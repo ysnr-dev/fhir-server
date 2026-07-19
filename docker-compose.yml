@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fhir_server_development
+    volumes:
+      # Postgres 18+ expects the mount at /var/lib/postgresql (data lives in a
+      # version-specific subdirectory), not /var/lib/postgresql/data.
+      - pg_data:/var/lib/postgresql
+    ports:
+      # Host 5433 avoids clashing with a local Homebrew Postgres on 5432.
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      RAILS_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pg_data:
