@@ -7,27 +7,32 @@ module Fhir
       "Patient" => {
         model: Patient,
         validator: PatientValidator,
-        search_params: SearchDefinitions::Patient::PARAMS
+        search_params: SearchDefinitions::Patient::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Patient"
       },
       "MedicationRequest" => {
         model: MedicationRequest,
         validator: MedicationRequestValidator,
-        search_params: SearchDefinitions::MedicationRequest::PARAMS
+        search_params: SearchDefinitions::MedicationRequest::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRequest"
       },
       "ServiceRequest" => {
         model: ServiceRequest,
         validator: ServiceRequestValidator,
-        search_params: SearchDefinitions::ServiceRequest::PARAMS
+        search_params: SearchDefinitions::ServiceRequest::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_ServiceRequest_Common"
       },
       "Practitioner" => {
         model: Practitioner,
         validator: PractitionerValidator,
-        search_params: SearchDefinitions::Practitioner::PARAMS
+        search_params: SearchDefinitions::Practitioner::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Practitioner"
       },
       "Organization" => {
         model: Organization,
         validator: OrganizationValidator,
-        search_params: SearchDefinitions::Organization::PARAMS
+        search_params: SearchDefinitions::Organization::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Organization"
       }
     }.freeze
 
