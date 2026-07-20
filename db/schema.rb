@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_20_000004) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,11 +25,13 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000004) do
     t.datetime "period_start"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "service_provider_reference"
     t.index ["class_code"], name: "index_encounters_on_class_code"
     t.index ["content"], name: "index_encounters_on_content", using: :gin
     t.index ["deleted"], name: "index_encounters_on_deleted"
     t.index ["last_updated"], name: "index_encounters_on_last_updated"
     t.index ["period_start"], name: "index_encounters_on_period_start"
+    t.index ["service_provider_reference"], name: "index_encounters_on_service_provider_reference"
     t.index ["status"], name: "index_encounters_on_status"
     t.index ["subject_reference"], name: "index_encounters_on_subject_reference"
   end
@@ -46,12 +48,14 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000004) do
     t.string "organization_reference"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "partof_reference"
     t.index ["address_text"], name: "index_locations_on_address_text"
     t.index ["content"], name: "index_locations_on_content", using: :gin
     t.index ["deleted"], name: "index_locations_on_deleted"
     t.index ["last_updated"], name: "index_locations_on_last_updated"
     t.index ["name"], name: "index_locations_on_name"
     t.index ["organization_reference"], name: "index_locations_on_organization_reference"
+    t.index ["partof_reference"], name: "index_locations_on_partof_reference"
     t.index ["status"], name: "index_locations_on_status"
     t.index ["type_code"], name: "index_locations_on_type_code"
   end
@@ -69,13 +73,17 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000004) do
     t.string "medication_text"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "encounter_reference"
+    t.string "requester_reference"
     t.index ["authored_on"], name: "index_medication_requests_on_authored_on"
     t.index ["content"], name: "index_medication_requests_on_content", using: :gin
     t.index ["deleted"], name: "index_medication_requests_on_deleted"
+    t.index ["encounter_reference"], name: "index_medication_requests_on_encounter_reference"
     t.index ["intent"], name: "index_medication_requests_on_intent"
     t.index ["last_updated"], name: "index_medication_requests_on_last_updated"
     t.index ["medication_code"], name: "index_medication_requests_on_medication_code"
     t.index ["medication_text"], name: "index_medication_requests_on_medication_text"
+    t.index ["requester_reference"], name: "index_medication_requests_on_requester_reference"
     t.index ["status"], name: "index_medication_requests_on_status"
     t.index ["subject_reference"], name: "index_medication_requests_on_subject_reference"
   end
@@ -89,11 +97,13 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000004) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "partof_reference"
     t.index ["active"], name: "index_organizations_on_active"
     t.index ["content"], name: "index_organizations_on_content", using: :gin
     t.index ["deleted"], name: "index_organizations_on_deleted"
     t.index ["last_updated"], name: "index_organizations_on_last_updated"
     t.index ["name"], name: "index_organizations_on_name"
+    t.index ["partof_reference"], name: "index_organizations_on_partof_reference"
   end
 
   create_table "patients", id: :string, force: :cascade do |t|
@@ -199,13 +209,17 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000004) do
     t.string "code_text"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "encounter_reference"
+    t.string "requester_reference"
     t.index ["authored_on"], name: "index_service_requests_on_authored_on"
     t.index ["code"], name: "index_service_requests_on_code"
     t.index ["code_text"], name: "index_service_requests_on_code_text"
     t.index ["content"], name: "index_service_requests_on_content", using: :gin
     t.index ["deleted"], name: "index_service_requests_on_deleted"
+    t.index ["encounter_reference"], name: "index_service_requests_on_encounter_reference"
     t.index ["intent"], name: "index_service_requests_on_intent"
     t.index ["last_updated"], name: "index_service_requests_on_last_updated"
+    t.index ["requester_reference"], name: "index_service_requests_on_requester_reference"
     t.index ["status"], name: "index_service_requests_on_status"
     t.index ["subject_reference"], name: "index_service_requests_on_subject_reference"
   end

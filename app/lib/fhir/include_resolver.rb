@@ -44,16 +44,15 @@ module Fhir
     end
 
     def collect_forward_refs(definition)
-      path = definition[:path]
-
       records.flat_map do |record|
         content = record.content || {}
 
         if definition[:multiple]
-          key, sub = path
-          Array(content[key]).filter_map { |el| el[sub] if el.is_a?(Hash) && el[sub].present? }
+          Array(content[definition[:jsonb_key]]).filter_map do |element|
+            element.dig(*definition[:ref_path]) if element.is_a?(Hash)
+          end.select(&:present?)
         else
-          value = content.dig(*path)
+          value = content.dig(*definition[:path])
           value.present? ? [value] : []
         end
       end
@@ -105,13 +104,20 @@ module Fhir
         # Multi-valued reference lives only in `content`; match array membership
         # via jsonb containment (GIN-indexed). OR over each candidate reference.
         scopes = refs.map do |ref|
-          model.where(deleted: false).where("content @> ?", { definition[:jsonb_key] => [{ "reference" => ref }] }.to_json)
+          containment = { definition[:jsonb_key] => [nest(definition[:ref_path], ref)] }
+          model.where(deleted: false).where("content @> ?", containment.to_json)
         end
         scopes.reduce(:or)
       else
         # Single-valued reference is extracted to an indexed column.
         model.where(deleted: false, definition[:column] => refs)
       end
+    end
+
+    # Builds the nested hash a jsonb containment query expects, e.g.
+    # nest(["individual", "reference"], "Practitioner/1") => {"individual"=>{"reference"=>"Practitioner/1"}}
+    def nest(path, value)
+      path.reverse.reduce(value) { |acc, key| { key => acc } }
     end
 
     def tokens(value)

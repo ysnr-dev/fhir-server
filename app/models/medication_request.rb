@@ -9,6 +9,8 @@ class MedicationRequest < ApplicationRecord
     self.status = resource["status"]
     self.intent = resource["intent"]
     self.subject_reference = resource.dig("subject", "reference")
+    self.encounter_reference = resource.dig("encounter", "reference")
+    self.requester_reference = resource.dig("requester", "reference")
     self.authored_on = parse_authored_on(resource["authoredOn"])
 
     medication = resource["medicationCodeableConcept"] || {}

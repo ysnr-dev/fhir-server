@@ -11,6 +11,7 @@ class Location < ApplicationRecord
     self.address_text = flatten_address(resource["address"])
     self.type_code = first_coding_code(resource["type"])
     self.organization_reference = resource.dig("managingOrganization", "reference")
+    self.partof_reference = resource.dig("partOf", "reference")
   end
 
   private

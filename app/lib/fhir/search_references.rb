@@ -5,23 +5,53 @@ module Fhir
   # a server may silently drop unsupported include parameters).
   #
   # Each definition describes how to read the reference out of the source's FHIR
-  # `content`:
-  #   path      - keys to dig the reference string ("Type/id") out of `content`
-  #   multiple  - true when the reference element is an array (0..*)
+  # `content`. Single-valued (0..1) and multi-valued (0..*) references use
+  # different keys:
   #   targets   - resource types the reference is allowed to point at
-  #   jsonb_key - top-level `content` key, used for jsonb containment queries
-  #   column    - extracted search column (single-valued refs only), used for
-  #               indexed reverse lookups instead of a jsonb query
+  #   alias     - name of another param in the same source whose definition to use
+  #
+  #   single-valued:
+  #     path    - keys to dig the reference string ("Type/id") out of `content`
+  #     column  - extracted search column, used for indexed reverse lookups
+  #
+  #   multi-valued (multiple: true):
+  #     jsonb_key - the `content` array key holding the repeating element
+  #     ref_path  - keys from each array element down to the reference string;
+  #                 used both to read refs (forward) and to build the jsonb
+  #                 containment query (reverse), GIN-indexed on `content`
   module SearchReferences
     MAP = {
-      "ServiceRequest" => {
-        "subject" => { path: %w[subject reference], multiple: false, targets: %w[Patient], jsonb_key: "subject", column: "subject_reference" },
-        "patient" => { alias: "subject" }
+      "Encounter" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "service-provider" => { path: %w[serviceProvider reference], targets: %w[Organization], column: "service_provider_reference" },
+        "location" => { multiple: true, jsonb_key: "location", ref_path: %w[location reference], targets: %w[Location] },
+        "participant" => { multiple: true, jsonb_key: "participant", ref_path: %w[individual reference], targets: %w[Practitioner PractitionerRole] },
+        "practitioner" => { alias: "participant" }
       },
       "MedicationRequest" => {
-        "subject" => { path: %w[subject reference], multiple: false, targets: %w[Patient], jsonb_key: "subject", column: "subject_reference" },
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
-        "based-on" => { path: %w[basedOn reference], multiple: true, targets: %w[ServiceRequest], jsonb_key: "basedOn" }
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        "requester" => { path: %w[requester reference], targets: %w[Practitioner PractitionerRole Organization], column: "requester_reference" },
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] }
+      },
+      "ServiceRequest" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        "requester" => { path: %w[requester reference], targets: %w[Practitioner PractitionerRole Organization], column: "requester_reference" }
+      },
+      "PractitionerRole" => {
+        "practitioner" => { path: %w[practitioner reference], targets: %w[Practitioner], column: "practitioner_reference" },
+        "organization" => { path: %w[organization reference], targets: %w[Organization], column: "organization_reference" }
+      },
+      "Location" => {
+        "organization" => { path: %w[managingOrganization reference], targets: %w[Organization], column: "organization_reference" },
+        "partof" => { path: %w[partOf reference], targets: %w[Location], column: "partof_reference" }
+      },
+      "Organization" => {
+        "partof" => { path: %w[partOf reference], targets: %w[Organization], column: "partof_reference" }
       }
     }.freeze
 

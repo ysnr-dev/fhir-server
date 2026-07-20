@@ -4,7 +4,8 @@ module Fhir
       PARAMS = {
         "identifier" => { type: :identifier },
         "name"       => { type: :string, column: :name },
-        "active"     => { type: :boolean, column: :active }
+        "active"     => { type: :boolean, column: :active },
+        "partof"     => { type: :reference, column: :partof_reference, target_type: "Organization" }
       }.freeze
     end
   end

@@ -33,6 +33,26 @@ RSpec.describe Fhir::IncludeResolver do
     )
   end
 
+  def create_practitioner
+    Fhir::Repository.create(
+      "Practitioner",
+      { "resourceType" => "Practitioner",
+        "identifier" => [{ "system" => "urn:example", "value" => "DR1" }] }
+    )
+  end
+
+  def create_encounter(overrides = {})
+    Fhir::Repository.create(
+      "Encounter",
+      {
+        "resourceType" => "Encounter",
+        "status" => "finished",
+        "class" => { "code" => "AMB" },
+        "subject" => { "reference" => "Patient/#{patient.id}" }
+      }.deep_merge(overrides.deep_stringify_keys)
+    )
+  end
+
   def resolve(resource_type:, records:, params:)
     described_class.call(resource_type: resource_type, records: records, params: params)
   end
@@ -160,6 +180,90 @@ RSpec.describe Fhir::IncludeResolver do
       )
 
       expect(included).to be_empty
+    end
+  end
+
+  describe "single-valued references added in Tier 2" do
+    it "forward-includes the encounter of a MedicationRequest" do
+      encounter = create_encounter
+      medication_request = create_medication_request("encounter" => { "reference" => "Encounter/#{encounter.id}" })
+
+      included = resolve(
+        resource_type: "MedicationRequest",
+        records: [medication_request],
+        params: { "_include" => "MedicationRequest:encounter" }
+      )
+
+      expect(included.map(&:id)).to eq([encounter.id])
+      expect(included.first).to be_a(Encounter)
+    end
+
+    it "reverse-includes every Encounter of a patient (patient's clinical bundle)" do
+      first = create_encounter
+      second = create_encounter
+
+      included = resolve(
+        resource_type: "Patient",
+        records: [patient],
+        params: { "_revinclude" => "Encounter:subject" }
+      )
+
+      expect(included.map(&:id)).to contain_exactly(first.id, second.id)
+    end
+
+    it "follows a Location.partOf self-reference in reverse" do
+      parent = Fhir::Repository.create("Location", { "resourceType" => "Location", "status" => "active", "name" => "棟" })
+      child = Fhir::Repository.create(
+        "Location",
+        { "resourceType" => "Location", "status" => "active", "name" => "室",
+          "partOf" => { "reference" => "Location/#{parent.id}" } }
+      )
+
+      included = resolve(
+        resource_type: "Location",
+        records: [parent],
+        params: { "_revinclude" => "Location:partof" }
+      )
+
+      expect(included.map(&:id)).to eq([child.id])
+    end
+  end
+
+  describe "multi-valued nested references (Encounter.participant)" do
+    it "forward-includes the practitioner from a nested participant.individual" do
+      practitioner = create_practitioner
+      encounter = create_encounter(
+        "participant" => [
+          { "individual" => { "reference" => "Practitioner/#{practitioner.id}" } }
+        ]
+      )
+
+      included = resolve(
+        resource_type: "Encounter",
+        records: [encounter],
+        params: { "_include" => "Encounter:participant" }
+      )
+
+      expect(included.map(&:id)).to eq([practitioner.id])
+      expect(included.first).to be_a(Practitioner)
+    end
+
+    it "reverse-includes encounters that reference a practitioner (via the practitioner alias)" do
+      practitioner = create_practitioner
+      encounter = create_encounter(
+        "participant" => [
+          { "individual" => { "reference" => "Practitioner/#{practitioner.id}" } }
+        ]
+      )
+
+      included = resolve(
+        resource_type: "Practitioner",
+        records: [practitioner],
+        params: { "_revinclude" => "Encounter:practitioner" }
+      )
+
+      expect(included.map(&:id)).to eq([encounter.id])
+      expect(included.first).to be_a(Encounter)
     end
   end
 end

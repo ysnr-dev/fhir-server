@@ -36,7 +36,7 @@ module Fhir
       total = scope.count
       count = clamped_count
       offset = clamped_offset
-      records = scope.order(:id).limit(count).offset(offset)
+      records = ordered(scope).limit(count).offset(offset)
 
       Result.new(records: records, total: total, count: count, offset: offset)
     end
@@ -44,6 +44,43 @@ module Fhir
     private
 
     attr_reader :resource_type, :model, :search_params, :params
+
+    # _id and _lastUpdated are sortable on every resource; type-specific params are
+    # sortable when they map to a single extracted column.
+    SORTABLE_META = { "_id" => :id, "_lastUpdated" => :last_updated }.freeze
+
+    def ordered(scope)
+      clauses = sort_clauses
+      return scope.order(:id) if clauses.empty?
+
+      # Append id as a stable tiebreaker so pagination is deterministic.
+      clauses[:id] ||= :asc
+      scope.order(clauses)
+    end
+
+    def sort_clauses
+      raw = params["_sort"]
+      return {} if raw.blank?
+
+      raw.to_s.split(",").each_with_object({}) do |token, clauses|
+        token = token.strip
+        next if token.blank?
+
+        descending = token.start_with?("-")
+        name = descending ? token[1..] : token
+        column = sort_column(name)
+        next unless column
+
+        clauses[column] ||= descending ? :desc : :asc
+      end
+    end
+
+    def sort_column(name)
+      return SORTABLE_META[name] if SORTABLE_META.key?(name)
+
+      definition = search_params[name]
+      definition && definition[:column]&.to_sym
+    end
 
     def filter_id(scope)
       return scope if params["_id"].blank?
@@ -80,7 +117,21 @@ module Fhir
 
     def apply_reference_filter(scope, definition, value)
       reference = value.include?("/") ? value : "#{definition[:target_type]}/#{value}"
-      scope.where(definition[:column] => reference)
+
+      if definition[:multiple]
+        # 0..* reference lives only in content; match array membership via jsonb
+        # containment (GIN-indexed), mirroring Fhir::IncludeResolver#query_reverse.
+        containment = { definition[:jsonb_key] => [nest(definition[:ref_path], reference)] }
+        scope.where("content @> ?", containment.to_json)
+      else
+        scope.where(definition[:column] => reference)
+      end
+    end
+
+    # Builds the nested hash a jsonb containment query expects, e.g.
+    # nest(["individual", "reference"], "Practitioner/1") => {"individual"=>{"reference"=>"Practitioner/1"}}
+    def nest(path, value)
+      path.reverse.reduce(value) { |acc, key| { key => acc } }
     end
 
     def apply_identifier_filter(scope, value)

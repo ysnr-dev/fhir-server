@@ -8,5 +8,6 @@ class Organization < ApplicationRecord
 
     self.active = resource["active"]
     self.name = resource["name"]
+    self.partof_reference = resource.dig("partOf", "reference")
   end
 end

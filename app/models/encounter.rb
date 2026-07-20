@@ -9,6 +9,7 @@ class Encounter < ApplicationRecord
     self.status = resource["status"]
     self.class_code = resource.dig("class", "code")
     self.subject_reference = resource.dig("subject", "reference")
+    self.service_provider_reference = resource.dig("serviceProvider", "reference")
     self.period_start = parse_time(resource.dig("period", "start"))
   end
 
