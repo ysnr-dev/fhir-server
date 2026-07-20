@@ -18,7 +18,9 @@ class FhirResourcesController < ApplicationController
     payload, parse_error = parse_body
     return render_bad_request(parse_error) if parse_error
 
-    render_operation_result(Fhir::Operation.create(resource_type, payload))
+    render_operation_result(
+      Fhir::Operation.create(resource_type, payload, if_none_exist: request.headers["If-None-Exist"])
+    )
   end
 
   def update
@@ -26,6 +28,15 @@ class FhirResourcesController < ApplicationController
     return render_bad_request(parse_error) if parse_error
 
     render_operation_result(Fhir::Operation.update(resource_type, params[:id], payload, if_match: if_match_version))
+  end
+
+  # PUT /{type}?{criteria} -- conditional update. The raw query string is the
+  # selection criteria (parsed strictly by Fhir::ConditionalMatch).
+  def conditional_update
+    payload, parse_error = parse_body
+    return render_bad_request(parse_error) if parse_error
+
+    render_operation_result(Fhir::Operation.conditional_update(resource_type, request.query_string, payload))
   end
 
   def destroy

@@ -14,6 +14,7 @@ Rails.application.routes.draw do
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
       post   "/#{type}",                   to: "fhir_resources#create"
+      put    "/#{type}",                   to: "fhir_resources#conditional_update"
       get    "/#{type}/:id/_history/:vid", to: "fhir_resources#vread"
       get    "/#{type}/:id/_history",      to: "fhir_resources#history"
       get    "/#{type}/:id",               to: "fhir_resources#show"

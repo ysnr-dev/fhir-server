@@ -60,6 +60,18 @@ module Fhir
       Result.new(records: records, total: total, count: count, offset: offset)
     end
 
+    # Names of clauses this searcher cannot honor (unknown parameter or
+    # unsupported modifier). Plain search silently skips them (lenient, per
+    # spec); conditional interactions (Fhir::ConditionalMatch) reject instead,
+    # since a skipped clause would broaden the criteria and select unintended
+    # resources.
+    def unsupported_clause_names
+      search_params.clauses.reject do |clause|
+        definition = definition_for(clause.name)
+        definition && supported_modifier?(definition, clause.modifier)
+      end.map(&:name)
+    end
+
     private
 
     attr_reader :resource_type, :model, :search_param_defs, :search_params

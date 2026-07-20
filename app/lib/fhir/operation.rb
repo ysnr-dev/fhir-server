@@ -10,8 +10,8 @@ module Fhir
       end
     end
 
-    def self.create(resource_type, payload, id: nil)
-      new(resource_type).create(payload, id: id)
+    def self.create(resource_type, payload, id: nil, if_none_exist: nil)
+      new(resource_type).create(payload, id: id, if_none_exist: if_none_exist)
     end
 
     def self.read(resource_type, id)
@@ -20,6 +20,10 @@ module Fhir
 
     def self.update(resource_type, id, payload, if_match: nil)
       new(resource_type).update(id, payload, if_match: if_match)
+    end
+
+    def self.conditional_update(resource_type, criteria, payload)
+      new(resource_type).conditional_update(criteria, payload)
     end
 
     def self.delete(resource_type, id)
@@ -35,9 +39,21 @@ module Fhir
       @entry = ResourceRegistry.entry_for(resource_type)
     end
 
-    def create(payload, id: nil)
+    def create(payload, id: nil, if_none_exist: nil)
       return unsupported_type_result unless entry
       return resource_type_mismatch_result(payload) unless resource_type_matches?(payload)
+
+      if if_none_exist.present?
+        match = ConditionalMatch.call(resource_type, if_none_exist)
+        return conditional_failure_result(match) if %i[invalid multiple].include?(match.outcome)
+
+        # Exactly one match: conditional create is a no-op that returns the
+        # existing resource (200 OK, not 201).
+        if match.outcome == :one
+          record = match.record
+          return Result.new(status: :ok, resource: resource_for(record), version_id: record.version_id, resource_id: record.id)
+        end
+      end
 
       validation = entry[:validator].call(payload)
       return validation_result(validation) unless validation.valid?
@@ -88,6 +104,37 @@ module Fhir
       end
 
       Result.new(status: :ok, resource: resource_for(updated), version_id: updated.version_id, resource_id: updated.id)
+    end
+
+    # PUT /{type}?{criteria}: updates the single resource matching the criteria
+    # (200), creates a new one when nothing matches (201, server-assigned id),
+    # and fails with 412 when the criteria are ambiguous.
+    def conditional_update(criteria, payload)
+      return unsupported_type_result unless entry
+      return resource_type_mismatch_result(payload) unless resource_type_matches?(payload)
+
+      match = ConditionalMatch.call(resource_type, criteria)
+      case match.outcome
+      when :invalid, :multiple
+        conditional_failure_result(match)
+      when :none
+        create(payload)
+      else
+        # Per spec, a payload id that contradicts the matched resource is an error.
+        if payload["id"].present? && payload["id"] != match.record.id
+          return Result.new(
+            status: :bad_request,
+            outcome: Fhir::OperationOutcome.single(
+              severity: "error",
+              code: "invalid",
+              diagnostics: "Resource id '#{payload['id']}' does not match the resource selected by the " \
+                           "conditional criteria (#{resource_type}/#{match.record.id})"
+            )
+          )
+        end
+
+        update(match.record.id, payload)
+      end
     end
 
     def delete(id)
@@ -158,6 +205,20 @@ module Fhir
 
     def validation_result(validation)
       Result.new(status: :unprocessable_entity, outcome: Fhir::OperationOutcome.build(validation.issues))
+    end
+
+    # Maps a failed ConditionalMatch to its HTTP result: unusable criteria are
+    # the client's error (400); ambiguous criteria are 412 Precondition Failed.
+    def conditional_failure_result(match)
+      invalid = match.outcome == :invalid
+      Result.new(
+        status: invalid ? :bad_request : :precondition_failed,
+        outcome: Fhir::OperationOutcome.single(
+          severity: "error",
+          code: invalid ? "invalid" : "multiple-matches",
+          diagnostics: match.diagnostics
+        )
+      )
     end
 
     def unsupported_type_result

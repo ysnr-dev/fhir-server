@@ -4,6 +4,21 @@ class BundleProcessor
   # so references created earlier in the request are resolvable later.
   PROCESSING_ORDER = %w[DELETE POST PUT PATCH GET].freeze
 
+  # A conditional reference: "Type?criteria" (vs the literal "Type/id").
+  CONDITIONAL_REFERENCE_PATTERN = %r{\A([A-Za-z]+)\?(.+)\z}.freeze
+
+  # Raised while resolving a conditional reference that doesn't select exactly
+  # one resource; caught per-entry and converted to a failing entry result.
+  class UnresolvableConditionalReference < StandardError
+    attr_reader :status, :code
+
+    def initialize(status, code, message)
+      @status = status
+      @code = code
+      super(message)
+    end
+  end
+
   Response = Struct.new(:status, :body, keyword_init: true)
 
   def self.call(bundle, base_url:)
@@ -74,7 +89,7 @@ class BundleProcessor
 
     ActiveRecord::Base.transaction do
       order.each do |i|
-        result = dispatch_entry(entries[i], resource: resolved_resources[i], id_override: pre_assigned_ids[i])
+        result = dispatch_transaction_entry(entries[i], resolved_resources[i], pre_assigned_ids[i])
         results[i] = result
 
         next if result.success?
@@ -102,6 +117,18 @@ class BundleProcessor
     Response.new(status: result.status, body: outcome)
   end
 
+  # Transaction-only wrapper around dispatch_entry: resolves "Type?criteria"
+  # conditional references in the entry's resource first. Running inside the
+  # DB transaction at dispatch time (not upfront) means references to
+  # resources created by earlier entries of the same transaction resolve too.
+  def dispatch_transaction_entry(entry, resource, id_override)
+    resource = resolve_conditional_references(resource) if resource
+
+    dispatch_entry(entry, resource: resource, id_override: id_override)
+  rescue UnresolvableConditionalReference => e
+    entry_error(e.status, e.code, e.message)
+  end
+
   def dispatch_entry(entry, resource: entry["resource"], id_override: nil)
     req = entry["request"] || {}
     method = req["method"].to_s.upcase
@@ -112,7 +139,7 @@ class BundleProcessor
 
     case method
     when "POST"
-      Fhir::Operation.create(resource_type, resource, id: id_override)
+      Fhir::Operation.create(resource_type, resource, id: id_override, if_none_exist: req["ifNoneExist"])
     when "GET"
       if id.present?
         Fhir::Operation.read(resource_type, id)
@@ -120,9 +147,13 @@ class BundleProcessor
         Fhir::Operation.search(resource_type, query_string.to_s, base_url: base_url)
       end
     when "PUT"
-      return entry_error(:bad_request, "structure", "PUT requires an id in Bundle.entry.request.url") if id.blank?
-
-      Fhir::Operation.update(resource_type, id, resource, if_match: req["ifMatch"])
+      if id.present?
+        Fhir::Operation.update(resource_type, id, resource, if_match: req["ifMatch"])
+      elsif query_string.present?
+        Fhir::Operation.conditional_update(resource_type, query_string, resource)
+      else
+        entry_error(:bad_request, "structure", "PUT requires an id or search criteria in Bundle.entry.request.url")
+      end
     when "DELETE"
       return entry_error(:bad_request, "structure", "DELETE requires an id in Bundle.entry.request.url") if id.blank?
 
@@ -163,8 +194,21 @@ class BundleProcessor
       resource_type = extract_resource_type(entry.dig("request", "url"))
       next nil unless Fhir::ResourceRegistry.supported?(resource_type)
 
-      SecureRandom.uuid
+      if_none_exist_match(entry, resource_type)&.id || SecureRandom.uuid
     end
+  end
+
+  # When a POST entry carries ifNoneExist and exactly one resource already
+  # matches, the entry returns that existing resource instead of creating one --
+  # so same-bundle urn:uuid references to the entry's fullUrl must resolve to
+  # the EXISTING id, not a fresh one. Invalid or ambiguous criteria are left
+  # for dispatch to reject (inside the transaction, so nothing is committed).
+  def if_none_exist_match(entry, resource_type)
+    criteria = entry.dig("request", "ifNoneExist")
+    return nil if criteria.blank?
+
+    match = Fhir::ConditionalMatch.call(resource_type, criteria)
+    match.outcome == :one ? match.record : nil
   end
 
   def build_reference_map(entries, pre_assigned_ids)
@@ -191,6 +235,47 @@ class BundleProcessor
       node.map { |item| resolve_references(item, reference_map) }
     else
       node
+    end
+  end
+
+  # Rewrites conditional references ("Type?criteria") to literal ones
+  # ("Type/id"). A reference that doesn't select exactly one resource raises
+  # UnresolvableConditionalReference, failing the entry (and the transaction).
+  def resolve_conditional_references(node)
+    case node
+    when Hash
+      node.each_with_object({}) do |(k, v), acc|
+        acc[k] = if k == "reference" && v.is_a?(String) && (match = v.match(CONDITIONAL_REFERENCE_PATTERN)) &&
+                    Fhir::ResourceRegistry.supported?(match[1])
+                   resolve_conditional_reference(match[1], match[2], v)
+                 else
+                   resolve_conditional_references(v)
+                 end
+      end
+    when Array
+      node.map { |item| resolve_conditional_references(item) }
+    else
+      node
+    end
+  end
+
+  def resolve_conditional_reference(resource_type, criteria, original)
+    match = Fhir::ConditionalMatch.call(resource_type, criteria)
+    case match.outcome
+    when :one
+      "#{resource_type}/#{match.record.id}"
+    when :none
+      raise UnresolvableConditionalReference.new(
+        :precondition_failed, "not-found", "Conditional reference '#{original}' matched no resources"
+      )
+    when :multiple
+      raise UnresolvableConditionalReference.new(
+        :precondition_failed, "multiple-matches", "Conditional reference '#{original}': #{match.diagnostics}"
+      )
+    else
+      raise UnresolvableConditionalReference.new(
+        :bad_request, "invalid", "Conditional reference '#{original}': #{match.diagnostics}"
+      )
     end
   end
 

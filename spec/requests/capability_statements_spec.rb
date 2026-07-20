@@ -16,5 +16,12 @@ RSpec.describe "CapabilityStatement", type: :request do
       system_interactions = body["rest"].first["interaction"].map { |i| i["code"] }
       expect(system_interactions).to include("transaction", "batch")
     end
+
+    it "advertises conditional create and conditional update for every resource" do
+      get "/metadata"
+
+      resources = JSON.parse(response.body)["rest"].first["resource"]
+      expect(resources).to all(include("conditionalCreate" => true, "conditionalUpdate" => true))
+    end
   end
 end

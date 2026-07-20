@@ -45,6 +45,8 @@ module Fhir
         "type" => resource_type,
         "profile" => entry.fetch(:profile),
         "interaction" => RESOURCE_INTERACTIONS.map { |code| { "code" => code } },
+        "conditionalCreate" => true,
+        "conditionalUpdate" => true,
         "searchParam" => search_params(entry.fetch(:search_params))
       }
     end
