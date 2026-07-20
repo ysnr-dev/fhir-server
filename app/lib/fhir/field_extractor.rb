@@ -75,6 +75,12 @@ module Fhir
       Array(codings).first&.dig("code")
     end
 
+    # First element of a 0..* array of primitive codes, e.g.
+    # AllergyIntolerance.category: ["food", "medication"].
+    def first_value(values)
+      Array(values).first
+    end
+
     # Human-readable text of a single CodeableConcept: concept.text plus the first
     # coding's display, space-joined; nil when both are absent.
     def concept_text(concept)

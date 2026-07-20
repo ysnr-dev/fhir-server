@@ -10,9 +10,87 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_20_000014) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000019) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "allergy_intolerances", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "clinical_status"
+    t.string "verification_status"
+    t.string "type_code"
+    t.string "category_code"
+    t.string "criticality"
+    t.string "code_value"
+    t.string "code_text"
+    t.string "patient_reference"
+    t.datetime "recorded_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_allergy_intolerances_on_category_code"
+    t.index ["clinical_status"], name: "index_allergy_intolerances_on_clinical_status"
+    t.index ["code_value"], name: "index_allergy_intolerances_on_code_value"
+    t.index ["content"], name: "index_allergy_intolerances_on_content", using: :gin
+    t.index ["criticality"], name: "index_allergy_intolerances_on_criticality"
+    t.index ["deleted"], name: "index_allergy_intolerances_on_deleted"
+    t.index ["last_updated"], name: "index_allergy_intolerances_on_last_updated"
+    t.index ["patient_reference"], name: "index_allergy_intolerances_on_patient_reference"
+    t.index ["recorded_time"], name: "index_allergy_intolerances_on_recorded_time"
+  end
+
+  create_table "conditions", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "clinical_status"
+    t.string "verification_status"
+    t.string "category_code"
+    t.string "severity_code"
+    t.string "code_value"
+    t.string "code_text"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.datetime "onset_time"
+    t.datetime "recorded_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_conditions_on_category_code"
+    t.index ["clinical_status"], name: "index_conditions_on_clinical_status"
+    t.index ["code_value"], name: "index_conditions_on_code_value"
+    t.index ["content"], name: "index_conditions_on_content", using: :gin
+    t.index ["deleted"], name: "index_conditions_on_deleted"
+    t.index ["encounter_reference"], name: "index_conditions_on_encounter_reference"
+    t.index ["last_updated"], name: "index_conditions_on_last_updated"
+    t.index ["onset_time"], name: "index_conditions_on_onset_time"
+    t.index ["recorded_time"], name: "index_conditions_on_recorded_time"
+    t.index ["subject_reference"], name: "index_conditions_on_subject_reference"
+    t.index ["verification_status"], name: "index_conditions_on_verification_status"
+  end
+
+  create_table "coverages", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "type_code"
+    t.string "type_text"
+    t.string "beneficiary_reference"
+    t.string "dependent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["beneficiary_reference"], name: "index_coverages_on_beneficiary_reference"
+    t.index ["content"], name: "index_coverages_on_content", using: :gin
+    t.index ["deleted"], name: "index_coverages_on_deleted"
+    t.index ["dependent"], name: "index_coverages_on_dependent"
+    t.index ["last_updated"], name: "index_coverages_on_last_updated"
+    t.index ["status"], name: "index_coverages_on_status"
+    t.index ["type_code"], name: "index_coverages_on_type_code"
+  end
 
   create_table "diagnostic_reports", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
@@ -84,6 +162,29 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000014) do
     t.index ["started"], name: "index_imaging_studies_on_started"
     t.index ["status"], name: "index_imaging_studies_on_status"
     t.index ["subject_reference"], name: "index_imaging_studies_on_subject_reference"
+  end
+
+  create_table "immunizations", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "vaccine_code"
+    t.string "vaccine_text"
+    t.string "patient_reference"
+    t.datetime "occurrence_time"
+    t.string "lot_number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_immunizations_on_content", using: :gin
+    t.index ["deleted"], name: "index_immunizations_on_deleted"
+    t.index ["last_updated"], name: "index_immunizations_on_last_updated"
+    t.index ["lot_number"], name: "index_immunizations_on_lot_number"
+    t.index ["occurrence_time"], name: "index_immunizations_on_occurrence_time"
+    t.index ["patient_reference"], name: "index_immunizations_on_patient_reference"
+    t.index ["status"], name: "index_immunizations_on_status"
+    t.index ["vaccine_code"], name: "index_immunizations_on_vaccine_code"
   end
 
   create_table "locations", id: :string, force: :cascade do |t|
@@ -342,6 +443,31 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000014) do
     t.index ["gender"], name: "index_practitioners_on_gender"
     t.index ["last_updated"], name: "index_practitioners_on_last_updated"
     t.index ["name_text"], name: "index_practitioners_on_name_text"
+  end
+
+  create_table "procedures", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "category_code"
+    t.string "code_value"
+    t.string "code_text"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.datetime "performed_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_procedures_on_category_code"
+    t.index ["code_value"], name: "index_procedures_on_code_value"
+    t.index ["content"], name: "index_procedures_on_content", using: :gin
+    t.index ["deleted"], name: "index_procedures_on_deleted"
+    t.index ["encounter_reference"], name: "index_procedures_on_encounter_reference"
+    t.index ["last_updated"], name: "index_procedures_on_last_updated"
+    t.index ["performed_time"], name: "index_procedures_on_performed_time"
+    t.index ["status"], name: "index_procedures_on_status"
+    t.index ["subject_reference"], name: "index_procedures_on_subject_reference"
   end
 
   create_table "resource_identifiers", force: :cascade do |t|

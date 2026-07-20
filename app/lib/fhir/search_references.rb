@@ -93,6 +93,27 @@ module Fhir
       },
       "Organization" => {
         "partof" => { path: %w[partOf reference], targets: %w[Organization], column: "partof_reference" }
+      },
+      "Condition" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" }
+      },
+      "AllergyIntolerance" => {
+        "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" }
+      },
+      "Procedure" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" }
+      },
+      "Immunization" => {
+        "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" }
+      },
+      "Coverage" => {
+        "beneficiary" => { path: %w[beneficiary reference], targets: %w[Patient], column: "beneficiary_reference" },
+        "patient" => { alias: "beneficiary" },
+        "payor" => { multiple: true, jsonb_key: "payor", ref_path: %w[reference], targets: %w[Organization] }
       }
     }.freeze
 

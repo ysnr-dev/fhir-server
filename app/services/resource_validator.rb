@@ -83,6 +83,13 @@ class ResourceValidator
     )
   end
 
+  # Checks the first coding.code of an optional CodeableConcept element against a
+  # required ValueSet binding (e.g. Condition.clinicalStatus). No-op when the
+  # element is absent; a concept whose first coding is unbound is a "value" error.
+  def validate_concept_binding(field, valueset)
+    validate_binding(field, valueset, value: Fhir::FieldExtractor.coding_code(payload[field]))
+  end
+
   # Validates a FHIR `date` element: partial-date format then real-calendar check.
   # No-op when absent (caller enforces requiredness separately if needed).
   def validate_date(field, value: payload[field], expression: "#{resource_type}.#{field}")

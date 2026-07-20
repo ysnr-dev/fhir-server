@@ -115,6 +115,41 @@ module Fhir
         search_params: SearchDefinitions::Location::PARAMS,
         extraction: ExtractionDefinitions::Location::FIELDS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Location"
+      },
+      "Condition" => {
+        model: Condition,
+        validator: ConditionValidator,
+        search_params: SearchDefinitions::Condition::PARAMS,
+        extraction: ExtractionDefinitions::Condition::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Condition"
+      },
+      "AllergyIntolerance" => {
+        model: AllergyIntolerance,
+        validator: AllergyIntoleranceValidator,
+        search_params: SearchDefinitions::AllergyIntolerance::PARAMS,
+        extraction: ExtractionDefinitions::AllergyIntolerance::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_AllergyIntolerance"
+      },
+      "Procedure" => {
+        model: Procedure,
+        validator: ProcedureValidator,
+        search_params: SearchDefinitions::Procedure::PARAMS,
+        extraction: ExtractionDefinitions::Procedure::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Procedure"
+      },
+      "Immunization" => {
+        model: Immunization,
+        validator: ImmunizationValidator,
+        search_params: SearchDefinitions::Immunization::PARAMS,
+        extraction: ExtractionDefinitions::Immunization::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Immunization"
+      },
+      "Coverage" => {
+        model: InsuranceCoverage,
+        validator: CoverageValidator,
+        search_params: SearchDefinitions::Coverage::PARAMS,
+        extraction: ExtractionDefinitions::Coverage::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage"
       }
     }.freeze
 

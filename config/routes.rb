@@ -9,7 +9,8 @@ Rails.application.routes.draw do
   %w[Patient MedicationRequest Medication MedicationDispense MedicationAdministration
      MedicationStatement Observation Specimen ImagingStudy DiagnosticReport
      ServiceRequest Practitioner Organization
-     PractitionerRole Encounter Location].each do |type|
+     PractitionerRole Encounter Location
+     Condition AllergyIntolerance Procedure Immunization Coverage].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
       post   "/#{type}",                   to: "fhir_resources#create"

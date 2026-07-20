@@ -47,6 +47,31 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/location-mode (required)
     LOCATION_MODE = %w[instance kind].freeze
 
+    # http://hl7.org/fhir/ValueSet/condition-clinical (required)
+    CONDITION_CLINICAL_STATUS = %w[active recurrence relapse inactive remission resolved].freeze
+    # http://hl7.org/fhir/ValueSet/condition-ver-status (required)
+    CONDITION_VERIFICATION_STATUS = %w[unconfirmed provisional differential confirmed refuted entered-in-error].freeze
+
+    # http://hl7.org/fhir/ValueSet/allergyintolerance-clinical (required)
+    ALLERGY_CLINICAL_STATUS = %w[active inactive resolved].freeze
+    # http://hl7.org/fhir/ValueSet/allergyintolerance-verification (required)
+    ALLERGY_VERIFICATION_STATUS = %w[unconfirmed confirmed refuted entered-in-error].freeze
+    # http://hl7.org/fhir/ValueSet/allergy-intolerance-type (required)
+    ALLERGY_TYPE = %w[allergy intolerance].freeze
+    # http://hl7.org/fhir/ValueSet/allergy-intolerance-category (required)
+    ALLERGY_CATEGORY = %w[food medication environment biologic].freeze
+    # http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality (required)
+    ALLERGY_CRITICALITY = %w[low high unable-to-assess].freeze
+
+    # http://hl7.org/fhir/ValueSet/event-status (required) -- Procedure.status
+    EVENT_STATUS = %w[preparation in-progress not-done on-hold stopped completed entered-in-error unknown].freeze
+
+    # http://hl7.org/fhir/ValueSet/immunization-status (required)
+    IMMUNIZATION_STATUS = %w[completed entered-in-error not-done].freeze
+
+    # http://hl7.org/fhir/ValueSet/fm-status (required) -- Coverage.status
+    FINANCIAL_RESOURCE_STATUS = %w[active cancelled draft entered-in-error].freeze
+
     # --- Identifier systems / OIDs (JP Core) --------------------------------
 
     # JP Core Patient medical record number (院内カルテ番号) identifier system.

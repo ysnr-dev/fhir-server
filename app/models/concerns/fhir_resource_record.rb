@@ -11,9 +11,11 @@ module FhirResourceRecord
 
   class_methods do
     # The declarative column -> extraction spec map for this resource type, resolved
-    # from the registry by class name (== FHIR resourceType, per the invariant above).
+    # from the registry by polymorphic_name (== FHIR resourceType, per the invariant
+    # above -- polymorphic_name defaults to the class name, but a model may override
+    # it when the Ruby class name can't match the resourceType, e.g. InsuranceCoverage).
     def extraction_fields
-      Fhir::ResourceRegistry.entry_for(name).fetch(:extraction)
+      Fhir::ResourceRegistry.entry_for(polymorphic_name).fetch(:extraction)
     end
   end
 

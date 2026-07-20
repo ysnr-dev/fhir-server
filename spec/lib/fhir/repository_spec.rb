@@ -122,7 +122,7 @@ RSpec.describe Fhir::Repository do
   end
 
   describe "every registered resource type" do
-    def minimal_payload(resource_type, patient_id:)
+    def minimal_payload(resource_type, patient_id:, organization_id: nil)
       case resource_type
       when "Patient"
         { "resourceType" => "Patient",
@@ -223,16 +223,46 @@ RSpec.describe Fhir::Repository do
           "identifier" => [{ "system" => "http://example.org/location", "value" => "smoke-loc" }],
           "status" => "active",
           "name" => "Smoke Room" }
+      when "Condition"
+        { "resourceType" => "Condition",
+          "identifier" => [{ "system" => "http://example.org/condition", "value" => "smoke-cond" }],
+          "code" => { "coding" => [{ "system" => "http://hl7.org/fhir/sid/icd-10", "code" => "J20.9" }] },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "AllergyIntolerance"
+        { "resourceType" => "AllergyIntolerance",
+          "identifier" => [{ "system" => "http://example.org/allergy", "value" => "smoke-allergy" }],
+          "code" => { "coding" => [{ "system" => "http://www.nlm.nih.gov/research/umls/rxnorm", "code" => "7980" }] },
+          "patient" => { "reference" => "Patient/#{patient_id}" } }
+      when "Procedure"
+        { "resourceType" => "Procedure",
+          "identifier" => [{ "system" => "http://example.org/procedure", "value" => "smoke-proc" }],
+          "status" => "completed",
+          "code" => { "coding" => [{ "system" => "http://snomed.info/sct", "code" => "80146002" }] },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "Immunization"
+        { "resourceType" => "Immunization",
+          "identifier" => [{ "system" => "http://example.org/immunization", "value" => "smoke-imm" }],
+          "status" => "completed",
+          "vaccineCode" => { "coding" => [{ "system" => "http://hl7.org/fhir/sid/ndc", "code" => "49281-0215-88" }] },
+          "patient" => { "reference" => "Patient/#{patient_id}" },
+          "occurrenceDateTime" => "2026-07-19T10:00:00+09:00" }
+      when "Coverage"
+        { "resourceType" => "Coverage",
+          "identifier" => [{ "system" => "http://example.org/coverage", "value" => "smoke-cov" }],
+          "status" => "active",
+          "beneficiary" => { "reference" => "Patient/#{patient_id}" },
+          "payor" => [{ "reference" => "Organization/#{organization_id}" }] }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end
     end
 
     let(:patient_id) { described_class.create("Patient", minimal_payload("Patient", patient_id: nil)).id }
+    let(:organization_id) { described_class.create("Organization", minimal_payload("Organization", patient_id: nil)).id }
 
     Fhir::ResourceRegistry.types.each do |resource_type|
       it "round-trips create -> update -> history and extracts identifiers for #{resource_type}" do
-        fixture = minimal_payload(resource_type, patient_id: patient_id)
+        fixture = minimal_payload(resource_type, patient_id: patient_id, organization_id: organization_id)
 
         record = described_class.create(resource_type, fixture)
         expect(record.version_id).to eq(1)
