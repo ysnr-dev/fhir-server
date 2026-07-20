@@ -208,7 +208,9 @@ RSpec.describe "MedicationRequests", type: :request do
       get "/MedicationRequest/#{id}/_history/1"
 
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body)["status"]).to eq("active")
+      body = JSON.parse(response.body)
+      expect(body["status"]).to eq("active")
+      expect(body["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRequest"])
     end
   end
 
@@ -272,6 +274,12 @@ RSpec.describe "MedicationRequests", type: :request do
         expect(included.size).to eq(1)
         expect(included.first["resource"]["resourceType"]).to eq("Patient")
         expect(included.first["resource"]["id"]).to eq(subject_id)
+
+        # meta.profile is resolved per-resource, not fixed to the searched type: the
+        # match entry gets MedicationRequest's profile, the included entry gets Patient's.
+        match = bundle["entry"].find { |entry| entry.dig("search", "mode") == "match" }
+        expect(match["resource"]["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRequest"])
+        expect(included.first["resource"]["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_Patient"])
       end
 
       it "includes the referenced ServiceRequest via MedicationRequest:based-on" do

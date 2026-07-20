@@ -15,6 +15,7 @@ RSpec.describe "Patients", type: :request do
       expect(body["id"]).to be_present
       expect(body["meta"]["versionId"]).to eq("1")
       expect(body["meta"]["lastUpdated"]).to be_present
+      expect(body["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_Patient"])
     end
 
     it "returns 422 when identifier is missing (JP Core 1..*)" do
