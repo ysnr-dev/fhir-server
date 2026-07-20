@@ -1,199 +1,68 @@
-class MedicationRequestValidator
-  Result = Struct.new(:errors, :warnings) do
-    def valid?
-      errors.empty?
-    end
-
-    def issues
-      errors.map { |e| e.merge(severity: "error") } +
-        warnings.map { |w| w.merge(severity: "warning") }
-    end
-  end
-
-  VALID_STATUSES = %w[active on-hold cancelled completed entered-in-error stopped draft unknown].freeze
-  VALID_INTENTS = %w[proposal plan order original-order reflex-order filler-order instance-order option].freeze
-  RP_NUMBER_SYSTEM = "http://jpfhir.jp/fhir/core/mhlw/IdSystem/Medication-RPGroupNumber".freeze
-  ORDER_IN_RP_SYSTEM = "http://jpfhir.jp/fhir/core/mhlw/IdSystem/MedicationAdministrationIndex".freeze
-  SUBJECT_REFERENCE_PATTERN = %r{\APatient/(.+)\z}.freeze
-
-  def self.call(payload)
-    new(payload).call
-  end
-
-  def initialize(payload)
-    @payload = payload
-  end
-
-  def call
-    errors = []
-    warnings = []
-
-    validate_identifier(errors, warnings)
-    validate_status(errors)
-    validate_intent(errors)
-    validate_medication(errors)
-    validate_subject(errors)
-    validate_authored_on(errors)
-
-    Result.new(errors, warnings)
-  end
-
+class MedicationRequestValidator < ResourceValidator
   private
 
-  attr_reader :payload
+  def validate
+    validate_identifier
+    require_field("status") && validate_binding("status", Fhir::Terminology::MEDICATION_REQUEST_STATUS)
+    require_field("intent") && validate_binding("intent", Fhir::Terminology::MEDICATION_REQUEST_INTENT)
+    validate_medication
+    validate_subject
+    validate_authored_on
+  end
 
-  def validate_identifier(errors, warnings)
+  def validate_identifier
     identifiers = payload["identifier"]
 
-    if identifiers.blank?
-      errors << {
-        code: "required",
-        diagnostics: "MedicationRequest.identifier is required (JP Core: 2..*)",
-        expression: ["MedicationRequest.identifier"]
-      }
-      return
-    end
+    return unless require_field("identifier", cardinality: "2..*")
 
     identifiers.each_with_index do |identifier, index|
       next if identifier.is_a?(Hash) && identifier["value"].present?
 
-      errors << {
+      add_error(
         code: "required",
         diagnostics: "MedicationRequest.identifier[#{index}].value is required",
-        expression: ["MedicationRequest.identifier[#{index}].value"]
-      }
+        expression: "MedicationRequest.identifier[#{index}].value"
+      )
     end
 
     systems = identifiers.filter_map { |i| i["system"] if i.is_a?(Hash) }
 
-    unless systems.include?(RP_NUMBER_SYSTEM)
-      warnings << {
-        code: "value",
-        diagnostics: "MedicationRequest.identifier is missing the JP Core rpNumber slice (system: #{RP_NUMBER_SYSTEM})",
-        expression: ["MedicationRequest.identifier"]
-      }
-    end
-
-    unless systems.include?(ORDER_IN_RP_SYSTEM)
-      warnings << {
-        code: "value",
-        diagnostics: "MedicationRequest.identifier is missing the JP Core orderInRp slice (system: #{ORDER_IN_RP_SYSTEM})",
-        expression: ["MedicationRequest.identifier"]
-      }
-    end
+    warn_missing_slice(systems, Fhir::Terminology::MEDICATION_RP_NUMBER_SYSTEM, "rpNumber")
+    warn_missing_slice(systems, Fhir::Terminology::MEDICATION_ORDER_IN_RP_SYSTEM, "orderInRp")
   end
 
-  def validate_status(errors)
-    status = payload["status"]
+  def warn_missing_slice(systems, system, slice_name)
+    return if systems.include?(system)
 
-    if status.blank?
-      errors << {
-        code: "required",
-        diagnostics: "MedicationRequest.status is required",
-        expression: ["MedicationRequest.status"]
-      }
-      return
-    end
-
-    return if VALID_STATUSES.include?(status)
-
-    errors << {
+    add_warning(
       code: "value",
-      diagnostics: "Invalid MedicationRequest.status '#{status}'. Must be one of: #{VALID_STATUSES.join(', ')}",
-      expression: ["MedicationRequest.status"]
-    }
+      diagnostics: "MedicationRequest.identifier is missing the JP Core #{slice_name} slice (system: #{system})",
+      expression: "MedicationRequest.identifier"
+    )
   end
 
-  def validate_intent(errors)
-    intent = payload["intent"]
-
-    if intent.blank?
-      errors << {
-        code: "required",
-        diagnostics: "MedicationRequest.intent is required",
-        expression: ["MedicationRequest.intent"]
-      }
-      return
-    end
-
-    return if VALID_INTENTS.include?(intent)
-
-    errors << {
-      code: "value",
-      diagnostics: "Invalid MedicationRequest.intent '#{intent}'. Must be one of: #{VALID_INTENTS.join(', ')}",
-      expression: ["MedicationRequest.intent"]
-    }
-  end
-
-  def validate_medication(errors)
+  def validate_medication
     if payload["medicationReference"].present?
-      errors << {
+      add_error(
         code: "invariant",
         diagnostics: "MedicationRequest.medicationReference is not supported by JP Core; use medicationCodeableConcept",
-        expression: ["MedicationRequest.medicationReference"]
-      }
+        expression: "MedicationRequest.medicationReference"
+      )
       return
     end
 
-    return if payload["medicationCodeableConcept"].present?
-
-    errors << {
-      code: "required",
-      diagnostics: "MedicationRequest.medicationCodeableConcept is required",
-      expression: ["MedicationRequest.medicationCodeableConcept"]
-    }
+    require_field("medicationCodeableConcept")
   end
 
-  def validate_subject(errors)
-    reference = payload.dig("subject", "reference")
+  def validate_subject
+    return unless require_field("subject", value: payload.dig("subject", "reference"))
 
-    if reference.blank?
-      errors << {
-        code: "required",
-        diagnostics: "MedicationRequest.subject is required",
-        expression: ["MedicationRequest.subject"]
-      }
-      return
-    end
-
-    match = reference.match(SUBJECT_REFERENCE_PATTERN)
-    unless match
-      errors << {
-        code: "value",
-        diagnostics: "MedicationRequest.subject.reference must reference a Patient (e.g. 'Patient/{id}')",
-        expression: ["MedicationRequest.subject.reference"]
-      }
-      return
-    end
-
-    patient = Patient.find_by(id: match[1])
-    return if patient && !patient.deleted?
-
-    errors << {
-      code: "invalid",
-      diagnostics: "MedicationRequest.subject.reference '#{reference}' does not reference an existing Patient",
-      expression: ["MedicationRequest.subject.reference"]
-    }
+    validate_patient_reference("subject", on_non_patient: :reject)
   end
 
-  def validate_authored_on(errors)
-    authored_on = payload["authoredOn"]
+  def validate_authored_on
+    return unless require_field("authoredOn")
 
-    if authored_on.blank?
-      errors << {
-        code: "required",
-        diagnostics: "MedicationRequest.authoredOn is required",
-        expression: ["MedicationRequest.authoredOn"]
-      }
-      return
-    end
-
-    Time.iso8601(authored_on)
-  rescue ArgumentError, TypeError
-    errors << {
-      code: "value",
-      diagnostics: "MedicationRequest.authoredOn must be a valid ISO8601 dateTime",
-      expression: ["MedicationRequest.authoredOn"]
-    }
+    validate_datetime("authoredOn")
   end
 end

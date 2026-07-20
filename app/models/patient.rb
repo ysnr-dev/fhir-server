@@ -1,8 +1,6 @@
 class Patient < ApplicationRecord
   include FhirResourceRecord
 
-  IDENTIFIER_REPRESENTATION_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/iso21090-EN-representation".freeze
-
   # Derives the search-optimized columns from the FHIR `content` payload.
   # Called before every persist so the extracted columns never drift from content.
   def sync_search_fields!
