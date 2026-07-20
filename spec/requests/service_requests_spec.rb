@@ -187,5 +187,59 @@ RSpec.describe "ServiceRequests", type: :request do
 
       expect(JSON.parse(response.body)["total"]).to eq(0)
     end
+
+    describe "_revinclude=MedicationRequest:based-on" do
+      it "includes MedicationRequests that reference the matched ServiceRequest" do
+        subject_id = create_patient
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        service_request_id = JSON.parse(response.body)["id"]
+        post "/MedicationRequest",
+             params: valid_medication_request_payload(
+               subject_id: subject_id,
+               basedOn: [{ "reference" => "ServiceRequest/#{service_request_id}" }]
+             ),
+             as: :json
+        medication_request_id = JSON.parse(response.body)["id"]
+
+        get "/ServiceRequest", params: { _id: service_request_id, _revinclude: "MedicationRequest:based-on" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["total"]).to eq(1)
+
+        modes = bundle["entry"].group_by { |entry| entry.dig("search", "mode") }
+        expect(modes["match"].map { |entry| entry["resource"]["id"] }).to eq([service_request_id])
+
+        included = modes["include"]
+        expect(included.size).to eq(1)
+        expect(included.first["resource"]["resourceType"]).to eq("MedicationRequest")
+        expect(included.first["resource"]["id"]).to eq(medication_request_id)
+        expect(included.first["fullUrl"]).to end_with("/MedicationRequest/#{medication_request_id}")
+      end
+
+      it "returns only the match when no MedicationRequest references it" do
+        subject_id = create_patient
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        service_request_id = JSON.parse(response.body)["id"]
+
+        get "/ServiceRequest", params: { _id: service_request_id, _revinclude: "MedicationRequest:based-on" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["total"]).to eq(1)
+        expect(bundle["entry"].map { |entry| entry.dig("search", "mode") }).to eq(["match"])
+      end
+    end
+
+    it "ignores an unsupported _revinclude value" do
+      subject_id = create_patient
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+      service_request_id = JSON.parse(response.body)["id"]
+
+      get "/ServiceRequest", params: { _id: service_request_id, _revinclude: "Foo:bar" }
+
+      expect(response).to have_http_status(:ok)
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].map { |entry| entry.dig("search", "mode") }).to eq(["match"])
+    end
   end
 end

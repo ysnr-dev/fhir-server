@@ -1,6 +1,6 @@
 class BundleBuilder
-  def self.searchset(result:, base_url:, query_params:, resource_type:)
-    new(base_url, resource_type).searchset(result: result, query_params: query_params)
+  def self.searchset(result:, base_url:, query_params:, resource_type:, included: [])
+    new(base_url, resource_type).searchset(result: result, query_params: query_params, included: included)
   end
 
   def self.history(resource_id:, versions:, base_url:, resource_type:)
@@ -12,7 +12,7 @@ class BundleBuilder
     @resource_type = resource_type
   end
 
-  def searchset(result:, query_params:)
+  def searchset(result:, query_params:, included: [])
     entries = result.records.map do |record|
       {
         "fullUrl" => "#{base_url}/#{resource_type}/#{record.id}",
@@ -20,6 +20,8 @@ class BundleBuilder
         "search" => { "mode" => "match" }
       }
     end
+
+    entries.concat(include_entries(included, seen_urls: entries.map { |entry| entry["fullUrl"] }))
 
     {
       "resourceType" => "Bundle",
@@ -59,6 +61,27 @@ class BundleBuilder
   private
 
   attr_reader :base_url, :resource_type
+
+  # Renders `_include`/`_revinclude` resources as `search.mode = "include"`
+  # entries, skipping any whose fullUrl already appears (as a match or an earlier
+  # include). Each included record may be a different resourceType than the
+  # searched one, so the type is read from its own `content`.
+  def include_entries(included, seen_urls:)
+    seen = seen_urls.to_set
+
+    included.filter_map do |record|
+      type = record.content["resourceType"]
+      full_url = "#{base_url}/#{type}/#{record.id}"
+      next if seen.include?(full_url)
+
+      seen << full_url
+      {
+        "fullUrl" => full_url,
+        "resource" => Fhir::Meta.apply(record.content, version_id: record.version_id, last_updated: record.last_updated),
+        "search" => { "mode" => "include" }
+      }
+    end
+  end
 
   def search_links(result:, query_params:)
     links = [{ "relation" => "self", "url" => page_url(query_params, result.offset) }]

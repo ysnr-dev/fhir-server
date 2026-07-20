@@ -256,5 +256,72 @@ RSpec.describe "MedicationRequests", type: :request do
 
       expect(JSON.parse(response.body)["total"]).to eq(0)
     end
+
+    describe "_include" do
+      it "includes the referenced Patient via MedicationRequest:subject" do
+        subject_id = create_patient
+        post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id), as: :json
+        id = JSON.parse(response.body)["id"]
+
+        get "/MedicationRequest", params: { _id: id, _include: "MedicationRequest:subject" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["total"]).to eq(1)
+
+        included = bundle["entry"].select { |entry| entry.dig("search", "mode") == "include" }
+        expect(included.size).to eq(1)
+        expect(included.first["resource"]["resourceType"]).to eq("Patient")
+        expect(included.first["resource"]["id"]).to eq(subject_id)
+      end
+
+      it "includes the referenced ServiceRequest via MedicationRequest:based-on" do
+        subject_id = create_patient
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        service_request_id = JSON.parse(response.body)["id"]
+        post "/MedicationRequest",
+             params: valid_medication_request_payload(
+               subject_id: subject_id,
+               basedOn: [{ "reference" => "ServiceRequest/#{service_request_id}" }]
+             ),
+             as: :json
+        id = JSON.parse(response.body)["id"]
+
+        get "/MedicationRequest", params: { _id: id, _include: "MedicationRequest:based-on" }
+
+        bundle = JSON.parse(response.body)
+        included = bundle["entry"].select { |entry| entry.dig("search", "mode") == "include" }
+        expect(included.map { |entry| entry["resource"]["resourceType"] }).to eq(["ServiceRequest"])
+        expect(included.first["resource"]["id"]).to eq(service_request_id)
+      end
+
+      it "de-duplicates a Patient shared by multiple matched MedicationRequests" do
+        subject_id = create_patient
+        post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id), as: :json
+        post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id), as: :json
+
+        get "/MedicationRequest", params: { subject: "Patient/#{subject_id}", _include: "MedicationRequest:subject" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["total"]).to eq(2)
+
+        patient_entries = bundle["entry"].select do |entry|
+          entry.dig("search", "mode") == "include" && entry["resource"]["resourceType"] == "Patient"
+        end
+        expect(patient_entries.size).to eq(1)
+      end
+
+      it "omits a deleted _include target" do
+        subject_id = create_patient
+        post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id), as: :json
+        id = JSON.parse(response.body)["id"]
+        delete "/Patient/#{subject_id}"
+
+        get "/MedicationRequest", params: { _id: id, _include: "MedicationRequest:subject" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["total"]).to eq(1)
+        expect(bundle["entry"].map { |entry| entry.dig("search", "mode") }).to eq(["match"])
+      end
+    end
   end
 end

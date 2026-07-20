@@ -105,7 +105,8 @@ module Fhir
       return unsupported_type_result unless entry
 
       result = entry[:search].call(params)
-      bundle = BundleBuilder.searchset(result: result, base_url: base_url, query_params: params, resource_type: resource_type)
+      included = IncludeResolver.call(resource_type: resource_type, records: result.records, params: params)
+      bundle = BundleBuilder.searchset(result: result, base_url: base_url, query_params: params, resource_type: resource_type, included: included)
       Result.new(status: :ok, resource: bundle)
     end
 
