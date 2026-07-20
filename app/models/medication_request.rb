@@ -1,6 +1,5 @@
 class MedicationRequest < ApplicationRecord
-  has_many :medication_request_identifiers, dependent: :destroy
-  has_many :medication_request_versions, -> { order(version_id: :asc) }, dependent: :destroy
+  include FhirResourceRecord
 
   # Derives the search-optimized columns from the FHIR `content` payload.
   # Called before every persist so the extracted columns never drift from content.
@@ -16,20 +15,6 @@ class MedicationRequest < ApplicationRecord
     coding = Array(medication["coding"]).first
     self.medication_code = coding && coding["code"]
     self.medication_text = [medication["text"], coding && coding["display"]].compact.join(" ").presence
-  end
-
-  # Rebuilds the medication_request_identifiers rows from content["identifier"].
-  def sync_identifiers!
-    medication_request_identifiers.destroy_all
-
-    Array(content["identifier"]).each do |identifier|
-      next if identifier["value"].blank?
-
-      medication_request_identifiers.create!(
-        system: identifier["system"],
-        value: identifier["value"]
-      )
-    end
   end
 
   private

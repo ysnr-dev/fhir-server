@@ -2,14 +2,16 @@ require "rails_helper"
 
 RSpec.describe Fhir::IncludeResolver do
   let(:patient) do
-    PatientRepository.create(
+    Fhir::Repository.create(
+      "Patient",
       { "resourceType" => "Patient",
         "identifier" => [{ "system" => "urn:oid:1.2.392.100495.20.3.51", "value" => "P1" }] }
     )
   end
 
   def create_service_request(overrides = {})
-    ServiceRequestRepository.create(
+    Fhir::Repository.create(
+      "ServiceRequest",
       {
         "resourceType" => "ServiceRequest",
         "status" => "active",
@@ -20,7 +22,8 @@ RSpec.describe Fhir::IncludeResolver do
   end
 
   def create_medication_request(overrides = {})
-    MedicationRequestRepository.create(
+    Fhir::Repository.create(
+      "MedicationRequest",
       {
         "resourceType" => "MedicationRequest",
         "status" => "active",
@@ -112,7 +115,7 @@ RSpec.describe Fhir::IncludeResolver do
       medication_request = create_medication_request(
         "basedOn" => [{ "reference" => "ServiceRequest/#{service_request.id}" }]
       )
-      MedicationRequestRepository.delete(medication_request)
+      Fhir::Repository.delete("MedicationRequest", medication_request)
 
       included = resolve(
         resource_type: "ServiceRequest",

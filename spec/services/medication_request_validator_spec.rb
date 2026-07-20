@@ -2,7 +2,8 @@ require "rails_helper"
 
 RSpec.describe MedicationRequestValidator do
   let(:patient) do
-    PatientRepository.create(
+    Fhir::Repository.create(
+      "Patient",
       { "resourceType" => "Patient",
         "identifier" => [{ "system" => "urn:oid:1.2.392.100495.20.3.51", "value" => "P1" }] }
     )
@@ -95,7 +96,7 @@ RSpec.describe MedicationRequestValidator do
   end
 
   it "rejects a subject reference to a deleted patient" do
-    PatientRepository.delete(patient)
+    Fhir::Repository.delete("Patient", patient)
 
     result = described_class.call(payload("Patient/#{patient.id}"))
 

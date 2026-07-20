@@ -10,31 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_19_121324) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "medication_request_identifiers", force: :cascade do |t|
-    t.string "medication_request_id", null: false
-    t.string "system"
-    t.string "value", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["medication_request_id"], name: "index_medication_request_identifiers_on_medication_request_id"
-    t.index ["system", "value"], name: "index_medication_request_identifiers_on_system_and_value"
-    t.index ["value"], name: "index_medication_request_identifiers_on_value"
-  end
-
-  create_table "medication_request_versions", force: :cascade do |t|
-    t.string "medication_request_id", null: false
-    t.integer "version_id", null: false
-    t.jsonb "content", null: false
-    t.boolean "deleted", default: false, null: false
-    t.datetime "last_updated", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["medication_request_id", "version_id"], name: "index_med_request_versions_on_request_id_and_version_id", unique: true
-  end
 
   create_table "medication_requests", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
@@ -60,28 +38,6 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_19_121324) do
     t.index ["subject_reference"], name: "index_medication_requests_on_subject_reference"
   end
 
-  create_table "organization_identifiers", force: :cascade do |t|
-    t.string "organization_id", null: false
-    t.string "system"
-    t.string "value", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["organization_id"], name: "index_organization_identifiers_on_organization_id"
-    t.index ["system", "value"], name: "index_organization_identifiers_on_system_and_value"
-    t.index ["value"], name: "index_organization_identifiers_on_value"
-  end
-
-  create_table "organization_versions", force: :cascade do |t|
-    t.string "organization_id", null: false
-    t.integer "version_id", null: false
-    t.jsonb "content", null: false
-    t.boolean "deleted", default: false, null: false
-    t.datetime "last_updated", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["organization_id", "version_id"], name: "index_organization_versions_on_request_and_version", unique: true
-  end
-
   create_table "organizations", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
     t.jsonb "content", null: false
@@ -96,28 +52,6 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_19_121324) do
     t.index ["deleted"], name: "index_organizations_on_deleted"
     t.index ["last_updated"], name: "index_organizations_on_last_updated"
     t.index ["name"], name: "index_organizations_on_name"
-  end
-
-  create_table "patient_identifiers", force: :cascade do |t|
-    t.string "patient_id", null: false
-    t.string "system"
-    t.string "value", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["patient_id"], name: "index_patient_identifiers_on_patient_id"
-    t.index ["system", "value"], name: "index_patient_identifiers_on_system_and_value"
-    t.index ["value"], name: "index_patient_identifiers_on_value"
-  end
-
-  create_table "patient_versions", force: :cascade do |t|
-    t.string "patient_id", null: false
-    t.integer "version_id", null: false
-    t.jsonb "content", null: false
-    t.boolean "deleted", default: false, null: false
-    t.datetime "last_updated", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["patient_id", "version_id"], name: "index_patient_versions_on_patient_id_and_version_id", unique: true
   end
 
   create_table "patients", id: :string, force: :cascade do |t|
@@ -142,28 +76,6 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_19_121324) do
     t.index ["name_text"], name: "index_patients_on_name_text"
   end
 
-  create_table "practitioner_identifiers", force: :cascade do |t|
-    t.string "practitioner_id", null: false
-    t.string "system"
-    t.string "value", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["practitioner_id"], name: "index_practitioner_identifiers_on_practitioner_id"
-    t.index ["system", "value"], name: "index_practitioner_identifiers_on_system_and_value"
-    t.index ["value"], name: "index_practitioner_identifiers_on_value"
-  end
-
-  create_table "practitioner_versions", force: :cascade do |t|
-    t.string "practitioner_id", null: false
-    t.integer "version_id", null: false
-    t.jsonb "content", null: false
-    t.boolean "deleted", default: false, null: false
-    t.datetime "last_updated", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["practitioner_id", "version_id"], name: "index_practitioner_versions_on_request_and_version", unique: true
-  end
-
   create_table "practitioners", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
     t.jsonb "content", null: false
@@ -186,26 +98,28 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_19_121324) do
     t.index ["name_text"], name: "index_practitioners_on_name_text"
   end
 
-  create_table "service_request_identifiers", force: :cascade do |t|
-    t.string "service_request_id", null: false
+  create_table "resource_identifiers", force: :cascade do |t|
+    t.string "resource_type", null: false
+    t.string "resource_id", null: false
     t.string "system"
     t.string "value", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["service_request_id"], name: "index_service_request_identifiers_on_service_request_id"
-    t.index ["system", "value"], name: "index_service_request_identifiers_on_system_and_value"
-    t.index ["value"], name: "index_service_request_identifiers_on_value"
+    t.index ["resource_type", "resource_id"], name: "index_resource_identifiers_on_resource_type_and_resource_id"
+    t.index ["system", "value"], name: "index_resource_identifiers_on_system_and_value"
+    t.index ["value"], name: "index_resource_identifiers_on_value"
   end
 
-  create_table "service_request_versions", force: :cascade do |t|
-    t.string "service_request_id", null: false
+  create_table "resource_versions", force: :cascade do |t|
+    t.string "resource_type", null: false
+    t.string "resource_id", null: false
     t.integer "version_id", null: false
     t.jsonb "content", null: false
     t.boolean "deleted", default: false, null: false
     t.datetime "last_updated", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["service_request_id", "version_id"], name: "index_service_request_versions_on_request_and_version", unique: true
+    t.index ["resource_type", "resource_id", "version_id"], name: "index_resource_versions_on_type_id_version", unique: true
   end
 
   create_table "service_requests", id: :string, force: :cascade do |t|
@@ -232,9 +146,4 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_19_121324) do
     t.index ["subject_reference"], name: "index_service_requests_on_subject_reference"
   end
 
-  add_foreign_key "medication_request_identifiers", "medication_requests"
-  add_foreign_key "organization_identifiers", "organizations"
-  add_foreign_key "patient_identifiers", "patients"
-  add_foreign_key "practitioner_identifiers", "practitioners"
-  add_foreign_key "service_request_identifiers", "service_requests"
 end

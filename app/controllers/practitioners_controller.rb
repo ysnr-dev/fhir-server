@@ -33,7 +33,7 @@ class PractitionersController < ApplicationController
   def history
     return render_not_found unless @practitioner
 
-    versions = PractitionerRepository.history(@practitioner.id)
+    versions = Fhir::Repository.history(RESOURCE_TYPE, @practitioner.id)
     bundle = BundleBuilder.history(resource_id: @practitioner.id, versions: versions, base_url: base_url, resource_type: RESOURCE_TYPE)
     render_fhir_resource(bundle, status: :ok)
   end
@@ -41,7 +41,7 @@ class PractitionersController < ApplicationController
   def vread
     return render_not_found unless @practitioner
 
-    version = PractitionerRepository.version(@practitioner.id, params[:vid].to_i)
+    version = Fhir::Repository.version(RESOURCE_TYPE, @practitioner.id, params[:vid].to_i)
     return render_not_found unless version
     return render_gone if version.deleted
 

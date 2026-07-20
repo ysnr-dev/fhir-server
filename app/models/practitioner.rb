@@ -1,6 +1,5 @@
 class Practitioner < ApplicationRecord
-  has_many :practitioner_identifiers, dependent: :destroy
-  has_many :practitioner_versions, -> { order(version_id: :asc) }, dependent: :destroy
+  include FhirResourceRecord
 
   # Derives the search-optimized columns from the FHIR `content` payload.
   # Called before every persist so the extracted columns never drift from content.
@@ -15,20 +14,6 @@ class Practitioner < ApplicationRecord
     self.family = official_name&.dig("family")
     self.given = Array(official_name&.dig("given")).join(" ")
     self.name_text = all_name_representations(resource["name"]).join(" ")
-  end
-
-  # Rebuilds the practitioner_identifiers rows from content["identifier"].
-  def sync_identifiers!
-    practitioner_identifiers.destroy_all
-
-    Array(content["identifier"]).each do |identifier|
-      next if identifier["value"].blank?
-
-      practitioner_identifiers.create!(
-        system: identifier["system"],
-        value: identifier["value"]
-      )
-    end
   end
 
   private

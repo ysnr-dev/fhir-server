@@ -1,6 +1,5 @@
 class ServiceRequest < ApplicationRecord
-  has_many :service_request_identifiers, dependent: :destroy
-  has_many :service_request_versions, -> { order(version_id: :asc) }, dependent: :destroy
+  include FhirResourceRecord
 
   # Derives the search-optimized columns from the FHIR `content` payload.
   # Called before every persist so the extracted columns never drift from content.
@@ -16,20 +15,6 @@ class ServiceRequest < ApplicationRecord
     coding = Array(code_concept["coding"]).first
     self.code = coding && coding["code"]
     self.code_text = [code_concept["text"], coding && coding["display"]].compact.join(" ").presence
-  end
-
-  # Rebuilds the service_request_identifiers rows from content["identifier"].
-  def sync_identifiers!
-    service_request_identifiers.destroy_all
-
-    Array(content["identifier"]).each do |identifier|
-      next if identifier["value"].blank?
-
-      service_request_identifiers.create!(
-        system: identifier["system"],
-        value: identifier["value"]
-      )
-    end
   end
 
   private

@@ -33,7 +33,7 @@ class PatientsController < ApplicationController
   def history
     return render_not_found unless @patient
 
-    versions = PatientRepository.history(@patient.id)
+    versions = Fhir::Repository.history(RESOURCE_TYPE, @patient.id)
     bundle = BundleBuilder.history(resource_id: @patient.id, versions: versions, base_url: base_url, resource_type: RESOURCE_TYPE)
     render_fhir_resource(bundle, status: :ok)
   end
@@ -41,7 +41,7 @@ class PatientsController < ApplicationController
   def vread
     return render_not_found unless @patient
 
-    version = PatientRepository.version(@patient.id, params[:vid].to_i)
+    version = Fhir::Repository.version(RESOURCE_TYPE, @patient.id, params[:vid].to_i)
     return render_not_found unless version
     return render_gone if version.deleted
 

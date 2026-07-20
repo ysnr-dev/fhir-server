@@ -42,7 +42,7 @@ module Fhir
       validation = entry[:validator].call(payload)
       return validation_result(validation) unless validation.valid?
 
-      record = id ? entry[:repository].create(payload, id: id) : entry[:repository].create(payload)
+      record = id ? repository.create(payload, id: id) : repository.create(payload)
       Result.new(
         status: :created,
         resource: resource_for(record),
@@ -73,7 +73,7 @@ module Fhir
       return validation_result(validation) unless validation.valid?
 
       begin
-        updated = entry[:repository].update(record, payload, if_match_version: if_match)
+        updated = repository.update(record, payload, if_match_version: if_match)
       rescue StandardError => e
         raise unless e.respond_to?(:current_version_id)
 
@@ -97,14 +97,14 @@ module Fhir
       return not_found_result(id) unless record
       return Result.new(status: :no_content, resource_id: id) if record.deleted?
 
-      entry[:repository].delete(record)
+      repository.delete(record)
       Result.new(status: :no_content, resource_id: id)
     end
 
     def search(params, base_url:)
       return unsupported_type_result unless entry
 
-      result = entry[:search].call(params)
+      result = Search.call(resource_type, params)
       included = IncludeResolver.call(resource_type: resource_type, records: result.records, params: params)
       bundle = BundleBuilder.searchset(result: result, base_url: base_url, query_params: params, resource_type: resource_type, included: included)
       Result.new(status: :ok, resource: bundle)
@@ -113,6 +113,10 @@ module Fhir
     private
 
     attr_reader :resource_type, :entry
+
+    def repository
+      @repository ||= Repository.new(resource_type)
+    end
 
     def resource_type_matches?(payload)
       payload.is_a?(Hash) && payload["resourceType"] == resource_type

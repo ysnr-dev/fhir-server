@@ -7,32 +7,27 @@ module Fhir
       "Patient" => {
         model: Patient,
         validator: PatientValidator,
-        repository: PatientRepository,
-        search: PatientSearch
+        search_params: SearchDefinitions::Patient::PARAMS
       },
       "MedicationRequest" => {
         model: MedicationRequest,
         validator: MedicationRequestValidator,
-        repository: MedicationRequestRepository,
-        search: MedicationRequestSearch
+        search_params: SearchDefinitions::MedicationRequest::PARAMS
       },
       "ServiceRequest" => {
         model: ServiceRequest,
         validator: ServiceRequestValidator,
-        repository: ServiceRequestRepository,
-        search: ServiceRequestSearch
+        search_params: SearchDefinitions::ServiceRequest::PARAMS
       },
       "Practitioner" => {
         model: Practitioner,
         validator: PractitionerValidator,
-        repository: PractitionerRepository,
-        search: PractitionerSearch
+        search_params: SearchDefinitions::Practitioner::PARAMS
       },
       "Organization" => {
         model: Organization,
         validator: OrganizationValidator,
-        repository: OrganizationRepository,
-        search: OrganizationSearch
+        search_params: SearchDefinitions::Organization::PARAMS
       }
     }.freeze
 

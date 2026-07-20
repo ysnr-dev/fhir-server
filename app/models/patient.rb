@@ -1,6 +1,5 @@
 class Patient < ApplicationRecord
-  has_many :patient_identifiers, dependent: :destroy
-  has_many :patient_versions, -> { order(version_id: :asc) }, dependent: :destroy
+  include FhirResourceRecord
 
   IDENTIFIER_REPRESENTATION_EXTENSION_URL = "http://hl7.org/fhir/StructureDefinition/iso21090-EN-representation".freeze
 
@@ -17,20 +16,6 @@ class Patient < ApplicationRecord
     self.family = official_name&.dig("family")
     self.given = Array(official_name&.dig("given")).join(" ")
     self.name_text = all_name_representations(resource["name"]).join(" ")
-  end
-
-  # Rebuilds the patient_identifiers rows from content["identifier"].
-  def sync_identifiers!
-    patient_identifiers.destroy_all
-
-    Array(content["identifier"]).each do |identifier|
-      next if identifier["value"].blank?
-
-      patient_identifiers.create!(
-        system: identifier["system"],
-        value: identifier["value"]
-      )
-    end
   end
 
   private

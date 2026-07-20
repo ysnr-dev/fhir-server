@@ -33,7 +33,7 @@ class MedicationRequestsController < ApplicationController
   def history
     return render_not_found unless @medication_request
 
-    versions = MedicationRequestRepository.history(@medication_request.id)
+    versions = Fhir::Repository.history(RESOURCE_TYPE, @medication_request.id)
     bundle = BundleBuilder.history(resource_id: @medication_request.id, versions: versions, base_url: base_url, resource_type: RESOURCE_TYPE)
     render_fhir_resource(bundle, status: :ok)
   end
@@ -41,7 +41,7 @@ class MedicationRequestsController < ApplicationController
   def vread
     return render_not_found unless @medication_request
 
-    version = MedicationRequestRepository.version(@medication_request.id, params[:vid].to_i)
+    version = Fhir::Repository.version(RESOURCE_TYPE, @medication_request.id, params[:vid].to_i)
     return render_not_found unless version
     return render_gone if version.deleted
 
