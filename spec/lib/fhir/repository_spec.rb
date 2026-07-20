@@ -176,6 +176,12 @@ RSpec.describe Fhir::Repository do
             "coding" => [{ "system" => "urn:oid:1.2.392.100495.20.2.74", "code" => "620004422", "display" => "Drug" }]
           },
           "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "Observation"
+        { "resourceType" => "Observation",
+          "identifier" => [{ "system" => "http://example.org/observation", "value" => "smoke-obs" }],
+          "status" => "final",
+          "code" => { "coding" => [{ "system" => "http://loinc.org", "code" => "718-7", "display" => "Hemoglobin" }] },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
       when "ServiceRequest"
         { "resourceType" => "ServiceRequest",
           "identifier" => [{ "system" => "http://example.org/sr", "value" => "smoke-sr" }],

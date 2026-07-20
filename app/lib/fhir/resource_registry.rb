@@ -46,6 +46,13 @@ module Fhir
         extraction: ExtractionDefinitions::MedicationStatement::FIELDS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationStatement"
       },
+      "Observation" => {
+        model: Observation,
+        validator: ObservationValidator,
+        search_params: SearchDefinitions::Observation::PARAMS,
+        extraction: ExtractionDefinitions::Observation::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Observation_Common"
+      },
       "ServiceRequest" => {
         model: ServiceRequest,
         validator: ServiceRequestValidator,

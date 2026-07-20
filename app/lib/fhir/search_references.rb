@@ -56,6 +56,11 @@ module Fhir
         "patient" => { alias: "subject" },
         "context" => { path: %w[context reference], targets: %w[Encounter], column: "context_reference" }
       },
+      "Observation" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" }
+      },
       "ServiceRequest" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },

@@ -32,6 +32,9 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/encounter-status (required)
     ENCOUNTER_STATUS = %w[planned arrived triaged in-progress onleave finished cancelled entered-in-error unknown].freeze
 
+    # http://hl7.org/fhir/ValueSet/observation-status (required)
+    OBSERVATION_STATUS = %w[registered preliminary final amended corrected cancelled entered-in-error unknown].freeze
+
     # http://hl7.org/fhir/ValueSet/location-status (required)
     LOCATION_STATUS = %w[active suspended inactive].freeze
     # http://hl7.org/fhir/ValueSet/location-mode (required)

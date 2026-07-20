@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_20_000010) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000011) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -184,6 +184,32 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000010) do
     t.index ["medication_code"], name: "index_medications_on_medication_code"
     t.index ["medication_text"], name: "index_medications_on_medication_text"
     t.index ["status"], name: "index_medications_on_status"
+  end
+
+  create_table "observations", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "category_code"
+    t.string "code_value"
+    t.string "code_text"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.datetime "effective_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_observations_on_category_code"
+    t.index ["code_text"], name: "index_observations_on_code_text"
+    t.index ["code_value"], name: "index_observations_on_code_value"
+    t.index ["content"], name: "index_observations_on_content", using: :gin
+    t.index ["deleted"], name: "index_observations_on_deleted"
+    t.index ["effective_time"], name: "index_observations_on_effective_time"
+    t.index ["encounter_reference"], name: "index_observations_on_encounter_reference"
+    t.index ["last_updated"], name: "index_observations_on_last_updated"
+    t.index ["status"], name: "index_observations_on_status"
+    t.index ["subject_reference"], name: "index_observations_on_subject_reference"
   end
 
   create_table "organizations", id: :string, force: :cascade do |t|

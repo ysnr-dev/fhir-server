@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   # strings (rather than Fhir::ResourceRegistry.types) so loading routes never
   # autoloads application code at boot. Keep in sync with Fhir::ResourceRegistry.
   %w[Patient MedicationRequest Medication MedicationDispense MedicationAdministration
-     MedicationStatement ServiceRequest Practitioner Organization
+     MedicationStatement Observation ServiceRequest Practitioner Organization
      PractitionerRole Encounter Location].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
