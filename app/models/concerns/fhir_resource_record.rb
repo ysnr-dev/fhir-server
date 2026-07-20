@@ -9,6 +9,26 @@ module FhirResourceRecord
     has_many :resource_versions, -> { order(version_id: :asc) }, as: :resource, dependent: :destroy
   end
 
+  class_methods do
+    # The declarative column -> extraction spec map for this resource type, resolved
+    # from the registry by class name (== FHIR resourceType, per the invariant above).
+    def extraction_fields
+      Fhir::ResourceRegistry.entry_for(name).fetch(:extraction)
+    end
+  end
+
+  # Populates the search-optimized columns from the FHIR `content` payload, driven by
+  # the resource's declarative extraction map (Fhir::ExtractionDefinitions, wired in
+  # Fhir::ResourceRegistry) rather than a hand-written method per model. Called before
+  # every persist so the extracted columns never drift from content.
+  def sync_search_fields!
+    resource = content || {}
+
+    self.class.extraction_fields.each do |column, spec|
+      self[column] = Fhir::FieldExtractor.extract(resource, spec)
+    end
+  end
+
   # Rebuilds the resource_identifiers rows from content["identifier"].
   def sync_identifiers!
     resource_identifiers.destroy_all
