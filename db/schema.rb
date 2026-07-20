@@ -10,9 +10,51 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_20_000001) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "encounters", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "class_code"
+    t.string "subject_reference"
+    t.datetime "period_start"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["class_code"], name: "index_encounters_on_class_code"
+    t.index ["content"], name: "index_encounters_on_content", using: :gin
+    t.index ["deleted"], name: "index_encounters_on_deleted"
+    t.index ["last_updated"], name: "index_encounters_on_last_updated"
+    t.index ["period_start"], name: "index_encounters_on_period_start"
+    t.index ["status"], name: "index_encounters_on_status"
+    t.index ["subject_reference"], name: "index_encounters_on_subject_reference"
+  end
+
+  create_table "locations", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "name"
+    t.string "address_text"
+    t.string "type_code"
+    t.string "organization_reference"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["address_text"], name: "index_locations_on_address_text"
+    t.index ["content"], name: "index_locations_on_content", using: :gin
+    t.index ["deleted"], name: "index_locations_on_deleted"
+    t.index ["last_updated"], name: "index_locations_on_last_updated"
+    t.index ["name"], name: "index_locations_on_name"
+    t.index ["organization_reference"], name: "index_locations_on_organization_reference"
+    t.index ["status"], name: "index_locations_on_status"
+    t.index ["type_code"], name: "index_locations_on_type_code"
+  end
 
   create_table "medication_requests", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
@@ -74,6 +116,28 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000001) do
     t.index ["gender"], name: "index_patients_on_gender"
     t.index ["last_updated"], name: "index_patients_on_last_updated"
     t.index ["name_text"], name: "index_patients_on_name_text"
+  end
+
+  create_table "practitioner_roles", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.boolean "active"
+    t.string "practitioner_reference"
+    t.string "organization_reference"
+    t.string "role_code"
+    t.string "specialty_code"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_practitioner_roles_on_active"
+    t.index ["content"], name: "index_practitioner_roles_on_content", using: :gin
+    t.index ["deleted"], name: "index_practitioner_roles_on_deleted"
+    t.index ["last_updated"], name: "index_practitioner_roles_on_last_updated"
+    t.index ["organization_reference"], name: "index_practitioner_roles_on_organization_reference"
+    t.index ["practitioner_reference"], name: "index_practitioner_roles_on_practitioner_reference"
+    t.index ["role_code"], name: "index_practitioner_roles_on_role_code"
+    t.index ["specialty_code"], name: "index_practitioner_roles_on_specialty_code"
   end
 
   create_table "practitioners", id: :string, force: :cascade do |t|

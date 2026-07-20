@@ -1,0 +1,71 @@
+require "rails_helper"
+
+RSpec.describe "Encounters", type: :request do
+  describe "POST /Encounter" do
+    it "creates and returns 201 with Location header, ETag, and meta" do
+      post "/Encounter", params: valid_encounter_payload, as: :json
+
+      expect(response).to have_http_status(:created)
+      expect(response.headers["Location"]).to match(%r{/Encounter/[\w-]+/_history/1\z})
+      expect(response.headers["ETag"]).to eq('W/"1"')
+
+      body = JSON.parse(response.body)
+      expect(body["resourceType"]).to eq("Encounter")
+    end
+
+    it "returns 422 when status is missing" do
+      post "/Encounter", params: valid_encounter_payload.except("status"), as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it "returns 422 when class is missing" do
+      post "/Encounter", params: valid_encounter_payload.except("class"), as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
+
+  describe "read, update, delete, history" do
+    it "supports the full lifecycle" do
+      post "/Encounter", params: valid_encounter_payload, as: :json
+      id = JSON.parse(response.body)["id"]
+
+      get "/Encounter/#{id}"
+      expect(response).to have_http_status(:ok)
+
+      put "/Encounter/#{id}", params: valid_encounter_payload(status: "cancelled"), as: :json
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["meta"]["versionId"]).to eq("2")
+
+      delete "/Encounter/#{id}"
+      expect(response).to have_http_status(:no_content)
+
+      get "/Encounter/#{id}/_history"
+      expect(JSON.parse(response.body)["total"]).to eq(3)
+    end
+  end
+
+  describe "GET /Encounter (search)" do
+    it "filters by status and class" do
+      post "/Encounter", params: valid_encounter_payload(status: "in-progress"), as: :json
+
+      get "/Encounter", params: { status: "in-progress", class: "AMB" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["type"]).to eq("searchset")
+      expect(bundle["total"]).to be >= 1
+    end
+
+    it "finds by patient reference (subject alias)" do
+      patient_id = SecureRandom.uuid
+      post "/Encounter",
+           params: valid_encounter_payload(subject: { "reference" => "Patient/#{patient_id}" }),
+           as: :json
+
+      get "/Encounter", params: { patient: patient_id }
+
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+  end
+end

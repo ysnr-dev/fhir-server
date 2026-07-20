@@ -33,6 +33,24 @@ module Fhir
         validator: OrganizationValidator,
         search_params: SearchDefinitions::Organization::PARAMS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Organization"
+      },
+      "PractitionerRole" => {
+        model: PractitionerRole,
+        validator: PractitionerRoleValidator,
+        search_params: SearchDefinitions::PractitionerRole::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_PractitionerRole"
+      },
+      "Encounter" => {
+        model: Encounter,
+        validator: EncounterValidator,
+        search_params: SearchDefinitions::Encounter::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Encounter"
+      },
+      "Location" => {
+        model: Location,
+        validator: LocationValidator,
+        search_params: SearchDefinitions::Location::PARAMS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Location"
       }
     }.freeze
 

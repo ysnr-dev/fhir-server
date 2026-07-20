@@ -154,6 +154,22 @@ RSpec.describe Fhir::Repository do
           "intent" => "order",
           "code" => { "coding" => [{ "system" => "http://snomed.info/sct", "code" => "396550006", "display" => "Drug" }] },
           "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "PractitionerRole"
+        { "resourceType" => "PractitionerRole",
+          "identifier" => [{ "system" => "http://example.org/practitioner-role", "value" => "smoke-pr" }],
+          "active" => true,
+          "practitioner" => { "reference" => "Practitioner/#{patient_id}" } }
+      when "Encounter"
+        { "resourceType" => "Encounter",
+          "identifier" => [{ "system" => "http://example.org/encounter", "value" => "smoke-enc" }],
+          "status" => "finished",
+          "class" => { "system" => "http://terminology.hl7.org/CodeSystem/v3-ActCode", "code" => "AMB" },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "Location"
+        { "resourceType" => "Location",
+          "identifier" => [{ "system" => "http://example.org/location", "value" => "smoke-loc" }],
+          "status" => "active",
+          "name" => "Smoke Room" }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end
