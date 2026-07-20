@@ -182,6 +182,24 @@ RSpec.describe Fhir::Repository do
           "status" => "final",
           "code" => { "coding" => [{ "system" => "http://loinc.org", "code" => "718-7", "display" => "Hemoglobin" }] },
           "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "Specimen"
+        { "resourceType" => "Specimen",
+          "identifier" => [{ "system" => "http://example.org/specimen", "value" => "smoke-spec" }],
+          "status" => "available",
+          "type" => { "coding" => [{ "system" => "http://terminology.hl7.org/CodeSystem/v2-0487", "code" => "BLD" }] },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "ImagingStudy"
+        { "resourceType" => "ImagingStudy",
+          "identifier" => [{ "system" => "urn:dicom:uid", "value" => "smoke-imaging" }],
+          "status" => "available",
+          "modality" => [{ "system" => "http://dicom.nema.org/resources/ontology/DCM", "code" => "CT" }],
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "DiagnosticReport"
+        { "resourceType" => "DiagnosticReport",
+          "identifier" => [{ "system" => "http://example.org/diagnostic-report", "value" => "smoke-dr" }],
+          "status" => "final",
+          "code" => { "coding" => [{ "system" => "http://loinc.org", "code" => "58410-2", "display" => "CBC panel" }] },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
       when "ServiceRequest"
         { "resourceType" => "ServiceRequest",
           "identifier" => [{ "system" => "http://example.org/sr", "value" => "smoke-sr" }],

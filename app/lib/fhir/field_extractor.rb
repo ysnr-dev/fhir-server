@@ -69,6 +69,12 @@ module Fhir
       Array(coding).first&.dig("code")
     end
 
+    # First code of a 0..* array of bare Codings (not CodeableConcepts), e.g.
+    # ImagingStudy.modality: [{ system: "...", code: "CT" }].
+    def coding_list_code(codings)
+      Array(codings).first&.dig("code")
+    end
+
     # Human-readable text of a single CodeableConcept: concept.text plus the first
     # coding's display, space-joined; nil when both are absent.
     def concept_text(concept)

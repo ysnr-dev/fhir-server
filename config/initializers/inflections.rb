@@ -10,6 +10,13 @@
 #   inflect.uncountable %w( fish sheep )
 # end
 
+# Rails' default "men -> man" rule mis-singularizes "specimen" to "speciman", so
+# "Specimen".tableize would yield "specimen" instead of "specimens". Pin the correct
+# FHIR Specimen <-> specimens mapping so the model resolves its table name normally.
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.irregular "specimen", "specimens"
+end
+
 # These inflection rules are supported but not enabled by default:
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"

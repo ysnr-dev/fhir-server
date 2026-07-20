@@ -61,6 +61,22 @@ module Fhir
         "patient" => { alias: "subject" },
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" }
       },
+      "Specimen" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" }
+      },
+      "ImagingStudy" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" }
+      },
+      "DiagnosticReport" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        "result" => { multiple: true, jsonb_key: "result", ref_path: %w[reference], targets: %w[Observation] },
+        "specimen" => { multiple: true, jsonb_key: "specimen", ref_path: %w[reference], targets: %w[Specimen] }
+      },
       "ServiceRequest" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },

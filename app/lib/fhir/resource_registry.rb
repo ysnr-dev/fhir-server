@@ -53,6 +53,27 @@ module Fhir
         extraction: ExtractionDefinitions::Observation::FIELDS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Observation_Common"
       },
+      "Specimen" => {
+        model: Specimen,
+        validator: SpecimenValidator,
+        search_params: SearchDefinitions::Specimen::PARAMS,
+        extraction: ExtractionDefinitions::Specimen::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Specimen"
+      },
+      "ImagingStudy" => {
+        model: ImagingStudy,
+        validator: ImagingStudyValidator,
+        search_params: SearchDefinitions::ImagingStudy::PARAMS,
+        extraction: ExtractionDefinitions::ImagingStudy::FIELDS,
+        profile: "http://hl7.org/fhir/StructureDefinition/ImagingStudy"
+      },
+      "DiagnosticReport" => {
+        model: DiagnosticReport,
+        validator: DiagnosticReportValidator,
+        search_params: SearchDefinitions::DiagnosticReport::PARAMS,
+        extraction: ExtractionDefinitions::DiagnosticReport::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_DiagnosticReport_Common"
+      },
       "ServiceRequest" => {
         model: ServiceRequest,
         validator: ServiceRequestValidator,

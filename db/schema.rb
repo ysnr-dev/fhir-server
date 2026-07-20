@@ -10,9 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_20_000011) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000014) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "diagnostic_reports", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "category_code"
+    t.string "code_value"
+    t.string "code_text"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.datetime "effective_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_diagnostic_reports_on_category_code"
+    t.index ["code_text"], name: "index_diagnostic_reports_on_code_text"
+    t.index ["code_value"], name: "index_diagnostic_reports_on_code_value"
+    t.index ["content"], name: "index_diagnostic_reports_on_content", using: :gin
+    t.index ["deleted"], name: "index_diagnostic_reports_on_deleted"
+    t.index ["effective_time"], name: "index_diagnostic_reports_on_effective_time"
+    t.index ["encounter_reference"], name: "index_diagnostic_reports_on_encounter_reference"
+    t.index ["last_updated"], name: "index_diagnostic_reports_on_last_updated"
+    t.index ["status"], name: "index_diagnostic_reports_on_status"
+    t.index ["subject_reference"], name: "index_diagnostic_reports_on_subject_reference"
+  end
 
   create_table "encounters", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
@@ -36,6 +62,28 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000011) do
     t.index ["service_provider_reference"], name: "index_encounters_on_service_provider_reference"
     t.index ["status"], name: "index_encounters_on_status"
     t.index ["subject_reference"], name: "index_encounters_on_subject_reference"
+  end
+
+  create_table "imaging_studies", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "modality_code"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.datetime "started"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_imaging_studies_on_content", using: :gin
+    t.index ["deleted"], name: "index_imaging_studies_on_deleted"
+    t.index ["encounter_reference"], name: "index_imaging_studies_on_encounter_reference"
+    t.index ["last_updated"], name: "index_imaging_studies_on_last_updated"
+    t.index ["modality_code"], name: "index_imaging_studies_on_modality_code"
+    t.index ["started"], name: "index_imaging_studies_on_started"
+    t.index ["status"], name: "index_imaging_studies_on_status"
+    t.index ["subject_reference"], name: "index_imaging_studies_on_subject_reference"
   end
 
   create_table "locations", id: :string, force: :cascade do |t|
@@ -346,6 +394,28 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000011) do
     t.index ["requester_reference"], name: "index_service_requests_on_requester_reference"
     t.index ["status"], name: "index_service_requests_on_status"
     t.index ["subject_reference"], name: "index_service_requests_on_subject_reference"
+  end
+
+  create_table "specimens", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "type_code"
+    t.string "subject_reference"
+    t.string "accession_value"
+    t.datetime "collected_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["accession_value"], name: "index_specimens_on_accession_value"
+    t.index ["collected_time"], name: "index_specimens_on_collected_time"
+    t.index ["content"], name: "index_specimens_on_content", using: :gin
+    t.index ["deleted"], name: "index_specimens_on_deleted"
+    t.index ["last_updated"], name: "index_specimens_on_last_updated"
+    t.index ["status"], name: "index_specimens_on_status"
+    t.index ["subject_reference"], name: "index_specimens_on_subject_reference"
+    t.index ["type_code"], name: "index_specimens_on_type_code"
   end
 
 end

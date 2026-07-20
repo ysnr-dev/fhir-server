@@ -35,6 +35,13 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/observation-status (required)
     OBSERVATION_STATUS = %w[registered preliminary final amended corrected cancelled entered-in-error unknown].freeze
 
+    # http://hl7.org/fhir/ValueSet/specimen-status (required)
+    SPECIMEN_STATUS = %w[available unavailable unsatisfactory entered-in-error].freeze
+    # http://hl7.org/fhir/ValueSet/imagingstudy-status (required)
+    IMAGING_STUDY_STATUS = %w[registered available cancelled entered-in-error unknown].freeze
+    # http://hl7.org/fhir/ValueSet/diagnostic-report-status (required)
+    DIAGNOSTIC_REPORT_STATUS = %w[registered partial preliminary final amended corrected appended cancelled entered-in-error unknown].freeze
+
     # http://hl7.org/fhir/ValueSet/location-status (required)
     LOCATION_STATUS = %w[active suspended inactive].freeze
     # http://hl7.org/fhir/ValueSet/location-mode (required)
