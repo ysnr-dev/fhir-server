@@ -6,7 +6,7 @@ class FhirResourcesController < ApplicationController
   before_action :set_record, only: %i[history vread]
 
   def index
-    result = Fhir::Operation.search(resource_type, request.query_parameters, base_url: base_url)
+    result = Fhir::Operation.search(resource_type, request.query_string, base_url: base_url)
     render_operation_result(result)
   end
 

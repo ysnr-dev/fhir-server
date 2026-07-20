@@ -179,6 +179,24 @@ RSpec.describe "Bundles", type: :request do
       get "/Patient/#{created_id}"
       expect(response).to have_http_status(:ok)
     end
+
+    it "applies repeated (AND) parameters in a GET entry's query string" do
+      post "/Patient", params: valid_patient_payload(birthDate: "1970-01-01"), as: :json
+      post "/Patient", params: valid_patient_payload(birthDate: "1990-01-01"), as: :json
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "batch",
+        "entry" => [
+          { "request" => { "method" => "GET", "url" => "Patient?birthdate=ge1985-01-01&birthdate=le1995-01-01" } }
+        ]
+      }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      entry_bundle = JSON.parse(response.body)["entry"].first["resource"]
+      expect(entry_bundle["total"]).to eq(1)
+      expect(entry_bundle["entry"].first["resource"]["birthDate"]).to eq("1990-01-01")
+    end
   end
 
   describe "entry-point validation" do

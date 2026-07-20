@@ -1,6 +1,6 @@
 class BundleBuilder
-  def self.searchset(result:, base_url:, query_params:, resource_type:, included: [])
-    new(base_url, resource_type).searchset(result: result, query_params: query_params, included: included)
+  def self.searchset(result:, base_url:, search_params:, resource_type:, included: [])
+    new(base_url, resource_type).searchset(result: result, search_params: search_params, included: included)
   end
 
   def self.history(resource_id:, versions:, base_url:, resource_type:)
@@ -12,7 +12,7 @@ class BundleBuilder
     @resource_type = resource_type
   end
 
-  def searchset(result:, query_params:, included: [])
+  def searchset(result:, search_params:, included: [])
     entries = result.records.map do |record|
       {
         "fullUrl" => "#{base_url}/#{resource_type}/#{record.id}",
@@ -27,7 +27,7 @@ class BundleBuilder
       "resourceType" => "Bundle",
       "type" => "searchset",
       "total" => result.total,
-      "link" => search_links(result: result, query_params: query_params),
+      "link" => search_links(result: result, search_params: search_params),
       "entry" => entries
     }
   end
@@ -83,24 +83,22 @@ class BundleBuilder
     end
   end
 
-  def search_links(result:, query_params:)
-    links = [{ "relation" => "self", "url" => page_url(query_params, result.offset) }]
+  def search_links(result:, search_params:)
+    links = [{ "relation" => "self", "url" => page_url(search_params, result.offset) }]
 
     if result.offset.positive?
       previous_offset = [result.offset - result.count, 0].max
-      links << { "relation" => "previous", "url" => page_url(query_params, previous_offset) }
+      links << { "relation" => "previous", "url" => page_url(search_params, previous_offset) }
     end
 
     if result.offset + result.count < result.total
-      links << { "relation" => "next", "url" => page_url(query_params, result.offset + result.count) }
+      links << { "relation" => "next", "url" => page_url(search_params, result.offset + result.count) }
     end
 
     links
   end
 
-  def page_url(query_params, offset)
-    params = query_params.except("_offset").merge("_offset" => offset)
-    query_string = params.to_query
-    "#{base_url}/#{resource_type}?#{query_string}"
+  def page_url(search_params, offset)
+    "#{base_url}/#{resource_type}?#{search_params.to_query(offset: offset)}"
   end
 end

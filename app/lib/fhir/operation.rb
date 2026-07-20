@@ -26,8 +26,8 @@ module Fhir
       new(resource_type).delete(id)
     end
 
-    def self.search(resource_type, params, base_url:)
-      new(resource_type).search(params, base_url: base_url)
+    def self.search(resource_type, query_string, base_url:)
+      new(resource_type).search(query_string, base_url: base_url)
     end
 
     def initialize(resource_type)
@@ -101,12 +101,13 @@ module Fhir
       Result.new(status: :no_content, resource_id: id)
     end
 
-    def search(params, base_url:)
+    def search(query_string, base_url:)
       return unsupported_type_result unless entry
 
-      result = Search.call(resource_type, params)
-      included = IncludeResolver.call(resource_type: resource_type, records: result.records, params: params)
-      bundle = BundleBuilder.searchset(result: result, base_url: base_url, query_params: params, resource_type: resource_type, included: included)
+      search_params = SearchParams.parse(query_string.to_s)
+      result = Search.call(resource_type, search_params)
+      included = IncludeResolver.call(resource_type: resource_type, records: result.records, search_params: search_params)
+      bundle = BundleBuilder.searchset(result: result, base_url: base_url, search_params: search_params, resource_type: resource_type, included: included)
       Result.new(status: :ok, resource: bundle)
     end
 

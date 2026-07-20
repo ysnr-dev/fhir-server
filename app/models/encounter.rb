@@ -11,6 +11,7 @@ class Encounter < ApplicationRecord
     self.subject_reference = resource.dig("subject", "reference")
     self.service_provider_reference = resource.dig("serviceProvider", "reference")
     self.period_start = parse_time(resource.dig("period", "start"))
+    self.period_end = parse_time(resource.dig("period", "end"))
   end
 
   private

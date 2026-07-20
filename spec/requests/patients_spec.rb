@@ -229,6 +229,24 @@ RSpec.describe "Patients", type: :request do
       expect(bundle["total"]).to be >= 1
     end
 
+    it "does not match a mid-string fragment by default (starts-with, not contains)" do
+      post "/Patient", params: valid_patient_payload, as: :json
+
+      get "/Patient", params: { family: "田" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(0)
+    end
+
+    it "matches a mid-string fragment with the :contains modifier" do
+      post "/Patient", params: valid_patient_payload, as: :json
+
+      get "/Patient", params: { "family:contains": "田" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to be >= 1
+    end
+
     it "filters by gender" do
       post "/Patient", params: valid_patient_payload(gender: "female"), as: :json
 
@@ -257,6 +275,28 @@ RSpec.describe "Patients", type: :request do
       bundle = JSON.parse(response.body)
       expect(bundle["entry"].size).to eq(2)
       expect(bundle["link"].map { |l| l["relation"] }).to include("self", "next")
+    end
+
+    it "round-trips repeated parameters and modifiers through the next page link" do
+      # Rails' `params:` hash serializes an Array value as `key[]=a&key[]=b`, which is
+      # NOT how a real FHIR client repeats a parameter (`key=a&key=b`) -- so this uses a
+      # literal query string to exercise the same wire format a real client sends.
+      3.times { post "/Patient", params: valid_patient_payload, as: :json }
+
+      get "/Patient?family:contains=#{CGI.escape('田')}&birthdate=ge1900-01-01&birthdate=le2100-01-01&_count=2&_offset=0"
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["entry"].size).to eq(2)
+
+      next_url = bundle["link"].find { |l| l["relation"] == "next" }["url"]
+      expect(next_url).to include("family:contains=")
+      expect(next_url.scan("birthdate=").size).to eq(2)
+      expect(next_url).to include("_offset=2")
+
+      get URI(next_url).request_uri
+
+      next_bundle = JSON.parse(response.body)
+      expect(next_bundle["entry"].size).to eq(1)
     end
   end
 end

@@ -117,7 +117,7 @@ class BundleProcessor
       if id.present?
         Fhir::Operation.read(resource_type, id)
       else
-        Fhir::Operation.search(resource_type, Rack::Utils.parse_nested_query(query_string.to_s), base_url: base_url)
+        Fhir::Operation.search(resource_type, query_string.to_s, base_url: base_url)
       end
     when "PUT"
       return entry_error(:bad_request, "structure", "PUT requires an id in Bundle.entry.request.url") if id.blank?

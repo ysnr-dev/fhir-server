@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_20_000005) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -26,10 +26,12 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000005) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "service_provider_reference"
+    t.datetime "period_end"
     t.index ["class_code"], name: "index_encounters_on_class_code"
     t.index ["content"], name: "index_encounters_on_content", using: :gin
     t.index ["deleted"], name: "index_encounters_on_deleted"
     t.index ["last_updated"], name: "index_encounters_on_last_updated"
+    t.index ["period_end"], name: "index_encounters_on_period_end"
     t.index ["period_start"], name: "index_encounters_on_period_start"
     t.index ["service_provider_reference"], name: "index_encounters_on_service_provider_reference"
     t.index ["status"], name: "index_encounters_on_status"

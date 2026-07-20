@@ -62,6 +62,24 @@ RSpec.describe "Locations", type: :request do
       expect(bundle["total"]).to be >= 1
     end
 
+    it "does not match a mid-string fragment by default (starts-with, not contains)" do
+      post "/Location", params: valid_location_payload(name: "救急外来"), as: :json
+
+      get "/Location", params: { name: "外来" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(0)
+    end
+
+    it "matches a mid-string fragment with the :contains modifier" do
+      post "/Location", params: valid_location_payload(name: "救急外来"), as: :json
+
+      get "/Location", params: { "name:contains": "外来" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to be >= 1
+    end
+
     it "filters by status" do
       post "/Location", params: valid_location_payload(status: "inactive"), as: :json
 

@@ -4,19 +4,20 @@ module Fhir
   # Bundle with `search.mode = "include"`.
   #
   # It is a pure query object: given the current page of match records and the
-  # raw query params, it returns a de-duplicated array of ActiveRecord instances
-  # to include. It never mutates the Bundle; BundleBuilder renders the entries.
+  # normalized search params, it returns a de-duplicated array of ActiveRecord
+  # instances to include. It never mutates the Bundle; BundleBuilder renders
+  # the entries.
   class IncludeResolver
-    def self.call(resource_type:, records:, params:)
-      new(resource_type: resource_type, records: records, params: params).call
+    def self.call(resource_type:, records:, search_params:)
+      new(resource_type: resource_type, records: records, search_params: search_params).call
     end
 
-    def initialize(resource_type:, records:, params:)
+    def initialize(resource_type:, records:, search_params:)
       @resource_type = resource_type
       # Materialize once: we scan the page multiple times (forward refs) and
       # BundleBuilder re-evaluates the relation separately for match entries.
       @records = records.to_a
-      @params = params
+      @search_params = search_params
     end
 
     def call
@@ -27,12 +28,12 @@ module Fhir
 
     private
 
-    attr_reader :resource_type, :records, :params
+    attr_reader :resource_type, :records, :search_params
 
     # Forward: for each matched record, follow the reference at the mapped path
     # and load the target resources it points at.
     def resolve_includes
-      tokens(params["_include"]).flat_map do |token|
+      search_params.includes.flat_map do |token|
         info = SearchReferences.lookup(token)
         # A forward include's source must be the type we are searching.
         next [] unless info && info[:source_type] == resource_type
@@ -83,7 +84,7 @@ module Fhir
     def resolve_revincludes
       refs = records.map { |record| "#{resource_type}/#{record.id}" }
 
-      tokens(params["_revinclude"]).flat_map do |token|
+      search_params.revincludes.flat_map do |token|
         info = SearchReferences.lookup(token)
         next [] unless info
 
@@ -118,10 +119,6 @@ module Fhir
     # nest(["individual", "reference"], "Practitioner/1") => {"individual"=>{"reference"=>"Practitioner/1"}}
     def nest(path, value)
       path.reverse.reduce(value) { |acc, key| { key => acc } }
-    end
-
-    def tokens(value)
-      Array(value).flat_map { |token| token.to_s.split(",") }.map(&:strip).reject(&:blank?)
     end
 
     def dedup(list)

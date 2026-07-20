@@ -67,5 +67,55 @@ RSpec.describe "Encounters", type: :request do
 
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
+
+    it "matches a day-precision date search that fully contains the period (eq)" do
+      identifier = SecureRandom.hex(6)
+      post "/Encounter",
+           params: valid_encounter_payload(
+             identifier: [{ "system" => "http://example.org/encounter", "value" => identifier }],
+             period: { "start" => "2026-07-19T09:00:00+09:00", "end" => "2026-07-19T10:00:00+09:00" }
+           ),
+           as: :json
+
+      get "/Encounter", params: { identifier: identifier, date: "2026-07-19" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Encounter", params: { identifier: identifier, date: "2026-07-18" }
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+
+    it "matches an ongoing encounter (no period.end) with a ge search" do
+      identifier = SecureRandom.hex(6)
+      post "/Encounter",
+           params: valid_encounter_payload(
+             identifier: [{ "system" => "http://example.org/encounter", "value" => identifier }],
+             period: { "start" => "2026-07-19T09:00:00+09:00", "end" => nil }
+           ),
+           as: :json
+
+      get "/Encounter", params: { identifier: identifier, date: "ge2000-01-01" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Encounter", params: { identifier: identifier, date: "lt2000-01-01" }
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+
+    it "sorts by date using period.start" do
+      earlier = SecureRandom.hex(6)
+      later = SecureRandom.hex(6)
+      post "/Encounter",
+           params: valid_encounter_payload(identifier: [{ "system" => "http://example.org/encounter", "value" => later }],
+                                            period: { "start" => "2026-07-20T00:00:00Z", "end" => nil }),
+           as: :json
+      post "/Encounter",
+           params: valid_encounter_payload(identifier: [{ "system" => "http://example.org/encounter", "value" => earlier }],
+                                            period: { "start" => "2026-07-01T00:00:00Z", "end" => nil }),
+           as: :json
+
+      get "/Encounter", params: { identifier: "#{earlier},#{later}", _sort: "date" }
+
+      values = JSON.parse(response.body)["entry"].map { |e| e["resource"]["identifier"].first["value"] }
+      expect(values).to eq([earlier, later])
+    end
   end
 end

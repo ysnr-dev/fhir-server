@@ -54,7 +54,7 @@ RSpec.describe Fhir::IncludeResolver do
   end
 
   def resolve(resource_type:, records:, params:)
-    described_class.call(resource_type: resource_type, records: records, params: params)
+    described_class.call(resource_type: resource_type, records: records, search_params: Fhir::SearchParams.from_hash(params))
   end
 
   describe "forward _include" do

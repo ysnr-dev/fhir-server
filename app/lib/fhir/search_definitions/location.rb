@@ -4,7 +4,10 @@ module Fhir
       PARAMS = {
         "identifier"   => { type: :identifier },
         "name"         => { type: :string, column: :name },
-        "address"      => { type: :string, column: :address_text },
+        # address_text is a flattened line/city/state/postalCode column (see
+        # Location#sync_search_fields!), so a plain prefix match would only ever
+        # match the first token.
+        "address"      => { type: :string, column: :address_text, word_boundary: true },
         "status"       => { type: :token, column: :status },
         "type"         => { type: :token, column: :type_code },
         "organization" => { type: :reference, column: :organization_reference, target_type: "Organization" },
