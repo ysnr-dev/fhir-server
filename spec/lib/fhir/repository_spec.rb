@@ -147,6 +147,35 @@ RSpec.describe Fhir::Repository do
             "coding" => [{ "system" => "urn:oid:1.2.392.100495.20.2.74", "code" => "620004422", "display" => "Drug" }]
           },
           "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "Medication"
+        { "resourceType" => "Medication",
+          "identifier" => [{ "system" => "http://example.org/medication", "value" => "smoke-med" }],
+          "status" => "active",
+          "code" => { "coding" => [{ "system" => "urn:oid:1.2.392.100495.20.2.74", "code" => "620004422", "display" => "Drug" }] } }
+      when "MedicationDispense"
+        { "resourceType" => "MedicationDispense",
+          "identifier" => [{ "system" => "http://example.org/medication-dispense", "value" => "smoke-md" }],
+          "status" => "completed",
+          "medicationCodeableConcept" => {
+            "coding" => [{ "system" => "urn:oid:1.2.392.100495.20.2.74", "code" => "620004422", "display" => "Drug" }]
+          },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "MedicationAdministration"
+        { "resourceType" => "MedicationAdministration",
+          "identifier" => [{ "system" => "http://example.org/medication-administration", "value" => "smoke-ma" }],
+          "status" => "completed",
+          "medicationCodeableConcept" => {
+            "coding" => [{ "system" => "urn:oid:1.2.392.100495.20.2.74", "code" => "620004422", "display" => "Drug" }]
+          },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "MedicationStatement"
+        { "resourceType" => "MedicationStatement",
+          "identifier" => [{ "system" => "http://example.org/medication-statement", "value" => "smoke-ms" }],
+          "status" => "active",
+          "medicationCodeableConcept" => {
+            "coding" => [{ "system" => "urn:oid:1.2.392.100495.20.2.74", "code" => "620004422", "display" => "Drug" }]
+          },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
       when "ServiceRequest"
         { "resourceType" => "ServiceRequest",
           "identifier" => [{ "system" => "http://example.org/sr", "value" => "smoke-sr" }],

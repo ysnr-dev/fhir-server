@@ -36,6 +36,26 @@ module Fhir
         "requester" => { path: %w[requester reference], targets: %w[Practitioner PractitionerRole Organization], column: "requester_reference" },
         "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] }
       },
+      "Medication" => {
+        "manufacturer" => { path: %w[manufacturer reference], targets: %w[Organization], column: "manufacturer_reference" }
+      },
+      "MedicationDispense" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "context" => { path: %w[context reference], targets: %w[Encounter], column: "context_reference" },
+        "prescription" => { multiple: true, jsonb_key: "authorizingPrescription", ref_path: %w[reference], targets: %w[MedicationRequest] }
+      },
+      "MedicationAdministration" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "context" => { path: %w[context reference], targets: %w[Encounter], column: "context_reference" },
+        "request" => { path: %w[request reference], targets: %w[MedicationRequest], column: "request_reference" }
+      },
+      "MedicationStatement" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "context" => { path: %w[context reference], targets: %w[Encounter], column: "context_reference" }
+      },
       "ServiceRequest" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },

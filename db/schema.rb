@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_20_000006) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_20_000010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -62,6 +62,56 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000006) do
     t.index ["type_code"], name: "index_locations_on_type_code"
   end
 
+  create_table "medication_administrations", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "subject_reference"
+    t.string "medication_code"
+    t.string "medication_text"
+    t.string "context_reference"
+    t.string "request_reference"
+    t.datetime "effective_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_medication_administrations_on_content", using: :gin
+    t.index ["context_reference"], name: "index_medication_administrations_on_context_reference"
+    t.index ["deleted"], name: "index_medication_administrations_on_deleted"
+    t.index ["effective_time"], name: "index_medication_administrations_on_effective_time"
+    t.index ["last_updated"], name: "index_medication_administrations_on_last_updated"
+    t.index ["medication_code"], name: "index_medication_administrations_on_medication_code"
+    t.index ["medication_text"], name: "index_medication_administrations_on_medication_text"
+    t.index ["request_reference"], name: "index_medication_administrations_on_request_reference"
+    t.index ["status"], name: "index_medication_administrations_on_status"
+    t.index ["subject_reference"], name: "index_medication_administrations_on_subject_reference"
+  end
+
+  create_table "medication_dispenses", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "subject_reference"
+    t.string "medication_code"
+    t.string "medication_text"
+    t.string "context_reference"
+    t.datetime "when_handed_over"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_medication_dispenses_on_content", using: :gin
+    t.index ["context_reference"], name: "index_medication_dispenses_on_context_reference"
+    t.index ["deleted"], name: "index_medication_dispenses_on_deleted"
+    t.index ["last_updated"], name: "index_medication_dispenses_on_last_updated"
+    t.index ["medication_code"], name: "index_medication_dispenses_on_medication_code"
+    t.index ["medication_text"], name: "index_medication_dispenses_on_medication_text"
+    t.index ["status"], name: "index_medication_dispenses_on_status"
+    t.index ["subject_reference"], name: "index_medication_dispenses_on_subject_reference"
+    t.index ["when_handed_over"], name: "index_medication_dispenses_on_when_handed_over"
+  end
+
   create_table "medication_requests", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
     t.jsonb "content", null: false
@@ -88,6 +138,52 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_20_000006) do
     t.index ["requester_reference"], name: "index_medication_requests_on_requester_reference"
     t.index ["status"], name: "index_medication_requests_on_status"
     t.index ["subject_reference"], name: "index_medication_requests_on_subject_reference"
+  end
+
+  create_table "medication_statements", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "subject_reference"
+    t.string "medication_code"
+    t.string "medication_text"
+    t.string "context_reference"
+    t.datetime "effective_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_medication_statements_on_content", using: :gin
+    t.index ["context_reference"], name: "index_medication_statements_on_context_reference"
+    t.index ["deleted"], name: "index_medication_statements_on_deleted"
+    t.index ["effective_time"], name: "index_medication_statements_on_effective_time"
+    t.index ["last_updated"], name: "index_medication_statements_on_last_updated"
+    t.index ["medication_code"], name: "index_medication_statements_on_medication_code"
+    t.index ["medication_text"], name: "index_medication_statements_on_medication_text"
+    t.index ["status"], name: "index_medication_statements_on_status"
+    t.index ["subject_reference"], name: "index_medication_statements_on_subject_reference"
+  end
+
+  create_table "medications", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "medication_code"
+    t.string "medication_text"
+    t.string "form_code"
+    t.string "manufacturer_reference"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_medications_on_content", using: :gin
+    t.index ["deleted"], name: "index_medications_on_deleted"
+    t.index ["form_code"], name: "index_medications_on_form_code"
+    t.index ["last_updated"], name: "index_medications_on_last_updated"
+    t.index ["manufacturer_reference"], name: "index_medications_on_manufacturer_reference"
+    t.index ["medication_code"], name: "index_medications_on_medication_code"
+    t.index ["medication_text"], name: "index_medications_on_medication_text"
+    t.index ["status"], name: "index_medications_on_status"
   end
 
   create_table "organizations", id: :string, force: :cascade do |t|

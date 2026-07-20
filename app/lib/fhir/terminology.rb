@@ -15,6 +15,15 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/medicationrequest-intent (required)
     MEDICATION_REQUEST_INTENT = %w[proposal plan order original-order reflex-order filler-order instance-order option].freeze
 
+    # http://hl7.org/fhir/ValueSet/medication-status (required)
+    MEDICATION_STATUS = %w[active inactive entered-in-error].freeze
+    # http://hl7.org/fhir/ValueSet/medicationdispense-status (required)
+    MEDICATION_DISPENSE_STATUS = %w[preparation in-progress cancelled on-hold completed entered-in-error stopped declined unknown].freeze
+    # http://hl7.org/fhir/ValueSet/medication-admin-status (required)
+    MEDICATION_ADMINISTRATION_STATUS = %w[in-progress not-done on-hold completed entered-in-error stopped unknown].freeze
+    # http://hl7.org/fhir/ValueSet/medication-statement-status (required)
+    MEDICATION_STATEMENT_STATUS = %w[active completed entered-in-error intended stopped on-hold unknown not-taken].freeze
+
     # http://hl7.org/fhir/ValueSet/request-status (required)
     SERVICE_REQUEST_STATUS = %w[draft active on-hold revoked completed entered-in-error unknown].freeze
     # http://hl7.org/fhir/ValueSet/request-intent (required)

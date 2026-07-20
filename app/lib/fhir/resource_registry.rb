@@ -18,6 +18,34 @@ module Fhir
         extraction: ExtractionDefinitions::MedicationRequest::FIELDS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRequest"
       },
+      "Medication" => {
+        model: Medication,
+        validator: MedicationValidator,
+        search_params: SearchDefinitions::Medication::PARAMS,
+        extraction: ExtractionDefinitions::Medication::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Medication"
+      },
+      "MedicationDispense" => {
+        model: MedicationDispense,
+        validator: MedicationDispenseValidator,
+        search_params: SearchDefinitions::MedicationDispense::PARAMS,
+        extraction: ExtractionDefinitions::MedicationDispense::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationDispense"
+      },
+      "MedicationAdministration" => {
+        model: MedicationAdministration,
+        validator: MedicationAdministrationValidator,
+        search_params: SearchDefinitions::MedicationAdministration::PARAMS,
+        extraction: ExtractionDefinitions::MedicationAdministration::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationAdministration"
+      },
+      "MedicationStatement" => {
+        model: MedicationStatement,
+        validator: MedicationStatementValidator,
+        search_params: SearchDefinitions::MedicationStatement::PARAMS,
+        extraction: ExtractionDefinitions::MedicationStatement::FIELDS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationStatement"
+      },
       "ServiceRequest" => {
         model: ServiceRequest,
         validator: ServiceRequestValidator,
