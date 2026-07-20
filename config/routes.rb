@@ -2,43 +2,19 @@ Rails.application.routes.draw do
   get "/metadata", to: "capability_statements#show"
   post "/", to: "bundles#create"
 
-  get "/Patient", to: "patients#index"
-  post "/Patient", to: "patients#create"
-  get "/Patient/:id/_history/:vid", to: "patients#vread"
-  get "/Patient/:id/_history", to: "patients#history"
-  get "/Patient/:id", to: "patients#show"
-  put "/Patient/:id", to: "patients#update"
-  delete "/Patient/:id", to: "patients#destroy"
-
-  get "/MedicationRequest", to: "medication_requests#index"
-  post "/MedicationRequest", to: "medication_requests#create"
-  get "/MedicationRequest/:id/_history/:vid", to: "medication_requests#vread"
-  get "/MedicationRequest/:id/_history", to: "medication_requests#history"
-  get "/MedicationRequest/:id", to: "medication_requests#show"
-  put "/MedicationRequest/:id", to: "medication_requests#update"
-  delete "/MedicationRequest/:id", to: "medication_requests#destroy"
-
-  get "/ServiceRequest", to: "service_requests#index"
-  post "/ServiceRequest", to: "service_requests#create"
-  get "/ServiceRequest/:id/_history/:vid", to: "service_requests#vread"
-  get "/ServiceRequest/:id/_history", to: "service_requests#history"
-  get "/ServiceRequest/:id", to: "service_requests#show"
-  put "/ServiceRequest/:id", to: "service_requests#update"
-  delete "/ServiceRequest/:id", to: "service_requests#destroy"
-
-  get "/Practitioner", to: "practitioners#index"
-  post "/Practitioner", to: "practitioners#create"
-  get "/Practitioner/:id/_history/:vid", to: "practitioners#vread"
-  get "/Practitioner/:id/_history", to: "practitioners#history"
-  get "/Practitioner/:id", to: "practitioners#show"
-  put "/Practitioner/:id", to: "practitioners#update"
-  delete "/Practitioner/:id", to: "practitioners#destroy"
-
-  get "/Organization", to: "organizations#index"
-  post "/Organization", to: "organizations#create"
-  get "/Organization/:id/_history/:vid", to: "organizations#vread"
-  get "/Organization/:id/_history", to: "organizations#history"
-  get "/Organization/:id", to: "organizations#show"
-  put "/Organization/:id", to: "organizations#update"
-  delete "/Organization/:id", to: "organizations#destroy"
+  # One identical route set per supported FHIR resource type, all dispatched to
+  # FhirResourcesController with the type injected via defaults. Kept as literal
+  # strings (rather than Fhir::ResourceRegistry.types) so loading routes never
+  # autoloads application code at boot. Keep in sync with Fhir::ResourceRegistry.
+  %w[Patient MedicationRequest ServiceRequest Practitioner Organization].each do |type|
+    scope defaults: { resource_type: type } do
+      get    "/#{type}",                   to: "fhir_resources#index"
+      post   "/#{type}",                   to: "fhir_resources#create"
+      get    "/#{type}/:id/_history/:vid", to: "fhir_resources#vread"
+      get    "/#{type}/:id/_history",      to: "fhir_resources#history"
+      get    "/#{type}/:id",               to: "fhir_resources#show"
+      put    "/#{type}/:id",               to: "fhir_resources#update"
+      delete "/#{type}/:id",               to: "fhir_resources#destroy"
+    end
+  end
 end
