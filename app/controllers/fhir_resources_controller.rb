@@ -3,7 +3,12 @@
 # route's `defaults: { resource_type: ... }` (see config/routes.rb), so adding a
 # resource requires no new controller.
 class FhirResourcesController < ApplicationController
+  before_action :authorize_interaction
   before_action :set_record, only: %i[history vread]
+
+  # $validate computes without persisting and reveals nothing stored, so it
+  # rides on the read scope alongside the other non-mutating interactions.
+  WRITE_ACTIONS = %w[create update conditional_update patch_update destroy conditional_destroy].freeze
 
   def index
     result = Fhir::Operation.search(resource_type, request.query_string, base_url: base_url)
@@ -137,6 +142,13 @@ class FhirResourcesController < ApplicationController
 
   def resource_type
     params[:resource_type]
+  end
+
+  def authorize_interaction
+    return unless Fhir::Auth.enabled?
+
+    access = WRITE_ACTIONS.include?(action_name) ? :write : :read
+    authorize_fhir_request!([[resource_type, access]])
   end
 
   def set_record

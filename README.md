@@ -129,10 +129,34 @@ http://localhost:3000
 | 201 | 作成成功 |
 | 204 | 削除成功 |
 | 400 | JSON不正 / `resourceType` 不一致 |
+| 401 | Bearer トークン欠落・無効・期限切れ（認証有効時） |
+| 403 | トークンのスコープ不足（認証有効時） |
 | 404 | リソースが存在しない |
 | 410 | リソースは削除済み（Gone） |
 | 412 | `If-Match` のバージョン不一致（楽観的排他制御） |
 | 422 | バリデーションエラー（必須項目欠落・値セット不正など） |
+
+### 認証（SMART Backend Services）
+
+デフォルトでは認証なしで動作します。環境変数 `FHIR_AUTH_ENABLED=true` を設定すると、
+すべての FHIR エンドポイントで Bearer トークン（OAuth2 client_credentials）が必須になります。
+`/metadata`・`/.well-known/smart-configuration`・`/oauth/token` は常に公開です。
+
+```bash
+# 1. クライアント登録（client_secret は一度しか表示されません）
+bin/rails "fhir:register_client[my-mcp-server,system/*.read]"
+
+# 2. トークン取得
+curl -s -X POST http://localhost:3000/oauth/token \
+  -d grant_type=client_credentials \
+  -d client_id={client_id} -d client_secret={client_secret}
+
+# 3. アクセストークンを付けて API を呼び出し
+curl -s http://localhost:3000/Patient -H "Authorization: Bearer {access_token}"
+```
+
+スコープは SMART の system 形式（`system/*.read` / `system/Patient.write` / `system/*.*` など）で、
+リソース型 × read/write 単位でアクセスを制御します。トークンの有効期限は 1 時間です。
 
 ### 対応リソース
 

@@ -2,6 +2,10 @@
 # outside FhirResourcesController because that controller's actions all assume
 # a single resource_type injected by the route defaults.
 class HistoriesController < ApplicationController
+  # System-level history spans every resource type, so it needs a
+  # wildcard-type read grant (system/*.read or system/*.*).
+  before_action -> { authorize_fhir_request!([["*", :read]]) }
+
   def index
     history_params = parse_history_params
     return if history_params.nil? # already rendered 400

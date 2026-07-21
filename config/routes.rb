@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   get "/metadata", to: "capability_statements#show"
+  get "/.well-known/smart-configuration", to: "smart_configurations#show"
+  post "/oauth/token", to: "oauth_tokens#create"
   get "/_history", to: "histories#index"
   post "/", to: "bundles#create"
 

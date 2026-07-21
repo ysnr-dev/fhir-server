@@ -10,9 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_21_000001) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_22_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "access_tokens", force: :cascade do |t|
+    t.string "token_digest", null: false
+    t.string "oauth_client_id", null: false
+    t.string "scopes", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["oauth_client_id"], name: "index_access_tokens_on_oauth_client_id"
+    t.index ["token_digest"], name: "index_access_tokens_on_token_digest", unique: true
+  end
 
   create_table "allergy_intolerances", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
@@ -335,6 +346,14 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_21_000001) do
     t.index ["status"], name: "index_medications_on_status"
   end
 
+  create_table "oauth_clients", id: :string, force: :cascade do |t|
+    t.string "name", null: false
+    t.string "secret_digest", null: false
+    t.string "scopes", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "observations", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
     t.jsonb "content", null: false
@@ -546,4 +565,5 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_21_000001) do
     t.index ["type_code"], name: "index_specimens_on_type_code"
   end
 
+  add_foreign_key "access_tokens", "oauth_clients"
 end

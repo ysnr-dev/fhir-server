@@ -21,7 +21,14 @@ module Fhir
 
     module_function
 
-    def build(date:)
+    def build(date:, base_url: nil)
+      rest = {
+        "mode" => "server",
+        "interaction" => SERVER_INTERACTIONS.map { |code| { "code" => code } },
+        "resource" => ResourceRegistry.types.map { |type| resource_component(type) }
+      }
+      rest = { "security" => security_component(base_url) }.merge(rest) if Auth.enabled?
+
       {
         "resourceType" => "CapabilityStatement",
         "status" => "active",
@@ -29,11 +36,26 @@ module Fhir
         "kind" => "instance",
         "fhirVersion" => "4.0.1",
         "format" => %w[application/fhir+json json],
-        "rest" => [
+        "rest" => [rest]
+      }
+    end
+
+    # Advertised only while enforcement is on, using the standard SMART
+    # oauth-uris extension so clients can discover the token endpoint from
+    # /metadata as well as /.well-known/smart-configuration.
+    def security_component(base_url)
+      {
+        "service" => [
           {
-            "mode" => "server",
-            "interaction" => SERVER_INTERACTIONS.map { |code| { "code" => code } },
-            "resource" => ResourceRegistry.types.map { |type| resource_component(type) }
+            "coding" => [
+              { "system" => "http://terminology.hl7.org/CodeSystem/restful-security-service", "code" => "SMART-on-FHIR" }
+            ]
+          }
+        ],
+        "extension" => [
+          {
+            "url" => "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
+            "extension" => [{ "url" => "token", "valueUri" => "#{base_url}/oauth/token" }]
           }
         ]
       }
