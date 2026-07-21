@@ -38,6 +38,20 @@ RSpec.describe "CapabilityStatement", type: :request do
       expect(patient["searchRevInclude"]).to include("Observation:subject", "MedicationRequest:subject", "Coverage:beneficiary")
     end
 
+    it "advertises $validate on every resource and $everything on Patient" do
+      get "/metadata"
+
+      resources = JSON.parse(response.body)["rest"].first["resource"]
+      resources.each do |resource|
+        expect(resource["operation"].map { |o| o["name"] }).to include("validate")
+      end
+
+      patient = resources.find { |r| r["type"] == "Patient" }
+      expect(patient["operation"].map { |o| o["name"] }).to include("everything")
+      observation = resources.find { |r| r["type"] == "Observation" }
+      expect(observation["operation"].map { |o| o["name"] }).not_to include("everything")
+    end
+
     it "advertises conditional create/update/delete for every resource" do
       get "/metadata"
 

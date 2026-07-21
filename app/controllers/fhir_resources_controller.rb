@@ -57,6 +57,36 @@ class FhirResourcesController < ApplicationController
     render_operation_result(Fhir::Operation.patch(resource_type, params[:id], operations, if_match: if_match_version))
   end
 
+  # POST /{type}/$validate -- validation without persistence. Accepts the
+  # resource directly or wrapped in a Parameters resource (parameter "resource").
+  def validate
+    payload, parse_error = parse_body
+    return render_bad_request(parse_error) if parse_error
+
+    if payload["resourceType"] == "Parameters"
+      payload = Array(payload["parameter"]).find { |p| p.is_a?(Hash) && p["name"] == "resource" }&.dig("resource")
+      return render_bad_request("Parameters must contain a 'resource' parameter") unless payload.is_a?(Hash)
+    end
+
+    render_operation_result(Fhir::Operation.validate(resource_type, payload))
+  end
+
+  # GET /Patient/:id/$everything -- the patient compartment as one Bundle.
+  def everything
+    model = Fhir::ResourceRegistry.entry_for(resource_type).fetch(:model)
+    record = model.find_by(id: params[:id])
+    return render_not_found unless record
+    return render_gone if record.deleted?
+
+    since = parse_since_param
+    return if since == :invalid # already rendered 400
+
+    bundle = Fhir::PatientEverything.call(patient: record, base_url: base_url, types: type_filter_param, since: since)
+    render_fhir_resource(bundle, status: :ok)
+  rescue Fhir::PatientEverything::InvalidType => e
+    render_operation_outcome_single(status: :bad_request, severity: "error", code: "value", diagnostics: e.message)
+  end
+
   def destroy
     render_operation_result(Fhir::Operation.delete(resource_type, params[:id]))
   end
@@ -119,6 +149,27 @@ class FhirResourcesController < ApplicationController
     return nil if header.blank?
 
     header.gsub(%r{^W/}, "").delete('"')
+  end
+
+  def type_filter_param
+    raw = params[:_type]
+    raw.present? ? raw.split(",").map(&:strip).reject(&:blank?) : nil
+  end
+
+  # Returns a Time, nil (absent), or :invalid after rendering the 400.
+  def parse_since_param
+    raw = params[:_since]
+    return nil if raw.blank?
+
+    Time.iso8601(raw)
+  rescue ArgumentError
+    render_operation_outcome_single(
+      status: :bad_request,
+      severity: "error",
+      code: "value",
+      diagnostics: "Invalid _since value #{raw.inspect}: must be an ISO 8601 instant"
+    )
+    :invalid
   end
 
   def render_not_found

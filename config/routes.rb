@@ -17,6 +17,8 @@ Rails.application.routes.draw do
       post   "/#{type}",                   to: "fhir_resources#create"
       put    "/#{type}",                   to: "fhir_resources#conditional_update"
       delete "/#{type}",                   to: "fhir_resources#conditional_destroy"
+      post   "/#{type}/$validate",         to: "fhir_resources#validate"
+      get    "/#{type}/:id/$everything",   to: "fhir_resources#everything" if type == "Patient"
       # The literal `_history` routes must precede `/#{type}/:id` so the
       # segment "_history" is never captured as an :id.
       get    "/#{type}/_history",          to: "fhir_resources#type_history"

@@ -53,8 +53,20 @@ module Fhir
         # advertise chaining -- documented here only.
         "searchInclude" => search_includes(resource_type),
         "searchRevInclude" => search_rev_includes(resource_type),
-        "searchParam" => search_params(entry.fetch(:search_params))
+        "searchParam" => search_params(entry.fetch(:search_params)),
+        "operation" => operations(resource_type)
       }
+    end
+
+    # $validate is available on every type; $everything only on Patient.
+    def operations(resource_type)
+      list = [
+        { "name" => "validate", "definition" => "http://hl7.org/fhir/OperationDefinition/Resource-validate" }
+      ]
+      if resource_type == "Patient"
+        list << { "name" => "everything", "definition" => "http://hl7.org/fhir/OperationDefinition/Patient-everything" }
+      end
+      list
     end
 
     # Derived from the _include/_revinclude allow-list so the advertisement

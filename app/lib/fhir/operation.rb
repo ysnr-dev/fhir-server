@@ -38,6 +38,10 @@ module Fhir
       new(resource_type).patch(id, operations, if_match: if_match)
     end
 
+    def self.validate(resource_type, payload)
+      new(resource_type).validate(payload)
+    end
+
     def self.search(resource_type, query_string, base_url:)
       new(resource_type).search(query_string, base_url: base_url)
     end
@@ -199,6 +203,40 @@ module Fhir
         Result.new(status: :no_content)
       else
         delete(match.record.id)
+      end
+    end
+
+    # POST /{type}/$validate: runs the resource through the same validator as
+    # create/update without persisting anything. Per the operation's definition
+    # the HTTP status is 200 whether or not the resource is valid -- the
+    # OperationOutcome carries the verdict; non-200 is reserved for failures of
+    # the operation itself (unparseable body, unknown type).
+    def validate(payload)
+      return unsupported_type_result unless entry
+
+      unless resource_type_matches?(payload)
+        return Result.new(
+          status: :ok,
+          outcome: Fhir::OperationOutcome.single(
+            severity: "error",
+            code: "invalid",
+            diagnostics: "resourceType must be '#{resource_type}', got '#{payload.is_a?(Hash) ? payload['resourceType'] : payload.inspect}'"
+          )
+        )
+      end
+
+      validation = entry[:validator].call(payload)
+      if validation.valid?
+        Result.new(
+          status: :ok,
+          outcome: Fhir::OperationOutcome.single(
+            severity: "information",
+            code: "informational",
+            diagnostics: "Validation successful: the resource is a valid #{resource_type}"
+          )
+        )
+      else
+        Result.new(status: :ok, outcome: Fhir::OperationOutcome.build(validation.issues))
       end
     end
 
