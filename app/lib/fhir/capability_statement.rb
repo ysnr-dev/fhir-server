@@ -25,7 +25,7 @@ module Fhir
       rest = {
         "mode" => "server",
         "interaction" => SERVER_INTERACTIONS.map { |code| { "code" => code } },
-        "resource" => ResourceRegistry.types.map { |type| resource_component(type) }
+        "resource" => ResourceRegistry.types.map { |type| resource_component(type) } + [audit_event_component]
       }
       rest = { "security" => security_component(base_url) }.merge(rest) if Auth.enabled?
 
@@ -79,6 +79,23 @@ module Fhir
         "searchRevInclude" => search_rev_includes(resource_type),
         "searchParam" => search_params(entry.fetch(:search_params)),
         "operation" => operations(resource_type)
+      }
+    end
+
+    # The audit trail is outside ResourceRegistry (server-generated, read-only),
+    # so its narrower capability set is declared by hand.
+    def audit_event_component
+      {
+        "type" => "AuditEvent",
+        "profile" => "http://hl7.org/fhir/StructureDefinition/AuditEvent",
+        "interaction" => [{ "code" => "read" }, { "code" => "search-type" }],
+        "searchParam" => [
+          { "name" => "date", "type" => "date" },
+          { "name" => "agent", "type" => "token" },
+          { "name" => "subtype", "type" => "token" },
+          { "name" => "entity", "type" => "reference" },
+          { "name" => "entity-type", "type" => "token" }
+        ]
       }
     end
 

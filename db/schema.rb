@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_22_000001) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_22_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -50,6 +50,24 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_22_000001) do
     t.index ["last_updated"], name: "index_allergy_intolerances_on_last_updated"
     t.index ["patient_reference"], name: "index_allergy_intolerances_on_patient_reference"
     t.index ["recorded_time"], name: "index_allergy_intolerances_on_recorded_time"
+  end
+
+  create_table "audit_events", id: :string, force: :cascade do |t|
+    t.datetime "occurred_at", null: false
+    t.string "client_id"
+    t.string "client_name"
+    t.string "action", null: false
+    t.string "interaction"
+    t.string "resource_type"
+    t.string "resource_id"
+    t.string "request_method", null: false
+    t.string "request_path", null: false
+    t.integer "response_status", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_id"], name: "index_audit_events_on_client_id"
+    t.index ["occurred_at"], name: "index_audit_events_on_occurred_at"
+    t.index ["resource_type", "resource_id"], name: "index_audit_events_on_resource_type_and_resource_id"
   end
 
   create_table "conditions", id: :string, force: :cascade do |t|

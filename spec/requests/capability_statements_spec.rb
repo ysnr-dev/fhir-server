@@ -17,10 +17,24 @@ RSpec.describe "CapabilityStatement", type: :request do
       expect(system_interactions).to include("transaction", "batch", "history-system")
     end
 
+    # The AuditEvent component is read-only and declared by hand, so the
+    # "every resource" assertions cover the registry-driven components only.
+    def registry_resources
+      JSON.parse(response.body)["rest"].first["resource"].reject { |r| r["type"] == "AuditEvent" }
+    end
+
+    it "advertises the read-only AuditEvent endpoint" do
+      get "/metadata"
+
+      audit = JSON.parse(response.body)["rest"].first["resource"].find { |r| r["type"] == "AuditEvent" }
+      expect(audit["interaction"].map { |i| i["code"] }).to contain_exactly("read", "search-type")
+      expect(audit).not_to have_key("conditionalCreate")
+    end
+
     it "advertises patch and history-type for every resource" do
       get "/metadata"
 
-      resources = JSON.parse(response.body)["rest"].first["resource"]
+      resources = registry_resources
       resources.each do |resource|
         codes = resource["interaction"].map { |i| i["code"] }
         expect(codes).to include("patch", "history-type", "history-instance")
@@ -41,7 +55,7 @@ RSpec.describe "CapabilityStatement", type: :request do
     it "advertises $validate on every resource and $everything on Patient" do
       get "/metadata"
 
-      resources = JSON.parse(response.body)["rest"].first["resource"]
+      resources = registry_resources
       resources.each do |resource|
         expect(resource["operation"].map { |o| o["name"] }).to include("validate")
       end
@@ -55,7 +69,7 @@ RSpec.describe "CapabilityStatement", type: :request do
     it "advertises conditional create/update/delete for every resource" do
       get "/metadata"
 
-      resources = JSON.parse(response.body)["rest"].first["resource"]
+      resources = registry_resources
       expect(resources).to all(
         include("conditionalCreate" => true, "conditionalRead" => "full-support",
                 "conditionalUpdate" => true, "conditionalDelete" => "single")

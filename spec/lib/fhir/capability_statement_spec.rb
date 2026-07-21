@@ -25,9 +25,9 @@ RSpec.describe Fhir::CapabilityStatement do
     expect(codes).to contain_exactly("transaction", "batch", "history-system")
   end
 
-  it "lists every registered resource type with its JP Core profile" do
+  it "lists every registered resource type (plus the read-only AuditEvent) with its JP Core profile" do
     types = statement["rest"].first["resource"].map { |r| r["type"] }
-    expect(types).to eq(Fhir::ResourceRegistry.types)
+    expect(types).to eq(Fhir::ResourceRegistry.types + ["AuditEvent"])
 
     expect(resource("Patient")["profile"]).to eq("http://jpfhir.jp/fhir/core/StructureDefinition/JP_Patient")
     expect(resource("ServiceRequest")["profile"]).to eq("http://jpfhir.jp/fhir/core/StructureDefinition/JP_ServiceRequest_Common")

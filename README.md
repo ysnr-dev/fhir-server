@@ -218,9 +218,15 @@ curl -s http://localhost:3000/Patient -H "Authorization: Bearer {access_token}"
 | `POST` | `/` | Bundle 一括処理（transaction / batch） |
 | `GET` | `/_history` | システムレベル履歴（全リソース横断） |
 | `GET` | `/Patient/:id/$everything` | 患者コンパートメント一括取得（`_type` / `_since` 対応） |
+| `GET` | `/AuditEvent` | アクセス監査ログの検索（読み取り専用。`date` / `agent` / `subtype` / `entity` / `entity-type` で絞り込み） |
+| `GET` | `/AuditEvent/:id` | 監査ログの参照 |
 | `GET` | `/metadata` | CapabilityStatement |
 | `GET` | `/.well-known/smart-configuration` | SMART ディスカバリ文書 |
 | `POST` | `/oauth/token` | アクセストークン発行（認証有効時に使用） |
+
+すべての FHIR リクエスト（認証拒否 401/403 を含む）は AuditEvent として自動記録されます。
+記録には操作種別・対象リソース・結果ステータス・認証クライアント（匿名アクセスは anonymous）が含まれ、
+API からは読み取り専用です。認証有効時、監査ログの参照には `system/AuditEvent.read` 相当のスコープが必要です。
 
 ---
 

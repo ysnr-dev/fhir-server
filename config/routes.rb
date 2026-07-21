@@ -3,6 +3,9 @@ Rails.application.routes.draw do
   get "/.well-known/smart-configuration", to: "smart_configurations#show"
   post "/oauth/token", to: "oauth_tokens#create"
   get "/_history", to: "histories#index"
+  # Server-generated audit trail: read-only by design (no write routes).
+  get "/AuditEvent", to: "audit_events#index"
+  get "/AuditEvent/:id", to: "audit_events#show"
   post "/", to: "bundles#create"
 
   # One identical route set per supported FHIR resource type, all dispatched to

@@ -3,12 +3,31 @@
 # route's `defaults: { resource_type: ... }` (see config/routes.rb), so adding a
 # resource requires no new controller.
 class FhirResourcesController < ApplicationController
+  include FhirAuditing # first, so halted (401/403) requests are audited too
+
   before_action :authorize_interaction
   before_action :set_record, only: %i[history vread]
 
   # $validate computes without persisting and reveals nothing stored, so it
   # rides on the read scope alongside the other non-mutating interactions.
   WRITE_ACTIONS = %w[create update conditional_update patch_update destroy conditional_destroy].freeze
+
+  # action_name -> restful-interaction code for the audit trail.
+  AUDIT_INTERACTIONS = {
+    "index" => "search-type",
+    "show" => "read",
+    "vread" => "vread",
+    "history" => "history-instance",
+    "type_history" => "history-type",
+    "create" => "create",
+    "update" => "update",
+    "conditional_update" => "update",
+    "patch_update" => "patch",
+    "destroy" => "delete",
+    "conditional_destroy" => "delete",
+    "everything" => "operation",
+    "validate" => "operation"
+  }.freeze
 
   def index
     result = Fhir::Operation.search(resource_type, request.query_string, base_url: base_url)
@@ -158,6 +177,22 @@ class FhirResourcesController < ApplicationController
 
     access = WRITE_ACTIONS.include?(action_name) ? :write : :read
     authorize_fhir_request!([[resource_type, access]])
+  end
+
+  def audit_interaction
+    AUDIT_INTERACTIONS[action_name]
+  end
+
+  def audit_resource_type
+    resource_type
+  end
+
+  # The created resource's id only exists after the fact -- recover it from
+  # the Location header ({base}/{type}/{id}/_history/{vid}).
+  def audit_resource_id
+    return params[:id] if params[:id].present?
+
+    response.get_header("Location")&.match(%r{/#{resource_type}/([^/]+)/_history/})&.captures&.first
   end
 
   def set_record

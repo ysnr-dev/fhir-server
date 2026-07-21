@@ -25,6 +25,10 @@ class ApplicationController < ActionController::API
     return render_unauthorized("Invalid access token") unless token
     return render_unauthorized("Access token expired", issue_code: "expired") if token.expired?
 
+    # Remembered before the scope check so denied (403) requests are still
+    # attributed to the client in the audit trail (FhirAuditing).
+    @current_access_token = token
+
     denied = checks.find { |type, access| !token.scope_set.allows?(type, access) }
     denied ? render_forbidden(denied) : true
   end
