@@ -175,6 +175,18 @@ RSpec.describe Fhir::SearchParams do
       expect(round_tripped.clauses).to eq(original.clauses)
     end
 
+    it "re-emits :iterate include variants in paging links" do
+      original = described_class.parse("_include=MedicationRequest:encounter&_include:iterate=Encounter:subject&_revinclude:iterate=Observation:encounter")
+
+      query = original.to_query(offset: 0)
+
+      expect(query).to include("_include:iterate=Encounter%3Asubject", "_revinclude:iterate=Observation%3Aencounter")
+      round_tripped = described_class.parse(query)
+      expect(round_tripped.includes).to eq(original.includes)
+      expect(round_tripped.iterate_includes).to eq(%w[Encounter:subject])
+      expect(round_tripped.iterate_revincludes).to eq(%w[Observation:encounter])
+    end
+
     it "re-emits _summary, _elements, and _total in paging links" do
       params = described_class.parse("status=active&_summary=data&_elements=name,gender&_total=none")
 

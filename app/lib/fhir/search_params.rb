@@ -127,6 +127,16 @@ module Fhir
       unmodified_clauses("_revinclude").flat_map(&:values)
     end
 
+    # :iterate variants are applied repeatedly to already-included resources
+    # (see Fhir::IncludeResolver), not just to the match set.
+    def iterate_includes
+      modified_clauses("_include", "iterate").flat_map(&:values)
+    end
+
+    def iterate_revincludes
+      modified_clauses("_revinclude", "iterate").flat_map(&:values)
+    end
+
     # Rebuilds a query string from the normalized clauses so pagination links
     # round-trip repeated params and modifiers instead of losing them through
     # Hash#to_query. Non-meta clauses keep their original relative order;
@@ -138,16 +148,26 @@ module Fhir
       parts << "_summary=#{escape(summary)}" if summary.present?
       parts << "_elements=#{elements.map { |e| escape(e) }.join(',')}" if elements.any?
       parts << "_total=#{escape(total_mode)}" if total_mode.present?
-      parts.concat(unmodified_clauses("_include").map { |c| serialize_clause(c) })
-      parts.concat(unmodified_clauses("_revinclude").map { |c| serialize_clause(c) })
+      parts.concat(clauses_named("_include").map { |c| serialize_clause(c) })
+      parts.concat(clauses_named("_revinclude").map { |c| serialize_clause(c) })
       parts << "_offset=#{offset}"
       parts.join("&")
     end
 
     private
 
+    # All occurrences regardless of modifier, so paging links keep the
+    # :iterate variants too.
+    def clauses_named(name)
+      @all_clauses.select { |c| c.name == name }
+    end
+
     def unmodified_clauses(name)
       @all_clauses.select { |c| c.name == name && c.modifier.nil? }
+    end
+
+    def modified_clauses(name, modifier)
+      @all_clauses.select { |c| c.name == name && c.modifier == modifier }
     end
 
     # _sort's value is itself a comma-joined list (e.g. "family,birthdate") whose

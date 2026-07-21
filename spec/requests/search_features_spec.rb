@@ -42,6 +42,28 @@ RSpec.describe "Search features (chaining, _has, _summary/_elements, _total)", t
     end
   end
 
+  describe "_include:iterate" do
+    it "includes resources referenced by included resources" do
+      patient_id = create_patient
+      post "/Encounter", params: valid_encounter_payload("subject" => { "reference" => "Patient/#{patient_id}" }), as: :json
+      encounter_id = JSON.parse(response.body)["id"]
+      post "/MedicationRequest",
+           params: valid_medication_request_payload(subject_id: patient_id,
+                                                    encounter: { "reference" => "Encounter/#{encounter_id}" }),
+           as: :json
+
+      get "/MedicationRequest?_include=MedicationRequest:encounter&_include:iterate=Encounter:subject"
+
+      bundle = JSON.parse(response.body)
+      modes = bundle["entry"].group_by { |e| e.dig("search", "mode") }
+      included_types = modes["include"].map { |e| e.dig("resource", "resourceType") }
+      expect(included_types).to contain_exactly("Encounter", "Patient")
+
+      self_link = bundle["link"].find { |l| l["relation"] == "self" }
+      expect(self_link["url"]).to include("_include:iterate=Encounter%3Asubject")
+    end
+  end
+
   describe "_has (reverse chaining)" do
     it "finds patients that have a matching observation" do
       with_obs = create_patient

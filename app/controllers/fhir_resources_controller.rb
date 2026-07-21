@@ -16,7 +16,16 @@ class FhirResourcesController < ApplicationController
   end
 
   def show
-    render_operation_result(Fhir::Operation.read(resource_type, params[:id]))
+    result = Fhir::Operation.read(resource_type, params[:id])
+
+    # Conditional read: 304 with the current ETag and no body when the client's
+    # cached copy is still current.
+    if result.success? && not_modified?(result)
+      response.set_header("ETag", %(W/"#{result.version_id}"))
+      return head :not_modified
+    end
+
+    render_operation_result(result)
   end
 
   def create
@@ -161,6 +170,30 @@ class FhirResourcesController < ApplicationController
     return nil if header.blank?
 
     header.gsub(%r{^W/}, "").delete('"')
+  end
+
+  # If-None-Match takes precedence over If-Modified-Since (RFC 9110 section 13.1.3).
+  def not_modified?(result)
+    if_none_match = request.headers["If-None-Match"]
+    if if_none_match.present?
+      etag = if_none_match.gsub(%r{^W/}, "").delete('"').strip
+      return etag == "*" || etag == result.version_id.to_s
+    end
+
+    threshold = parse_http_date(request.headers["If-Modified-Since"])
+    return false unless threshold
+
+    # HTTP dates carry second precision, so truncate before comparing --
+    # otherwise sub-second lastUpdated fractions would always read as newer.
+    Time.iso8601(result.resource.dig("meta", "lastUpdated")).change(usec: 0) <= threshold
+  end
+
+  def parse_http_date(header)
+    return nil if header.blank?
+
+    Time.httpdate(header)
+  rescue ArgumentError
+    nil
   end
 
   def type_filter_param

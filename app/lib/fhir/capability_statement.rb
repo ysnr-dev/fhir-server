@@ -68,6 +68,8 @@ module Fhir
         "profile" => entry.fetch(:profile),
         "interaction" => RESOURCE_INTERACTIONS.map { |code| { "code" => code } },
         "conditionalCreate" => true,
+        # Both If-None-Match and If-Modified-Since are honored on read.
+        "conditionalRead" => "full-support",
         "conditionalUpdate" => true,
         "conditionalDelete" => "single",
         # Chained search (one hop) and _has (one level) are also supported on

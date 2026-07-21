@@ -199,6 +199,85 @@ RSpec.describe "Bundles", type: :request do
     end
   end
 
+  describe "PATCH entries (Binary-wrapped JSON Patch)" do
+    def patch_binary(operations)
+      {
+        "resourceType" => "Binary",
+        "contentType" => "application/json-patch+json",
+        "data" => Base64.strict_encode64(operations.to_json)
+      }
+    end
+
+    it "applies a PATCH entry in a transaction" do
+      post "/Patient", params: valid_patient_payload, as: :json
+      patient_id = JSON.parse(response.body)["id"]
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          {
+            "resource" => patch_binary([{ "op" => "replace", "path" => "/gender", "value" => "female" }]),
+            "request" => { "method" => "PATCH", "url" => "Patient/#{patient_id}" }
+          }
+        ]
+      }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      entry = JSON.parse(response.body)["entry"].first
+      expect(entry["response"]["status"]).to start_with("200")
+      expect(entry["resource"]["gender"]).to eq("female")
+      expect(entry["resource"]["meta"]["versionId"]).to eq("2")
+    end
+
+    it "rejects a PATCH entry whose resource is not a JSON Patch Binary" do
+      post "/Patient", params: valid_patient_payload, as: :json
+      patient_id = JSON.parse(response.body)["id"]
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "batch",
+        "entry" => [
+          {
+            "resource" => { "resourceType" => "Binary", "contentType" => "text/plain", "data" => "eA==" },
+            "request" => { "method" => "PATCH", "url" => "Patient/#{patient_id}" }
+          },
+          { "request" => { "method" => "GET", "url" => "Patient/#{patient_id}" } }
+        ]
+      }, as: :json
+
+      body = JSON.parse(response.body)
+      expect(body["entry"][0]["response"]["status"]).to start_with("400")
+      expect(body["entry"][1]["response"]["status"]).to start_with("200")
+
+      get "/Patient/#{patient_id}"
+      expect(JSON.parse(response.body)["meta"]["versionId"]).to eq("1")
+    end
+
+    it "rolls back the whole transaction when a PATCH entry fails" do
+      post "/Patient", params: valid_patient_payload, as: :json
+      patient_id = JSON.parse(response.body)["id"]
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          {
+            "resource" => valid_patient_payload,
+            "request" => { "method" => "POST", "url" => "Patient" }
+          },
+          {
+            "resource" => patch_binary([{ "op" => "test", "path" => "/gender", "value" => "female" }]),
+            "request" => { "method" => "PATCH", "url" => "Patient/#{patient_id}" }
+          }
+        ]
+      }, as: :json
+
+      expect(response).not_to have_http_status(:ok)
+      expect(Patient.where(deleted: false).count).to eq(1) # the POST was rolled back
+    end
+  end
+
   describe "entry-point validation" do
     it "returns 400 when resourceType is not Bundle" do
       post "/", params: { "resourceType" => "Patient" }, as: :json

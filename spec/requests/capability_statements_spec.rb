@@ -57,7 +57,8 @@ RSpec.describe "CapabilityStatement", type: :request do
 
       resources = JSON.parse(response.body)["rest"].first["resource"]
       expect(resources).to all(
-        include("conditionalCreate" => true, "conditionalUpdate" => true, "conditionalDelete" => "single")
+        include("conditionalCreate" => true, "conditionalRead" => "full-support",
+                "conditionalUpdate" => true, "conditionalDelete" => "single")
       )
     end
   end

@@ -266,4 +266,66 @@ RSpec.describe Fhir::IncludeResolver do
       expect(included.first).to be_a(Encounter)
     end
   end
+
+  describe ":iterate" do
+    it "follows a forward include chain through an included resource" do
+      encounter = create_encounter
+      medication_request = create_medication_request("encounter" => { "reference" => "Encounter/#{encounter.id}" })
+
+      included = resolve(
+        resource_type: "MedicationRequest",
+        records: [medication_request],
+        params: { "_include" => "MedicationRequest:encounter", "_include:iterate" => "Encounter:subject" }
+      )
+
+      expect(included.map { |r| r.class.name }).to contain_exactly("Encounter", "Patient")
+    end
+
+    it "applies an iterate directive to the match set itself when no base include feeds it" do
+      medication_request = create_medication_request
+
+      included = resolve(
+        resource_type: "MedicationRequest",
+        records: [medication_request],
+        params: { "_include:iterate" => "MedicationRequest:subject" }
+      )
+
+      expect(included.map(&:id)).to eq([patient.id])
+    end
+
+    it "follows a reverse include chain through an included resource" do
+      encounter = create_encounter
+      observation = Fhir::Repository.create(
+        "Observation",
+        { "resourceType" => "Observation", "status" => "final", "code" => { "text" => "t" },
+          "subject" => { "reference" => "Patient/#{patient.id}" },
+          "encounter" => { "reference" => "Encounter/#{encounter.id}" } }
+      )
+
+      included = resolve(
+        resource_type: "Patient",
+        records: [patient],
+        params: { "_revinclude" => "Encounter:subject", "_revinclude:iterate" => "Observation:encounter" }
+      )
+
+      expect(included.map(&:id)).to contain_exactly(encounter.id, observation.id)
+    end
+
+    it "terminates on reference cycles without duplicating resources" do
+      first = Fhir::Repository.create("Location", { "resourceType" => "Location", "name" => "本館" })
+      second = Fhir::Repository.create(
+        "Location", { "resourceType" => "Location", "name" => "別館", "partOf" => { "reference" => "Location/#{first.id}" } }
+      )
+      Fhir::Repository.update("Location", first,
+                              first.content.merge("partOf" => { "reference" => "Location/#{second.id}" }))
+
+      included = resolve(
+        resource_type: "Location",
+        records: [first.reload],
+        params: { "_include:iterate" => "Location:partof" }
+      )
+
+      expect(included.map(&:id)).to eq([second.id])
+    end
+  end
 end

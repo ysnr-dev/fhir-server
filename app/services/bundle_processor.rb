@@ -2,11 +2,9 @@ class BundleProcessor
   VALID_TYPES = %w[transaction batch].freeze
   # Transactions apply mutations in a fixed order regardless of entry order,
   # so references created earlier in the request are resolvable later.
-  # PATCH has its ordering tier reserved here, but PATCH entries themselves are
-  # not yet supported: FHIR requires the patch document to arrive as a Binary
-  # resource (base64 data, contentType application/json-patch+json), which
-  # dispatch_entry does not decode.
   PROCESSING_ORDER = %w[DELETE POST PUT PATCH GET].freeze
+
+  PATCH_CONTENT_TYPE = "application/json-patch+json".freeze
 
   # A conditional reference: "Type?criteria" (vs the literal "Type/id").
   CONDITIONAL_REFERENCE_PATTERN = %r{\A([A-Za-z]+)\?(.+)\z}.freeze
@@ -166,9 +164,37 @@ class BundleProcessor
       else
         entry_error(:bad_request, "structure", "DELETE requires an id or search criteria in Bundle.entry.request.url")
       end
+    when "PATCH"
+      return entry_error(:bad_request, "structure", "PATCH requires an id in Bundle.entry.request.url") if id.blank?
+
+      operations, patch_error = decode_patch_document(resource)
+      return entry_error(:bad_request, "structure", patch_error) if patch_error
+
+      Fhir::Operation.patch(resource_type, id, operations)
     else
       entry_error(:bad_request, "not-supported", "Unsupported Bundle.entry.request.method '#{method}'")
     end
+  end
+
+  # Per the FHIR spec, a Bundle PATCH entry carries its patch document as a
+  # Binary resource: contentType application/json-patch+json, data base64.
+  # Returns [operations, nil] or [nil, error_message].
+  def decode_patch_document(resource)
+    unless resource.is_a?(Hash) && resource["resourceType"] == "Binary"
+      return [nil, "PATCH entry requires a Binary resource carrying the patch document"]
+    end
+    unless resource["contentType"] == PATCH_CONTENT_TYPE
+      return [nil, "Binary.contentType must be '#{PATCH_CONTENT_TYPE}', got #{resource['contentType'].inspect}"]
+    end
+
+    operations = JSON.parse(Base64.strict_decode64(resource["data"].to_s))
+    return [nil, "The decoded patch document must be a JSON array of operations"] unless operations.is_a?(Array)
+
+    [operations, nil]
+  rescue ArgumentError
+    [nil, "Binary.data must be valid base64"]
+  rescue JSON::ParserError => e
+    [nil, "Binary.data does not decode to valid JSON: #{e.message}"]
   end
 
   def entry_error(status, code, diagnostics)
