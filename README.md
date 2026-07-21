@@ -2,8 +2,10 @@
 
 Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです。
 [JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) に準拠した
-`Patient` / `MedicationRequest` / `ServiceRequest` / `Practitioner` / `Organization` リソースの
-CRUD・検索・バージョン管理と、`Bundle`（transaction / batch）による複数リソースの一括処理を提供します。
+21 リソース（`Patient` / `Observation` / `MedicationRequest` / `Encounter` / `Condition` など）の
+CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
+オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
+複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
 
 ## 動作環境
 
@@ -177,26 +179,47 @@ curl -s http://localhost:3000/Patient -H "Authorization: Bearer {access_token}"
 
 ### 対応リソース
 
-| リソース | エンドポイント |
+全 21 リソースが同一のエンドポイント群（後述）を持ちます。
+
+| カテゴリ | リソース |
 |---|---|
-| Patient | `/Patient` |
-| MedicationRequest | `/MedicationRequest` |
-| ServiceRequest | `/ServiceRequest` |
-| Practitioner | `/Practitioner` |
-| Organization | `/Organization` |
+| 基盤 | Patient / Practitioner / PractitionerRole / Organization / Location / Encounter |
+| 薬剤 | Medication / MedicationRequest / MedicationDispense / MedicationAdministration / MedicationStatement |
+| 検査・レポート | Observation / Specimen / ImagingStudy / DiagnosticReport / ServiceRequest |
+| 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization |
+| 保険 | Coverage |
+
+正確な一覧と各リソースの検索パラメータは `GET /metadata`（CapabilityStatement）で確認できます。
 
 以下、`{Resource}` は上記いずれかに読み替えてください。
 
+**インスタンス / タイプレベル**
+
 | メソッド | パス | 説明 |
 |---|---|---|
-| `POST` | `/{Resource}` | 作成 |
+| `POST` | `/{Resource}` | 作成（`If-None-Exist` による条件付き作成対応） |
 | `GET` | `/{Resource}/:id` | 参照 |
 | `PUT` | `/{Resource}/:id` | 更新（`If-Match` 対応） |
+| `PUT` | `/{Resource}?{criteria}` | 条件付き更新（upsert） |
+| `PATCH` | `/{Resource}/:id` | 部分更新（JSON Patch, RFC 6902。`Content-Type: application/json-patch+json`） |
 | `DELETE` | `/{Resource}/:id` | 削除（論理削除） |
-| `GET` | `/{Resource}/:id/_history` | バージョン履歴（Bundle） |
+| `DELETE` | `/{Resource}?{criteria}` | 条件付き削除（単一マッチのみ） |
+| `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索・`_has`・`_include`/`_revinclude`・`_sort`・`_count`/`_offset`・`_summary`/`_elements`・`_total`・`:missing` 等に対応 |
+| `GET` | `/{Resource}/_history` | タイプレベル履歴（`_count` / `_since` 対応） |
+| `GET` | `/{Resource}/:id/_history` | インスタンスのバージョン履歴（Bundle） |
 | `GET` | `/{Resource}/:id/_history/:vid` | 特定バージョンの参照（vread） |
-| `GET` | `/{Resource}` | 検索（Bundle） |
+| `POST` | `/{Resource}/$validate` | 保存せずバリデーションのみ実行 |
+
+**システムレベル / オペレーション**
+
+| メソッド | パス | 説明 |
+|---|---|---|
+| `POST` | `/` | Bundle 一括処理（transaction / batch） |
+| `GET` | `/_history` | システムレベル履歴（全リソース横断） |
+| `GET` | `/Patient/:id/$everything` | 患者コンパートメント一括取得（`_type` / `_since` 対応） |
 | `GET` | `/metadata` | CapabilityStatement |
+| `GET` | `/.well-known/smart-configuration` | SMART ディスカバリ文書 |
+| `POST` | `/oauth/token` | アクセストークン発行（認証有効時に使用） |
 
 ---
 
