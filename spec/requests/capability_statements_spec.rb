@@ -27,6 +27,17 @@ RSpec.describe "CapabilityStatement", type: :request do
       end
     end
 
+    it "advertises searchInclude and searchRevInclude derived from the include allow-list" do
+      get "/metadata"
+
+      resources = JSON.parse(response.body)["rest"].first["resource"]
+      observation = resources.find { |r| r["type"] == "Observation" }
+      expect(observation["searchInclude"]).to include("Observation:subject", "Observation:patient", "Observation:encounter")
+
+      patient = resources.find { |r| r["type"] == "Patient" }
+      expect(patient["searchRevInclude"]).to include("Observation:subject", "MedicationRequest:subject", "Coverage:beneficiary")
+    end
+
     it "advertises conditional create/update/delete for every resource" do
       get "/metadata"
 

@@ -72,4 +72,43 @@ RSpec.describe Fhir::ConditionalMatch do
 
     expect(result.outcome).to eq(:none)
   end
+
+  it "honors chained criteria" do
+    patient = create_patient("cm-chain")
+    observation = Fhir::Repository.create(
+      "Observation",
+      { "resourceType" => "Observation", "status" => "final", "code" => { "text" => "t" },
+        "identifier" => [{ "value" => "cm-chain-obs" }],
+        "subject" => { "reference" => "Patient/#{patient.id}" } }
+    )
+
+    result = described_class.call("Observation", "subject:Patient.identifier=cm-chain")
+
+    expect(result.outcome).to eq(:one)
+    expect(result.record.id).to eq(observation.id)
+  end
+
+  it "returns :invalid for a chain with an unsupported tail" do
+    result = described_class.call("Observation", "subject:Patient.bogus=1")
+
+    expect(result.outcome).to eq(:invalid)
+  end
+
+  it "actually filters on sa/eb date prefixes (formerly silently ignored)" do
+    create_patient("cm-date").tap do |patient|
+      Fhir::Repository.update("Patient", patient, patient.content.merge("birthDate" => "1990-06-15"))
+    end
+
+    expect(described_class.call("Patient", "identifier=cm-date&birthdate=sa1990-01-01").outcome).to eq(:one)
+    expect(described_class.call("Patient", "identifier=cm-date&birthdate=sa2000-01-01").outcome).to eq(:none)
+  end
+
+  it "ignores result-shaping meta params in criteria instead of distorting the match" do
+    patient = create_patient("cm-meta")
+
+    result = described_class.call("Patient", "identifier=cm-meta&_summary=count&_total=none&_count=0")
+
+    expect(result.outcome).to eq(:one)
+    expect(result.record.id).to eq(patient.id)
+  end
 end

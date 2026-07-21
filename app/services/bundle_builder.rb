@@ -1,6 +1,6 @@
 class BundleBuilder
-  def self.searchset(result:, base_url:, search_params:, resource_type:, included: [])
-    new(base_url, resource_type).searchset(result: result, search_params: search_params, included: included)
+  def self.searchset(result:, base_url:, search_params:, resource_type:, included: [], shaper: nil)
+    new(base_url, resource_type).searchset(result: result, search_params: search_params, included: included, shaper: shaper)
   end
 
   def self.history(resource_id:, versions:, base_url:, resource_type:)
@@ -20,24 +20,26 @@ class BundleBuilder
     @resource_type = resource_type
   end
 
-  def searchset(result:, search_params:, included: [])
+  def searchset(result:, search_params:, included: [], shaper: nil)
+    bundle = { "resourceType" => "Bundle", "type" => "searchset" }
+    # _total=none leaves total nil -> the element is omitted per spec.
+    bundle["total"] = result.total unless result.total.nil?
+    bundle["link"] = search_links(result: result, search_params: search_params)
+    # _summary=count: totals and links only, no entry element at all.
+    return bundle if search_params.summary == "count"
+
     entries = result.records.map do |record|
       {
         "fullUrl" => "#{base_url}/#{resource_type}/#{record.id}",
-        "resource" => Fhir::Meta.apply(record.content, version_id: record.version_id, last_updated: record.last_updated),
+        "resource" => shaped(record, shaper),
         "search" => { "mode" => "match" }
       }
     end
 
-    entries.concat(include_entries(included, seen_urls: entries.map { |entry| entry["fullUrl"] }))
+    entries.concat(include_entries(included, seen_urls: entries.map { |entry| entry["fullUrl"] }, shaper: shaper))
 
-    {
-      "resourceType" => "Bundle",
-      "type" => "searchset",
-      "total" => result.total,
-      "link" => search_links(result: result, search_params: search_params),
-      "entry" => entries
-    }
+    bundle["entry"] = entries
+    bundle
   end
 
   def history(resource_id:, versions:)
@@ -99,7 +101,7 @@ class BundleBuilder
   # entries, skipping any whose fullUrl already appears (as a match or an earlier
   # include). Each included record may be a different resourceType than the
   # searched one, so the type is read from its own `content`.
-  def include_entries(included, seen_urls:)
+  def include_entries(included, seen_urls:, shaper: nil)
     seen = seen_urls.to_set
 
     included.filter_map do |record|
@@ -110,10 +112,15 @@ class BundleBuilder
       seen << full_url
       {
         "fullUrl" => full_url,
-        "resource" => Fhir::Meta.apply(record.content, version_id: record.version_id, last_updated: record.last_updated),
+        "resource" => shaped(record, shaper),
         "search" => { "mode" => "include" }
       }
     end
+  end
+
+  def shaped(record, shaper)
+    resource = Fhir::Meta.apply(record.content, version_id: record.version_id, last_updated: record.last_updated)
+    shaper ? shaper.call(resource) : resource
   end
 
   def search_links(result:, search_params:)
@@ -124,11 +131,17 @@ class BundleBuilder
       links << { "relation" => "previous", "url" => page_url(search_params, previous_offset) }
     end
 
-    if result.offset + result.count < result.total
-      links << { "relation" => "next", "url" => page_url(search_params, result.offset + result.count) }
-    end
+    links << { "relation" => "next", "url" => page_url(search_params, result.offset + result.count) } if next_page?(result)
 
     links
+  end
+
+  # Without a total (_total=none) a full page implies a next page; the standard
+  # tradeoff is one possibly-empty final page when the last page is exactly full.
+  def next_page?(result)
+    return result.offset + result.count < result.total if result.total
+
+    result.records.length == result.count
   end
 
   def page_url(search_params, offset)

@@ -48,8 +48,28 @@ module Fhir
         "conditionalCreate" => true,
         "conditionalUpdate" => true,
         "conditionalDelete" => "single",
+        # Chained search (one hop) and _has (one level) are also supported on
+        # reference params, but CapabilityStatement has no structural way to
+        # advertise chaining -- documented here only.
+        "searchInclude" => search_includes(resource_type),
+        "searchRevInclude" => search_rev_includes(resource_type),
         "searchParam" => search_params(entry.fetch(:search_params))
       }
+    end
+
+    # Derived from the _include/_revinclude allow-list so the advertisement
+    # stays in sync with what IncludeResolver actually honors. Aliases (e.g.
+    # "patient" for "subject") are advertised too, since lookup resolves them.
+    def search_includes(resource_type)
+      SearchReferences::MAP.fetch(resource_type, {}).keys.map { |param| "#{resource_type}:#{param}" }
+    end
+
+    def search_rev_includes(resource_type)
+      SearchReferences::MAP.flat_map do |source_type, params|
+        params.filter_map do |param, definition|
+          "#{source_type}:#{param}" if definition[:targets]&.include?(resource_type)
+        end
+      end
     end
 
     # _id and _lastUpdated are handled implicitly by Fhir::Search for every type,

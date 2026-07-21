@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe Fhir::Search do
+  include ActiveSupport::Testing::TimeHelpers
+
   def create(type, content)
     Fhir::Repository.create(type, content.merge("resourceType" => type))
   end
@@ -248,6 +250,240 @@ RSpec.describe Fhir::Search do
       result = search("Patient", { "bogus-param" => "x" })
 
       expect(result.total).to eq(1)
+    end
+  end
+
+  describe "chained search" do
+    def create_patient_with_observation(family:, obs_identifier:)
+      patient = create("Patient", { "identifier" => [{ "value" => "ch-#{family}" }],
+                                    "name" => [{ "use" => "official", "family" => family }] })
+      create("Observation", { "identifier" => [{ "value" => obs_identifier }], "status" => "final",
+                              "code" => { "text" => "test" }, "subject" => { "reference" => "Patient/#{patient.id}" } })
+      patient
+    end
+
+    it "matches through an untyped chain" do
+      create_patient_with_observation(family: "山田", obs_identifier: "co-1")
+      create_patient_with_observation(family: "佐藤", obs_identifier: "co-2")
+
+      result = search("Observation", { "subject.family" => "山田" })
+
+      expect(result.total).to eq(1)
+      expect(result.records.first.content["identifier"].first["value"]).to eq("co-1")
+    end
+
+    it "matches through a typed chain with a tail modifier" do
+      create_patient_with_observation(family: "山田", obs_identifier: "co-3")
+
+      expect(search("Observation", { "subject:Patient.family:exact" => "山田" }).total).to eq(1)
+      expect(search("Observation", { "subject:Patient.family:exact" => "山" }).total).to eq(0)
+    end
+
+    it "resolves the chain through a reference alias" do
+      create_patient_with_observation(family: "田中", obs_identifier: "co-4")
+
+      expect(search("Observation", { "patient.family" => "田中" }).total).to eq(1)
+    end
+
+    it "returns zero (not everything) when the chain matches no target" do
+      create_patient_with_observation(family: "山田", obs_identifier: "co-5")
+
+      expect(search("Observation", { "subject.family" => "存在しない" }).total).to eq(0)
+    end
+
+    it "treats a typed chain naming the wrong target type as unsupported (skipped)" do
+      create_patient_with_observation(family: "山田", obs_identifier: "co-6")
+
+      expect(search("Observation", { "subject:Practitioner.family" => "山田" }).total).to eq(1)
+    end
+
+    it "treats a multi-hop chain as unsupported (skipped)" do
+      create_patient_with_observation(family: "山田", obs_identifier: "co-7")
+
+      expect(search("Observation", { "subject.organization.name" => "x" }).total).to eq(1)
+    end
+
+    it "ORs comma values and ANDs repeated chained clauses" do
+      create_patient_with_observation(family: "山田", obs_identifier: "co-8")
+      create_patient_with_observation(family: "佐藤", obs_identifier: "co-9")
+
+      expect(search("Observation", { "subject.family" => "山田,佐藤" }).total).to eq(2)
+      expect(search("Observation", { "subject.family" => %w[山田 佐藤] }).total).to eq(0)
+    end
+
+    it "chains through a multi-valued reference (Encounter.location)" do
+      location = create("Location", { "identifier" => [{ "value" => "loc-1" }], "name" => "第一診察室" })
+      create("Encounter", { "identifier" => [{ "value" => "ch-enc-1" }], "status" => "finished", "class" => { "code" => "AMB" },
+                            "location" => [{ "location" => { "reference" => "Location/#{location.id}" } }] })
+      create("Encounter", { "identifier" => [{ "value" => "ch-enc-2" }], "status" => "finished", "class" => { "code" => "AMB" } })
+
+      expect(search("Encounter", { "location.name" => "第一診察室" }).total).to eq(1)
+      expect(search("Encounter", { "location.name" => "別の部屋" }).total).to eq(0)
+    end
+  end
+
+  describe "_has (reverse chaining)" do
+    def create_patient(value)
+      create("Patient", { "identifier" => [{ "value" => value }] })
+    end
+
+    def create_observation_for(patient, code:)
+      create("Observation", { "identifier" => [{ "value" => "has-obs-#{code}" }], "status" => "final",
+                              "code" => { "coding" => [{ "system" => "http://loinc.org", "code" => code }], "text" => "t" },
+                              "subject" => { "reference" => "Patient/#{patient.id}" } })
+    end
+
+    it "finds patients that have a matching observation (alias patient -> subject)" do
+      with_obs = create_patient("has-1")
+      create_patient("has-2")
+      create_observation_for(with_obs, code: "1234-5")
+
+      result = search("Patient", { "_has:Observation:patient:code" => "1234-5" })
+
+      expect(result.total).to eq(1)
+      expect(result.records.first.id).to eq(with_obs.id)
+    end
+
+    it "returns zero when no source resource matches" do
+      create_patient("has-3")
+
+      expect(search("Patient", { "_has:Observation:patient:code" => "9999-9" }).total).to eq(0)
+    end
+
+    it "treats unknown source types, unknown ref params, and nested _has as unsupported (skipped)" do
+      create_patient("has-4")
+
+      expect(search("Patient", { "_has:Bogus:patient:code" => "x" }).total).to eq(1)
+      expect(search("Patient", { "_has:Observation:bogus-ref:code" => "x" }).total).to eq(1)
+      expect(search("Patient", { "_has:Observation:patient:_has" => "x" }).total).to eq(1)
+    end
+
+    it "reverse-chains through a multi-valued source reference (Encounter.location)" do
+      visited = create("Location", { "identifier" => [{ "value" => "has-loc-1" }], "name" => "処置室" })
+      create("Location", { "identifier" => [{ "value" => "has-loc-2" }], "name" => "待合室" })
+      create("Encounter", { "identifier" => [{ "value" => "has-enc-1" }], "status" => "finished", "class" => { "code" => "AMB" },
+                            "location" => [{ "location" => { "reference" => "Location/#{visited.id}" } }] })
+
+      result = search("Location", { "_has:Encounter:location:status" => "finished" })
+
+      expect(result.total).to eq(1)
+      expect(result.records.first.id).to eq(visited.id)
+    end
+  end
+
+  describe ":missing modifier" do
+    it "filters by NULL / NOT NULL on single-column params" do
+      create("Patient", { "identifier" => [{ "value" => "mi-1" }], "gender" => "male" })
+      create("Patient", { "identifier" => [{ "value" => "mi-2" }] })
+
+      expect(search("Patient", { "gender:missing" => "true" }).total).to eq(1)
+      expect(search("Patient", { "gender:missing" => "false" }).total).to eq(1)
+    end
+
+    it "requires both columns absent for token_or_text params" do
+      create("Observation", { "identifier" => [{ "value" => "mi-3" }], "status" => "final",
+                              "code" => { "text" => "血圧" } })
+
+      expect(search("Observation", { "code:missing" => "false" }).total).to eq(1)
+      expect(search("Observation", { "code:missing" => "true" }).total).to eq(0)
+    end
+
+    it "answers identifier:missing via the resource_identifiers table" do
+      create("Patient", { "identifier" => [{ "value" => "mi-4" }] })
+      create("Patient", {})
+
+      expect(search("Patient", { "identifier:missing" => "true" }).total).to eq(1)
+      expect(search("Patient", { "identifier:missing" => "false" }).total).to eq(1)
+    end
+
+    it "answers multi-valued reference :missing via jsonb key presence" do
+      create("Encounter", { "identifier" => [{ "value" => "mi-5" }], "status" => "finished", "class" => { "code" => "AMB" },
+                            "location" => [{ "location" => { "reference" => "Location/x" } }] })
+      create("Encounter", { "identifier" => [{ "value" => "mi-6" }], "status" => "finished", "class" => { "code" => "AMB" } })
+
+      expect(search("Encounter", { "location:missing" => "true" }).total).to eq(1)
+      expect(search("Encounter", { "location:missing" => "false" }).total).to eq(1)
+    end
+
+    it "treats a period date as missing only when both columns are NULL" do
+      create("Encounter", { "identifier" => [{ "value" => "mi-7" }], "status" => "in-progress", "class" => { "code" => "AMB" },
+                            "period" => { "start" => "2026-07-19T00:00:00Z" } })
+      create("Encounter", { "identifier" => [{ "value" => "mi-8" }], "status" => "planned", "class" => { "code" => "AMB" } })
+
+      expect(search("Encounter", { "date:missing" => "true" }).total).to eq(1)
+      expect(search("Encounter", { "date:missing" => "false" }).total).to eq(1)
+    end
+
+    it "treats values other than true/false as unsupported (skipped)" do
+      create("Patient", { "identifier" => [{ "value" => "mi-9" }] })
+
+      expect(search("Patient", { "gender:missing" => "maybe" }).total).to eq(1)
+    end
+  end
+
+  describe "date prefixes sa / eb / ap" do
+    it "sa/eb match strictly after/before the interval on point dates" do
+      create("Patient", { "identifier" => [{ "value" => "dp-1" }], "birthDate" => "2024-06-15" })
+
+      expect(search("Patient", { "birthdate" => "sa2024-06-14" }).total).to eq(1)
+      expect(search("Patient", { "birthdate" => "sa2024-06-15" }).total).to eq(0)
+      expect(search("Patient", { "birthdate" => "eb2024-06-16" }).total).to eq(1)
+      expect(search("Patient", { "birthdate" => "eb2024-06-15" }).total).to eq(0)
+    end
+
+    it "sa/eb respect the NULL conventions on period dates" do
+      create("Encounter", { "identifier" => [{ "value" => "dp-2" }], "status" => "in-progress", "class" => { "code" => "AMB" },
+                            "period" => { "start" => "2026-07-01T00:00:00Z" } }) # no end: ongoing
+      create("Encounter", { "identifier" => [{ "value" => "dp-3" }], "status" => "finished", "class" => { "code" => "AMB" },
+                            "period" => { "start" => "2026-06-01T00:00:00Z", "end" => "2026-06-02T00:00:00Z" } })
+
+      # Entirely after 2026-06-15: only the ongoing encounter starting 07-01.
+      expect(search("Encounter", { "date" => "sa2026-06-15" }).total).to eq(1)
+      # Entirely before 2026-06-15: only the closed June encounter; ongoing never qualifies.
+      expect(search("Encounter", { "date" => "eb2026-06-15" }).total).to eq(1)
+      expect(search("Encounter", { "date" => "eb2026-05-01" }).total).to eq(0)
+    end
+
+    it "ap widens the interval by 10% of the distance from now" do
+      create("Patient", { "identifier" => [{ "value" => "dp-4" }], "birthDate" => "2026-01-11" })
+
+      travel_to Time.zone.parse("2026-07-21T00:00:00Z") do
+        # ~191 days from now => ~19-day tolerance: 2026-01-01 matches, 2025-11-01 does not.
+        expect(search("Patient", { "birthdate" => "ap2026-01-01" }).total).to eq(1)
+        expect(search("Patient", { "birthdate" => "ap2025-11-01" }).total).to eq(0)
+      end
+    end
+  end
+
+  describe "_summary=count and _total" do
+    before do
+      create("Patient", { "identifier" => [{ "value" => "sm-1" }] })
+      create("Patient", { "identifier" => [{ "value" => "sm-2" }] })
+    end
+
+    it "_summary=count returns the total without fetching records" do
+      result = search("Patient", { "_summary" => "count" })
+
+      expect(result.total).to eq(2)
+      expect(result.records).to eq([])
+    end
+
+    it "_total=none skips the count but still fetches records" do
+      result = search("Patient", { "_total" => "none" })
+
+      expect(result.total).to be_nil
+      expect(result.records.length).to eq(2)
+    end
+
+    it "_summary=count wins over _total=none" do
+      result = search("Patient", { "_summary" => "count", "_total" => "none" })
+
+      expect(result.total).to eq(2)
+    end
+
+    it "_total=accurate and estimate return the exact count" do
+      expect(search("Patient", { "_total" => "accurate" }).total).to eq(2)
+      expect(search("Patient", { "_total" => "estimate" }).total).to eq(2)
     end
   end
 end

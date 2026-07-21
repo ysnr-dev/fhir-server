@@ -207,8 +207,17 @@ module Fhir
 
       search_params = SearchParams.parse(query_string.to_s)
       result = Search.call(resource_type, search_params)
-      included = IncludeResolver.call(resource_type: resource_type, records: result.records, search_params: search_params)
-      bundle = BundleBuilder.searchset(result: result, base_url: base_url, search_params: search_params, resource_type: resource_type, included: included)
+      # _summary=count renders no entries, so resolving includes would be wasted work.
+      included =
+        if search_params.summary == "count"
+          []
+        else
+          IncludeResolver.call(resource_type: resource_type, records: result.records, search_params: search_params)
+        end
+      bundle = BundleBuilder.searchset(
+        result: result, base_url: base_url, search_params: search_params, resource_type: resource_type,
+        included: included, shaper: ResourceShaper.build(search_params)
+      )
       Result.new(status: :ok, resource: bundle)
     end
 

@@ -166,5 +166,104 @@ RSpec.describe Fhir::SearchParams do
       expect(query).not_to include("_count=")
       expect(query).to include("_offset=0")
     end
+
+    it "round-trips chained and _has clauses byte-for-byte" do
+      original = described_class.parse("subject:Patient.name=Yamada&encounter.status=finished&_has:Observation:patient:code=1234-5")
+
+      round_tripped = described_class.parse(original.to_query(offset: 0))
+
+      expect(round_tripped.clauses).to eq(original.clauses)
+    end
+
+    it "re-emits _summary, _elements, and _total in paging links" do
+      params = described_class.parse("status=active&_summary=data&_elements=name,gender&_total=none")
+
+      query = params.to_query(offset: 20)
+
+      expect(query).to include("_summary=data", "_elements=name,gender", "_total=none")
+      round_tripped = described_class.parse(query)
+      expect(round_tripped.summary).to eq("data")
+      expect(round_tripped.elements).to eq(%w[name gender])
+      expect(round_tripped.total_mode).to eq("none")
+    end
+  end
+
+  describe "Clause#chain" do
+    def clause_for(query)
+      described_class.parse(query).clauses.first
+    end
+
+    it "parses an untyped chain" do
+      chain = clause_for("subject.name=Yamada").chain
+
+      expect(chain.to_h).to include(base: "subject", target_type: nil, param: "name", tail_modifier: nil)
+    end
+
+    it "parses an untyped chain with a tail modifier" do
+      chain = clause_for("subject.name:exact=Yamada").chain
+
+      expect(chain.to_h).to include(base: "subject", target_type: nil, param: "name", tail_modifier: "exact")
+    end
+
+    it "parses a typed chain" do
+      chain = clause_for("subject:Patient.name=Yamada").chain
+
+      expect(chain.to_h).to include(base: "subject", target_type: "Patient", param: "name", tail_modifier: nil)
+    end
+
+    it "parses a typed chain with a tail modifier" do
+      chain = clause_for("subject:Patient.name:exact=Yamada").chain
+
+      expect(chain.to_h).to include(base: "subject", target_type: "Patient", param: "name", tail_modifier: "exact")
+    end
+
+    it "returns nil for plain and modifier-only clauses" do
+      expect(clause_for("name=Yamada").chain).to be_nil
+      expect(clause_for("name:exact=Yamada").chain).to be_nil
+      expect(clause_for("gender:missing=true").chain).to be_nil
+    end
+  end
+
+  describe "Clause#has" do
+    def clause_for(query)
+      described_class.parse(query).clauses.first
+    end
+
+    it "parses a _has clause" do
+      has = clause_for("_has:Observation:patient:code=1234-5").has
+
+      expect(has.to_h).to include(source_type: "Observation", ref_param: "patient", param: "code", tail_modifier: nil)
+    end
+
+    it "parses a _has clause with a tail modifier" do
+      has = clause_for("_has:Observation:patient:code:exact=1234-5").has
+
+      expect(has.to_h).to include(source_type: "Observation", ref_param: "patient", param: "code", tail_modifier: "exact")
+    end
+
+    it "returns nil for malformed _has and non-_has clauses" do
+      expect(clause_for("_has:Observation:patient=x").has).to be_nil
+      expect(clause_for("_has=x").has).to be_nil
+      expect(clause_for("subject.name=x").has).to be_nil
+    end
+  end
+
+  describe "#summary / #elements / #total_mode" do
+    it "exposes the shaping meta params and keeps them out of clauses" do
+      params = described_class.parse("status=active&_summary=count&_elements=name&_elements=gender,birthDate&_total=accurate")
+
+      expect(params.summary).to eq("count")
+      expect(params.elements).to eq(%w[name gender birthDate])
+      expect(params.total_mode).to eq("accurate")
+      expect(params.clauses.map(&:name)).to eq(%w[status])
+    end
+
+    it "returns nil/empty when absent" do
+      params = described_class.parse("status=active")
+
+      expect(params.summary).to be_nil
+      expect(params.elements).to eq([])
+      expect(params.total_mode).to be_nil
+    end
   end
 end

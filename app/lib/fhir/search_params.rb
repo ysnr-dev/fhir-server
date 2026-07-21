@@ -5,9 +5,43 @@ module Fhir
   # collapse to last-wins. Fhir::Search, IncludeResolver, and BundleBuilder all
   # consume this instead of a plain params Hash.
   class SearchParams
-    Clause = Struct.new(:name, :modifier, :values, keyword_init: true)
+    Clause = Struct.new(:name, :modifier, :values, keyword_init: true) do
+      Chain = Struct.new(:base, :target_type, :param, :tail_modifier, keyword_init: true)
+      Has = Struct.new(:source_type, :ref_param, :param, :tail_modifier, keyword_init: true)
 
-    META_NAMES = %w[_sort _count _offset _include _revinclude].freeze
+      # Interprets this clause as a chained reference search, or nil. The parser
+      # splits the raw key at the FIRST ":", so the four accepted shapes arrive as:
+      #   subject.name               -> name="subject.name",  modifier=nil
+      #   subject.name:exact         -> name="subject.name",  modifier="exact"
+      #   subject:Patient.name       -> name="subject",       modifier="Patient.name"
+      #   subject:Patient.name:exact -> name="subject",       modifier="Patient.name:exact"
+      # name/modifier stay untouched, so serialize_clause round-trips chains as-is.
+      def chain
+        if name.include?(".") && !name.start_with?("_")
+          base, _, param = name.partition(".")
+          Chain.new(base: base, target_type: nil, param: param, tail_modifier: modifier)
+        elsif modifier&.include?(".")
+          typed, _, tail_modifier = modifier.partition(":")
+          target_type, _, param = typed.partition(".")
+          Chain.new(base: name, target_type: target_type, param: param, tail_modifier: tail_modifier.presence)
+        end
+      end
+
+      # Interprets this clause as a reverse chain, or nil:
+      #   _has:Observation:patient:code       -> name="_has", modifier="Observation:patient:code"
+      #   _has:Observation:patient:code:exact -> tail modifier on the chained param
+      def has
+        return nil unless name == "_has" && modifier.present?
+
+        source_type, ref_param, rest = modifier.split(":", 3)
+        return nil if source_type.blank? || ref_param.blank? || rest.blank?
+
+        param, _, tail_modifier = rest.partition(":")
+        Has.new(source_type: source_type, ref_param: ref_param, param: param, tail_modifier: tail_modifier.presence)
+      end
+    end
+
+    META_NAMES = %w[_sort _count _offset _include _revinclude _summary _elements _total].freeze
 
     def self.parse(query_string)
       new(parse_pairs(query_string))
@@ -73,6 +107,18 @@ module Fhir
       last_unmodified_value("_offset")
     end
 
+    def summary
+      last_unmodified_value("_summary")
+    end
+
+    def elements
+      unmodified_clauses("_elements").flat_map(&:values).reject(&:blank?)
+    end
+
+    def total_mode
+      last_unmodified_value("_total")
+    end
+
     def includes
       unmodified_clauses("_include").flat_map(&:values)
     end
@@ -89,6 +135,9 @@ module Fhir
       parts = clauses.map { |c| serialize_clause(c) }
       parts << "_sort=#{escape(sort)}" if sort.present?
       parts << "_count=#{escape(count)}" if count.present?
+      parts << "_summary=#{escape(summary)}" if summary.present?
+      parts << "_elements=#{elements.map { |e| escape(e) }.join(',')}" if elements.any?
+      parts << "_total=#{escape(total_mode)}" if total_mode.present?
       parts.concat(unmodified_clauses("_include").map { |c| serialize_clause(c) })
       parts.concat(unmodified_clauses("_revinclude").map { |c| serialize_clause(c) })
       parts << "_offset=#{offset}"

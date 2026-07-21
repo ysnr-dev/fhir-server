@@ -33,14 +33,17 @@ module Fhir
         )
       end
 
-      result = searcher.call
-      case result.total
+      # filtered_scope (not #call) so result-shaping meta params in the criteria
+      # (_summary=count, _total=none, _count/_offset paging) can never distort
+      # the zero/one/many decision; two records are enough to detect :multiple.
+      records = searcher.filtered_scope.order(:id).limit(2).to_a
+      case records.length
       when 0 then Result.new(outcome: :none)
-      when 1 then Result.new(outcome: :one, record: result.records.first)
+      when 1 then Result.new(outcome: :one, record: records.first)
       else
         Result.new(
           outcome: :multiple,
-          diagnostics: "Multiple #{resource_type} resources (#{result.total}) match the conditional criteria"
+          diagnostics: "Multiple #{resource_type} resources match the conditional criteria"
         )
       end
     end
