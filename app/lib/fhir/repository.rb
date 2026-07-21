@@ -12,6 +12,10 @@ module Fhir
       end
     end
 
+    # One page of a type- or system-level history: newest versions first, with
+    # the pre-paging total for Bundle.total and pagination links.
+    HistoryPage = Struct.new(:versions, :total, :count, :offset, keyword_init: true)
+
     class << self
       # id: is accepted (rather than always generated internally) so Bundle transaction
       # processing can pre-assign an id before resolving urn:uuid references across entries.
@@ -33,6 +37,32 @@ module Fhir
 
       def version(resource_type, resource_id, version_id)
         new(resource_type).version(resource_id, version_id)
+      end
+
+      # Type-/system-level history are class methods (not instance ones like
+      # #history) because system-level history spans every resource type and so
+      # has no single registry entry to construct a Repository around.
+      def type_history(resource_type, since: nil, count:, offset:)
+        history_page(ResourceVersion.where(resource_type: resource_type), since: since, count: count, offset: offset)
+      end
+
+      def system_history(since: nil, count:, offset:)
+        history_page(ResourceVersion.all, since: since, count: count, offset: offset)
+      end
+
+      private
+
+      # `since` is inclusive ("at or after the given instant" per the spec).
+      # The bigint PK breaks last_updated ties so paging order is stable.
+      def history_page(scope, since:, count:, offset:)
+        scope = scope.where("last_updated >= ?", since) if since
+
+        HistoryPage.new(
+          versions: scope.order(last_updated: :desc, id: :desc).limit(count).offset(offset),
+          total: scope.count,
+          count: count,
+          offset: offset
+        )
       end
     end
 

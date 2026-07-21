@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   get "/metadata", to: "capability_statements#show"
+  get "/_history", to: "histories#index"
   post "/", to: "bundles#create"
 
   # One identical route set per supported FHIR resource type, all dispatched to
@@ -15,10 +16,15 @@ Rails.application.routes.draw do
       get    "/#{type}",                   to: "fhir_resources#index"
       post   "/#{type}",                   to: "fhir_resources#create"
       put    "/#{type}",                   to: "fhir_resources#conditional_update"
+      delete "/#{type}",                   to: "fhir_resources#conditional_destroy"
+      # The literal `_history` routes must precede `/#{type}/:id` so the
+      # segment "_history" is never captured as an :id.
+      get    "/#{type}/_history",          to: "fhir_resources#type_history"
       get    "/#{type}/:id/_history/:vid", to: "fhir_resources#vread"
       get    "/#{type}/:id/_history",      to: "fhir_resources#history"
       get    "/#{type}/:id",               to: "fhir_resources#show"
       put    "/#{type}/:id",               to: "fhir_resources#update"
+      patch  "/#{type}/:id",               to: "fhir_resources#patch_update"
       delete "/#{type}/:id",               to: "fhir_resources#destroy"
     end
   end

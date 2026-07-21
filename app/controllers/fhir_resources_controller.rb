@@ -39,8 +39,32 @@ class FhirResourcesController < ApplicationController
     render_operation_result(Fhir::Operation.conditional_update(resource_type, request.query_string, payload))
   end
 
+  # PATCH /{type}/:id -- JSON Patch (RFC 6902) only; FHIRPath patch is not
+  # supported, so any other media type is 415.
+  def patch_update
+    unless request.media_type == "application/json-patch+json"
+      return render_operation_outcome_single(
+        status: :unsupported_media_type,
+        severity: "error",
+        code: "not-supported",
+        diagnostics: "PATCH requires Content-Type: application/json-patch+json"
+      )
+    end
+
+    operations, parse_error = parse_patch_body
+    return render_bad_request(parse_error) if parse_error
+
+    render_operation_result(Fhir::Operation.patch(resource_type, params[:id], operations, if_match: if_match_version))
+  end
+
   def destroy
     render_operation_result(Fhir::Operation.delete(resource_type, params[:id]))
+  end
+
+  # DELETE /{type}?{criteria} -- conditional delete (single-match only), same
+  # criteria handling as conditional update.
+  def conditional_destroy
+    render_operation_result(Fhir::Operation.conditional_delete(resource_type, request.query_string))
   end
 
   def history
@@ -49,6 +73,20 @@ class FhirResourcesController < ApplicationController
     versions = Fhir::Repository.history(resource_type, @record.id)
     bundle = BundleBuilder.history(resource_id: @record.id, versions: versions, base_url: base_url, resource_type: resource_type)
     render_fhir_resource(bundle, status: :ok)
+  end
+
+  # GET /{type}/_history -- history of every resource of this type, newest first.
+  def type_history
+    history_params = parse_history_params
+    return if history_params.nil? # already rendered 400
+
+    page = Fhir::Repository.type_history(
+      resource_type, since: history_params.since, count: history_params.count, offset: history_params.offset
+    )
+    render_fhir_resource(
+      BundleBuilder.history_page(page: page, base_url: base_url, path: "#{resource_type}/_history", params: history_params),
+      status: :ok
+    )
   end
 
   def vread

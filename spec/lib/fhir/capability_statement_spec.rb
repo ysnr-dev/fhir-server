@@ -20,9 +20,9 @@ RSpec.describe Fhir::CapabilityStatement do
     )
   end
 
-  it "advertises transaction and batch at the server level" do
+  it "advertises transaction, batch, and history-system at the server level" do
     codes = statement["rest"].first["interaction"].map { |i| i["code"] }
-    expect(codes).to contain_exactly("transaction", "batch")
+    expect(codes).to contain_exactly("transaction", "batch", "history-system")
   end
 
   it "lists every registered resource type with its JP Core profile" do
@@ -35,7 +35,7 @@ RSpec.describe Fhir::CapabilityStatement do
 
   it "grants the full instance/type interaction set per resource" do
     codes = resource("Patient")["interaction"].map { |i| i["code"] }
-    expect(codes).to eq(%w[read vread update delete history-instance search-type create])
+    expect(codes).to eq(%w[read vread update patch delete history-instance history-type search-type create])
   end
 
   it "brackets the declared search params with _id and _lastUpdated" do

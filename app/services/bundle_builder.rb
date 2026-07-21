@@ -7,6 +7,14 @@ class BundleBuilder
     new(base_url, resource_type).history(resource_id: resource_id, versions: versions)
   end
 
+  # Type-/system-level history: entries span multiple resources (and, for the
+  # system level, multiple types), so each entry's type/id comes from its
+  # ResourceVersion row rather than from the builder. `path` is the request
+  # path the pagination links point back at ("Patient/_history" or "_history").
+  def self.history_page(page:, base_url:, path:, params:)
+    new(base_url, nil).history_page(page: page, path: path, params: params)
+  end
+
   def initialize(base_url, resource_type)
     @base_url = base_url
     @resource_type = resource_type
@@ -33,34 +41,59 @@ class BundleBuilder
   end
 
   def history(resource_id:, versions:)
-    entries = versions.reverse_each.map do |version|
-      entry = {
-        "fullUrl" => "#{base_url}/#{resource_type}/#{resource_id}",
-        "request" => {
-          "method" => version.version_id == 1 ? "POST" : (version.deleted ? "DELETE" : "PUT"),
-          "url" => "#{resource_type}/#{resource_id}"
-        },
-        "response" => {
-          "status" => version.deleted ? "410" : "200",
-          "etag" => %(W/"#{version.version_id}"),
-          "lastModified" => version.last_updated.utc.iso8601(3)
-        }
-      }
-      entry["resource"] = Fhir::Meta.apply(version.content, version_id: version.version_id, last_updated: version.last_updated) unless version.deleted
-      entry
-    end
-
     {
       "resourceType" => "Bundle",
       "type" => "history",
       "total" => versions.size,
-      "entry" => entries
+      "entry" => versions.reverse_each.map { |version| history_entry(version, resource_type: resource_type, resource_id: resource_id) }
+    }
+  end
+
+  def history_page(page:, path:, params:)
+    {
+      "resourceType" => "Bundle",
+      "type" => "history",
+      "total" => page.total,
+      "link" => history_links(page: page, path: path, params: params),
+      "entry" => page.versions.map { |version| history_entry(version, resource_type: version.resource_type, resource_id: version.resource_id) }
     }
   end
 
   private
 
   attr_reader :base_url, :resource_type
+
+  def history_entry(version, resource_type:, resource_id:)
+    entry = {
+      "fullUrl" => "#{base_url}/#{resource_type}/#{resource_id}",
+      "request" => {
+        "method" => version.version_id == 1 ? "POST" : (version.deleted ? "DELETE" : "PUT"),
+        "url" => "#{resource_type}/#{resource_id}"
+      },
+      "response" => {
+        "status" => version.deleted ? "410" : "200",
+        "etag" => %(W/"#{version.version_id}"),
+        "lastModified" => version.last_updated.utc.iso8601(3)
+      }
+    }
+    entry["resource"] = Fhir::Meta.apply(version.content, version_id: version.version_id, last_updated: version.last_updated) unless version.deleted
+    entry
+  end
+
+  def history_links(page:, path:, params:)
+    page_url = ->(offset) { "#{base_url}/#{path}?#{params.to_query(offset: offset)}" }
+    links = [{ "relation" => "self", "url" => page_url.call(page.offset) }]
+
+    if page.offset.positive?
+      links << { "relation" => "previous", "url" => page_url.call([page.offset - page.count, 0].max) }
+    end
+
+    if page.offset + page.count < page.total
+      links << { "relation" => "next", "url" => page_url.call(page.offset + page.count) }
+    end
+
+    links
+  end
 
   # Renders `_include`/`_revinclude` resources as `search.mode = "include"`
   # entries, skipping any whose fullUrl already appears (as a match or an earlier

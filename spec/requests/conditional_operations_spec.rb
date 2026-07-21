@@ -108,6 +108,74 @@ RSpec.describe "Conditional operations", type: :request do
     end
   end
 
+  describe "conditional delete (DELETE /Patient?criteria)" do
+    it "deletes the single matching resource with 204" do
+      post "/Patient", params: patient_payload("cd-1"), as: :json
+      patient_id = JSON.parse(response.body)["id"]
+
+      delete conditional_put_url("cd-1")
+
+      expect(response).to have_http_status(:no_content)
+      expect(Patient.find(patient_id).deleted).to be(true)
+      expect(ResourceVersion.where(resource_id: patient_id, deleted: true).count).to eq(1)
+
+      get "/Patient/#{patient_id}"
+      expect(response).to have_http_status(:gone)
+    end
+
+    it "returns 204 when nothing matches, and is idempotent" do
+      delete conditional_put_url("cd-2")
+      expect(response).to have_http_status(:no_content)
+
+      post "/Patient", params: patient_payload("cd-2"), as: :json
+      delete conditional_put_url("cd-2")
+      expect(response).to have_http_status(:no_content)
+
+      # The deleted resource no longer matches, so a repeat is still 204.
+      delete conditional_put_url("cd-2")
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns 412 when multiple resources match, deleting nothing" do
+      post "/Patient", params: patient_payload("cd-3"), as: :json
+      post "/Patient", params: patient_payload("cd-3"), as: :json
+
+      delete conditional_put_url("cd-3")
+
+      expect(response).to have_http_status(:precondition_failed)
+      expect(Patient.where(deleted: false).count).to eq(2)
+    end
+
+    it "returns 400 for unrecognized or empty criteria" do
+      delete "/Patient?bogus-param=1"
+      expect(response).to have_http_status(:bad_request)
+
+      delete "/Patient"
+      expect(response).to have_http_status(:bad_request)
+    end
+  end
+
+  describe "Bundle transaction with conditional delete entries" do
+    it "deletes via DELETE with search criteria in the entry url" do
+      post "/Patient", params: patient_payload("bd-1"), as: :json
+      patient_id = JSON.parse(response.body)["id"]
+
+      bundle = {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          { "request" => { "method" => "DELETE", "url" => "Patient?identifier=#{MRN_SYSTEM}|bd-1" } }
+        ]
+      }
+
+      post "/", params: bundle, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["entry"][0]["response"]["status"]).to start_with("204")
+      expect(Patient.find(patient_id).deleted).to be(true)
+    end
+  end
+
   describe "Bundle transaction with ifNoneExist" do
     def transaction_bundle(mrn)
       {

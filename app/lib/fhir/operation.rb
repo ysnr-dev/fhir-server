@@ -30,6 +30,14 @@ module Fhir
       new(resource_type).delete(id)
     end
 
+    def self.conditional_delete(resource_type, criteria)
+      new(resource_type).conditional_delete(criteria)
+    end
+
+    def self.patch(resource_type, id, operations, if_match: nil)
+      new(resource_type).patch(id, operations, if_match: if_match)
+    end
+
     def self.search(resource_type, query_string, base_url:)
       new(resource_type).search(query_string, base_url: base_url)
     end
@@ -137,6 +145,33 @@ module Fhir
       end
     end
 
+    # PATCH /{type}/:id with a JSON Patch (RFC 6902) document. The patch is
+    # applied to the current content and the result goes through the same
+    # validation/versioning path as a full update. Unlike PUT, a deleted
+    # resource is 410 Gone: there is no current content to patch. A patch that
+    # is well-formed but cannot be applied (missing path, failed `test` op) is
+    # 422 per the FHIR spec, rather than RFC 5789's 409.
+    def patch(id, operations, if_match: nil)
+      return unsupported_type_result unless entry
+
+      record = entry[:model].find_by(id: id)
+      return not_found_result(id) unless record
+      return gone_result(id) if record.deleted?
+
+      patched = JsonPatch.apply(record.content, operations)
+      update(id, patched, if_match: if_match)
+    rescue JsonPatch::InvalidPatch => e
+      Result.new(
+        status: :bad_request,
+        outcome: Fhir::OperationOutcome.single(severity: "error", code: "structure", diagnostics: e.message)
+      )
+    rescue JsonPatch::ApplyFailure => e
+      Result.new(
+        status: :unprocessable_entity,
+        outcome: Fhir::OperationOutcome.single(severity: "error", code: "processing", diagnostics: e.message)
+      )
+    end
+
     def delete(id)
       return unsupported_type_result unless entry
 
@@ -146,6 +181,25 @@ module Fhir
 
       repository.delete(record)
       Result.new(status: :no_content, resource_id: id)
+    end
+
+    # DELETE /{type}?{criteria}: deletes the single resource matching the
+    # criteria. No match is a success (204) -- DELETE is idempotent, and with
+    # criteria "never existed" and "already deleted" are indistinguishable --
+    # while ambiguous criteria fail with 412 (this server only supports
+    # single-match conditional delete).
+    def conditional_delete(criteria)
+      return unsupported_type_result unless entry
+
+      match = ConditionalMatch.call(resource_type, criteria)
+      case match.outcome
+      when :invalid, :multiple
+        conditional_failure_result(match)
+      when :none
+        Result.new(status: :no_content)
+      else
+        delete(match.record.id)
+      end
     end
 
     def search(query_string, base_url:)

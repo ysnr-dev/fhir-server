@@ -14,14 +14,26 @@ RSpec.describe "CapabilityStatement", type: :request do
       expect(resource_types).to include("Patient", "MedicationRequest", "ServiceRequest", "Practitioner", "Organization")
 
       system_interactions = body["rest"].first["interaction"].map { |i| i["code"] }
-      expect(system_interactions).to include("transaction", "batch")
+      expect(system_interactions).to include("transaction", "batch", "history-system")
     end
 
-    it "advertises conditional create and conditional update for every resource" do
+    it "advertises patch and history-type for every resource" do
       get "/metadata"
 
       resources = JSON.parse(response.body)["rest"].first["resource"]
-      expect(resources).to all(include("conditionalCreate" => true, "conditionalUpdate" => true))
+      resources.each do |resource|
+        codes = resource["interaction"].map { |i| i["code"] }
+        expect(codes).to include("patch", "history-type", "history-instance")
+      end
+    end
+
+    it "advertises conditional create/update/delete for every resource" do
+      get "/metadata"
+
+      resources = JSON.parse(response.body)["rest"].first["resource"]
+      expect(resources).to all(
+        include("conditionalCreate" => true, "conditionalUpdate" => true, "conditionalDelete" => "single")
+      )
     end
   end
 end

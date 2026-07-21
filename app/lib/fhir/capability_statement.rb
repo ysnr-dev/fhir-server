@@ -3,8 +3,8 @@ module Fhir
   # advertised resources, profiles, and search parameters stay in sync with what
   # the server actually implements instead of being hand-maintained.
   module CapabilityStatement
-    SERVER_INTERACTIONS = %w[transaction batch].freeze
-    RESOURCE_INTERACTIONS = %w[read vread update delete history-instance search-type create].freeze
+    SERVER_INTERACTIONS = %w[transaction batch history-system].freeze
+    RESOURCE_INTERACTIONS = %w[read vread update patch delete history-instance history-type search-type create].freeze
 
     # Maps a search-definition param type (see Fhir::SearchDefinitions) to its
     # FHIR search parameter type code.
@@ -47,6 +47,7 @@ module Fhir
         "interaction" => RESOURCE_INTERACTIONS.map { |code| { "code" => code } },
         "conditionalCreate" => true,
         "conditionalUpdate" => true,
+        "conditionalDelete" => "single",
         "searchParam" => search_params(entry.fetch(:search_params))
       }
     end

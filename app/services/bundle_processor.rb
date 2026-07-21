@@ -2,6 +2,10 @@ class BundleProcessor
   VALID_TYPES = %w[transaction batch].freeze
   # Transactions apply mutations in a fixed order regardless of entry order,
   # so references created earlier in the request are resolvable later.
+  # PATCH has its ordering tier reserved here, but PATCH entries themselves are
+  # not yet supported: FHIR requires the patch document to arrive as a Binary
+  # resource (base64 data, contentType application/json-patch+json), which
+  # dispatch_entry does not decode.
   PROCESSING_ORDER = %w[DELETE POST PUT PATCH GET].freeze
 
   # A conditional reference: "Type?criteria" (vs the literal "Type/id").
@@ -155,9 +159,13 @@ class BundleProcessor
         entry_error(:bad_request, "structure", "PUT requires an id or search criteria in Bundle.entry.request.url")
       end
     when "DELETE"
-      return entry_error(:bad_request, "structure", "DELETE requires an id in Bundle.entry.request.url") if id.blank?
-
-      Fhir::Operation.delete(resource_type, id)
+      if id.present?
+        Fhir::Operation.delete(resource_type, id)
+      elsif query_string.present?
+        Fhir::Operation.conditional_delete(resource_type, query_string)
+      else
+        entry_error(:bad_request, "structure", "DELETE requires an id or search criteria in Bundle.entry.request.url")
+      end
     else
       entry_error(:bad_request, "not-supported", "Unsupported Bundle.entry.request.method '#{method}'")
     end
