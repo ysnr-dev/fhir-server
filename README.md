@@ -178,6 +178,23 @@ curl -s http://localhost:3000/Patient -H "Authorization: Bearer {access_token}"
 スコープは SMART の system 形式（`system/*.read` / `system/Patient.write` / `system/*.*` など）で、
 リソース型 × read/write 単位でアクセスを制御します。トークンの有効期限は 1 時間です。
 
+クライアント認証は共有シークレット（client_secret_basic / client_secret_post）に加え、
+SMART 標準の **private_key_jwt**（RS384 / ES384 署名の JWT クライアントアサーション）に対応しています。
+非対称鍵クライアントは JWKS ファイルを指定して登録します（シークレットは発行されません）:
+
+```bash
+bin/rails "fhir:register_client[my-mcp-server,system/*.read,path/to/jwks.json]"
+
+# トークン取得（クライアントは秘密鍵で署名した JWT を提示）
+curl -s -X POST http://localhost:3000/oauth/token \
+  -d grant_type=client_credentials \
+  -d client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer \
+  -d client_assertion={signed_jwt}
+```
+
+アサーションの要件（iss=sub=client_id、aud=トークンエンドポイント URL、exp は 5 分以内、jti 必須）を検証し、
+使用済み jti は exp まで記録してリプレイを防止します。
+
 ### 対応リソース
 
 全 21 リソースが同一のエンドポイント群（後述）を持ちます。

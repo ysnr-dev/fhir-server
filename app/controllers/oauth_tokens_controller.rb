@@ -10,10 +10,10 @@ class OauthTokensController < ApplicationController
                          "grant_type must be 'client_credentials', got #{params[:grant_type].inspect}")
     end
 
-    client = authenticate_client
+    client, auth_error = resolve_client
     unless client
       response.set_header("WWW-Authenticate", %(Basic realm="fhir-server")) if basic_credentials
-      return oauth_error(:unauthorized, "invalid_client", "Client authentication failed")
+      return oauth_error(:unauthorized, "invalid_client", auth_error)
     end
 
     scopes = granted_scopes(client)
@@ -30,11 +30,20 @@ class OauthTokensController < ApplicationController
 
   private
 
-  def authenticate_client
-    if basic_credentials
-      OauthClient.authenticate(*basic_credentials)
+  # Returns [client, nil] or [nil, error_description]. A request presenting a
+  # client_assertion is authenticated via private_key_jwt; otherwise the
+  # symmetric secret paths (Basic / body params) apply.
+  def resolve_client
+    if params[:client_assertion].present? || params[:client_assertion_type].present?
+      result = Fhir::ClientAssertion.call(
+        params[:client_assertion],
+        assertion_type: params[:client_assertion_type],
+        audience: "#{base_url}/oauth/token"
+      )
+      result.valid? ? [result.client, nil] : [nil, result.error_description]
     else
-      OauthClient.authenticate(params[:client_id], params[:client_secret])
+      client = basic_credentials ? OauthClient.authenticate(*basic_credentials) : OauthClient.authenticate(params[:client_id], params[:client_secret])
+      client ? [client, nil] : [nil, "Client authentication failed"]
     end
   end
 

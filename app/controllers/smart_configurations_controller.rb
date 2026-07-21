@@ -6,9 +6,10 @@ class SmartConfigurationsController < ApplicationController
     render json: {
       "token_endpoint" => "#{base_url}/oauth/token",
       "grant_types_supported" => ["client_credentials"],
-      "token_endpoint_auth_methods_supported" => %w[client_secret_basic client_secret_post],
+      "token_endpoint_auth_methods_supported" => %w[private_key_jwt client_secret_basic client_secret_post],
+      "token_endpoint_auth_signing_alg_values_supported" => Fhir::ClientAssertion::ALGORITHMS,
       "scopes_supported" => %w[system/*.read system/*.write system/*.*],
-      "capabilities" => ["client-confidential-symmetric"]
+      "capabilities" => %w[client-confidential-asymmetric client-confidential-symmetric]
     }
   end
 end

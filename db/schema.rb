@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_22_000002) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_22_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -68,6 +68,15 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_22_000002) do
     t.index ["client_id"], name: "index_audit_events_on_client_id"
     t.index ["occurred_at"], name: "index_audit_events_on_occurred_at"
     t.index ["resource_type", "resource_id"], name: "index_audit_events_on_resource_type_and_resource_id"
+  end
+
+  create_table "client_assertion_jtis", force: :cascade do |t|
+    t.string "oauth_client_id", null: false
+    t.string "jti", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "created_at", null: false
+    t.index ["expires_at"], name: "index_client_assertion_jtis_on_expires_at"
+    t.index ["oauth_client_id", "jti"], name: "index_client_assertion_jtis_on_oauth_client_id_and_jti", unique: true
   end
 
   create_table "conditions", id: :string, force: :cascade do |t|
@@ -366,10 +375,11 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_22_000002) do
 
   create_table "oauth_clients", id: :string, force: :cascade do |t|
     t.string "name", null: false
-    t.string "secret_digest", null: false
+    t.string "secret_digest"
     t.string "scopes", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "jwks"
   end
 
   create_table "observations", id: :string, force: :cascade do |t|
