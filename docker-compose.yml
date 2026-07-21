@@ -25,6 +25,9 @@ services:
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: password
       RAILS_ENV: development
+      # SMART Backend Services 認証の有効化トグル。既定は無効。
+      # 有効化する場合: FHIR_AUTH_ENABLED=true docker compose up
+      FHIR_AUTH_ENABLED: ${FHIR_AUTH_ENABLED:-false}
     ports:
       - "3000:3000"
     volumes:

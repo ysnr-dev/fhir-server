@@ -35,6 +35,22 @@ docker compose up --build -d
 curl -s http://localhost:3000/metadata
 ```
 
+### 認証の有効化（任意）
+
+デフォルトでは認証なしで起動します。SMART Backend Services 認証を有効にする場合は、
+`FHIR_AUTH_ENABLED` をホスト側で指定して起動します（既定は `false`）。
+
+```bash
+# 認証あり
+FHIR_AUTH_ENABLED=true docker compose up
+
+# 認証なし（既定）
+docker compose up
+```
+
+プロジェクトルートに `.env` を置き `FHIR_AUTH_ENABLED=true` と記述しても、Docker Compose が
+自動で読み込みます。詳細な利用手順は [認証（SMART Backend Services）](#認証smart-backend-services) を参照してください。
+
 ### コンテナ内でテスト実行
 
 ```bash
@@ -53,6 +69,7 @@ docker compose down -v    # DBデータも含めて削除
 - サービス: `web`（Rails, ホスト `3000` 番）/ `db`（PostgreSQL 18, ホスト `5433` 番 → コンテナ `5432`）
   - ホスト側 `5433` はローカルの Homebrew PostgreSQL(5432) との競合を避けるための割り当て
 - DB接続情報は `web` に環境変数で注入（`DATABASE_HOST=db` / `DATABASE_USERNAME=postgres` / `DATABASE_PASSWORD=password`）
+- 認証トグル `FHIR_AUTH_ENABLED` も `web` に注入（既定 `false`。ホストの環境変数 / `.env` で上書き可能）
 - アプリコードはボリュームマウントされるため、ソース変更は再ビルドなしで反映されます
   （`Gemfile` を変更した場合のみ `docker compose build` で再ビルド）
 
