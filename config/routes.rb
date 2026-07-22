@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # LB用ヘルスチェック(認証・監査・SSL/Host検査の対象外)
+  get "/up", to: "health#show"
+
   get "/metadata", to: "capability_statements#show"
   get "/.well-known/smart-configuration", to: "smart_configurations#show"
   post "/oauth/token", to: "oauth_tokens#create"
