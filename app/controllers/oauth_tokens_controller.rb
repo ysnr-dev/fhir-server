@@ -2,6 +2,8 @@
 # client_credentials). Client authentication: HTTP Basic or client_id /
 # client_secret body params. Always public; errors follow RFC 6749 section 5.2.
 class OauthTokensController < ApplicationController
+  include OauthClientAuthentication
+
   before_action { response.set_header("Cache-Control", "no-store") }
 
   def create
@@ -30,29 +32,6 @@ class OauthTokensController < ApplicationController
 
   private
 
-  # Returns [client, nil] or [nil, error_description]. A request presenting a
-  # client_assertion is authenticated via private_key_jwt; otherwise the
-  # symmetric secret paths (Basic / body params) apply.
-  def resolve_client
-    if params[:client_assertion].present? || params[:client_assertion_type].present?
-      result = Fhir::ClientAssertion.call(
-        params[:client_assertion],
-        assertion_type: params[:client_assertion_type],
-        audience: "#{base_url}/oauth/token"
-      )
-      result.valid? ? [result.client, nil] : [nil, result.error_description]
-    else
-      client = basic_credentials ? OauthClient.authenticate(*basic_credentials) : OauthClient.authenticate(params[:client_id], params[:client_secret])
-      client ? [client, nil] : [nil, "Client authentication failed"]
-    end
-  end
-
-  def basic_credentials
-    return nil unless request.authorization&.match?(/\ABasic /i)
-
-    @basic_credentials ||= Base64.decode64(request.authorization.split(" ", 2).last.to_s).split(":", 2)
-  end
-
   # No scope param -> everything the client is registered for; otherwise the
   # request must be a subset of the registration (no silent narrowing).
   def granted_scopes(client)
@@ -61,9 +40,5 @@ class OauthTokensController < ApplicationController
 
     valid = requested.all? { |scope| Fhir::Scopes.valid?(scope) } && (requested - client.allowed_scopes).empty?
     valid ? requested : nil
-  end
-
-  def oauth_error(status, error, description)
-    render json: { error: error, error_description: description }, status: status
   end
 end

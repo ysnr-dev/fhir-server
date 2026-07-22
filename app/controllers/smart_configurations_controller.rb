@@ -5,6 +5,7 @@ class SmartConfigurationsController < ApplicationController
   def show
     render json: {
       "token_endpoint" => "#{base_url}/oauth/token",
+      "revocation_endpoint" => "#{base_url}/oauth/revoke",
       "grant_types_supported" => ["client_credentials"],
       "token_endpoint_auth_methods_supported" => %w[private_key_jwt client_secret_basic client_secret_post],
       "token_endpoint_auth_signing_alg_values_supported" => Fhir::ClientAssertion::ALGORITHMS,

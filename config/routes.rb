@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   get "/metadata", to: "capability_statements#show"
   get "/.well-known/smart-configuration", to: "smart_configurations#show"
   post "/oauth/token", to: "oauth_tokens#create"
+  post "/oauth/revoke", to: "oauth_revocations#create"
   get "/_history", to: "histories#index"
   # Server-generated audit trail: read-only by design (no write routes).
   get "/AuditEvent", to: "audit_events#index"

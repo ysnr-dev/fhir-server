@@ -23,6 +23,7 @@ class ApplicationController < ActionController::API
 
     token = AccessToken.authenticate(raw)
     return render_unauthorized("Invalid access token") unless token
+    return render_unauthorized("Access token revoked") if token.revoked?
     return render_unauthorized("Access token expired", issue_code: "expired") if token.expired?
 
     # Remembered before the scope check so denied (403) requests are still

@@ -29,6 +29,10 @@ class AccessToken < ApplicationRecord
     expires_at <= Time.current
   end
 
+  def revoked?
+    revoked_at.present?
+  end
+
   def scope_set
     @scope_set ||= Fhir::Scopes.new(scopes.split)
   end

@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_22_000004) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_22_000005) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension "pg_catalog.plpgsql"
 
   create_table "access_tokens", force: :cascade do |t|
     t.string "token_digest", null: false
@@ -21,6 +21,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_22_000004) do
     t.datetime "expires_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "revoked_at"
+    t.index ["expires_at"], name: "index_access_tokens_on_expires_at"
     t.index ["oauth_client_id"], name: "index_access_tokens_on_oauth_client_id"
     t.index ["token_digest"], name: "index_access_tokens_on_token_digest", unique: true
   end
