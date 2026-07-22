@@ -27,7 +27,7 @@ RSpec.describe "MedicationDispenses", type: :request do
 
       post "/MedicationDispense", params: valid_medication_dispense_payload(subject_id: subject_id).except("status"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when medication[x] is missing" do
@@ -36,13 +36,13 @@ RSpec.describe "MedicationDispenses", type: :request do
       post "/MedicationDispense",
            params: valid_medication_dispense_payload(subject_id: subject_id).except("medicationCodeableConcept"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when subject references a non-existent patient" do
       post "/MedicationDispense", params: valid_medication_dispense_payload(subject_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 400 when resourceType does not match" do

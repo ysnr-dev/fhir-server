@@ -26,7 +26,7 @@ RSpec.describe "ImagingStudies", type: :request do
 
       post "/ImagingStudy", params: valid_imaging_study_payload(subject_id: subject_id).except("status"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 for an invalid status" do
@@ -34,13 +34,13 @@ RSpec.describe "ImagingStudies", type: :request do
 
       post "/ImagingStudy", params: valid_imaging_study_payload(subject_id: subject_id, status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when subject references a non-existent patient" do
       post "/ImagingStudy", params: valid_imaging_study_payload(subject_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

@@ -35,7 +35,7 @@ RSpec.describe "ServiceRequests", type: :request do
 
       post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id).except("status"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 for an invalid intent" do
@@ -43,13 +43,13 @@ RSpec.describe "ServiceRequests", type: :request do
 
       post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id, intent: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when subject references a non-existent patient" do
       post "/ServiceRequest", params: valid_service_request_payload(subject_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 400 when resourceType does not match" do

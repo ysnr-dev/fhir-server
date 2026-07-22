@@ -23,11 +23,11 @@ RSpec.describe "DocumentReference", type: :request do
 
       post "/DocumentReference",
            params: valid_document_reference_payload(subject_id: patient_id).except("status"), as: :json
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
 
       post "/DocumentReference",
            params: valid_document_reference_payload(subject_id: patient_id, status: "draft"), as: :json
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when content is missing or lacks an attachment" do
@@ -35,11 +35,11 @@ RSpec.describe "DocumentReference", type: :request do
 
       post "/DocumentReference",
            params: valid_document_reference_payload(subject_id: patient_id).except("content"), as: :json
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
 
       post "/DocumentReference",
            params: valid_document_reference_payload(subject_id: patient_id, content: [{}]), as: :json
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(JSON.parse(response.body)["issue"].first["expression"]).to include("DocumentReference.content[0].attachment")
     end
 
@@ -49,7 +49,7 @@ RSpec.describe "DocumentReference", type: :request do
       post "/DocumentReference",
            params: valid_document_reference_payload(subject_id: patient_id, docStatus: "draft"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

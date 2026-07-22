@@ -16,7 +16,7 @@ RSpec.describe "PractitionerRoles", type: :request do
     it "returns 422 for a non-boolean active" do
       post "/PractitionerRole", params: valid_practitioner_role_payload(active: "yes"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

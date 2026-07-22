@@ -27,7 +27,7 @@ RSpec.describe "Immunizations", type: :request do
 
       post "/Immunization", params: valid_immunization_payload(patient_id: patient_id).except("vaccineCode"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 for an invalid status" do
@@ -35,13 +35,13 @@ RSpec.describe "Immunizations", type: :request do
 
       post "/Immunization", params: valid_immunization_payload(patient_id: patient_id, status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when patient references a non-existent patient" do
       post "/Immunization", params: valid_immunization_payload(patient_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

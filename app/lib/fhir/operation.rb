@@ -6,7 +6,10 @@ module Fhir
   class Operation
     Result = Struct.new(:status, :resource, :location_path, :version_id, :outcome, :resource_id, keyword_init: true) do
       def success?
-        Rack::Utils::SYMBOL_TO_STATUS_CODE[status].to_i < 400
+        # Rack::Utils.status_code (not the SYMBOL_TO_STATUS_CODE hash) so renamed
+        # symbols (e.g. Rack 3's :unprocessable_entity -> :unprocessable_content)
+        # resolve through Rack's deprecation shim instead of silently mapping to 0.
+        Rack::Utils.status_code(status) < 400
       end
     end
 
@@ -171,7 +174,7 @@ module Fhir
       )
     rescue JsonPatch::ApplyFailure => e
       Result.new(
-        status: :unprocessable_entity,
+        status: :unprocessable_content,
         outcome: Fhir::OperationOutcome.single(severity: "error", code: "processing", diagnostics: e.message)
       )
     end
@@ -305,7 +308,7 @@ module Fhir
     end
 
     def validation_result(validation)
-      Result.new(status: :unprocessable_entity, outcome: Fhir::OperationOutcome.build(validation.issues))
+      Result.new(status: :unprocessable_content, outcome: Fhir::OperationOutcome.build(validation.issues))
     end
 
     # Maps a failed ConditionalMatch to its HTTP result: unusable criteria are

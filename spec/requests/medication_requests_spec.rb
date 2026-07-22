@@ -27,7 +27,7 @@ RSpec.describe "MedicationRequests", type: :request do
 
       post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id).except("status"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 for an invalid status" do
@@ -35,7 +35,7 @@ RSpec.describe "MedicationRequests", type: :request do
 
       post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id, status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when intent is missing" do
@@ -43,7 +43,7 @@ RSpec.describe "MedicationRequests", type: :request do
 
       post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id).except("intent"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when medicationCodeableConcept is missing" do
@@ -51,7 +51,7 @@ RSpec.describe "MedicationRequests", type: :request do
 
       post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id).except("medicationCodeableConcept"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when medicationReference is used instead of medicationCodeableConcept" do
@@ -61,13 +61,13 @@ RSpec.describe "MedicationRequests", type: :request do
 
       post "/MedicationRequest", params: payload, as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when subject references a non-existent patient" do
       post "/MedicationRequest", params: valid_medication_request_payload(subject_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when authoredOn is missing" do
@@ -75,7 +75,7 @@ RSpec.describe "MedicationRequests", type: :request do
 
       post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id).except("authoredOn"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 400 when resourceType does not match" do

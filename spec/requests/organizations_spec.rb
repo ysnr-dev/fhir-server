@@ -30,7 +30,7 @@ RSpec.describe "Organizations", type: :request do
     it "returns 422 when both identifier and name are absent (org-1)" do
       post "/Organization", params: valid_organization_payload.except("identifier", "name"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       body = JSON.parse(response.body)
       expect(body["issue"].first["code"]).to eq("invariant")
     end

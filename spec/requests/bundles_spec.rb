@@ -128,7 +128,7 @@ RSpec.describe "Bundles", type: :request do
         ]
       }, as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       body = JSON.parse(response.body)
       expect(body["resourceType"]).to eq("OperationOutcome")
       expect(body["issue"].first["expression"].first).to eq("Bundle.entry[1]")
@@ -140,13 +140,13 @@ RSpec.describe "Bundles", type: :request do
     it "returns 422 for an unsupported Bundle.type" do
       post "/", params: { "resourceType" => "Bundle", "type" => "document", "entry" => [] }, as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when entry is empty" do
       post "/", params: { "resourceType" => "Bundle", "type" => "transaction", "entry" => [] }, as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

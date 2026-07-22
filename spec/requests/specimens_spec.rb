@@ -27,13 +27,13 @@ RSpec.describe "Specimens", type: :request do
 
       post "/Specimen", params: valid_specimen_payload(subject_id: subject_id, status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when subject references a non-existent patient" do
       post "/Specimen", params: valid_specimen_payload(subject_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

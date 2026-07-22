@@ -19,13 +19,13 @@ RSpec.describe "Medications", type: :request do
     it "returns 422 for an invalid status" do
       post "/Medication", params: valid_medication_payload(status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when code is missing" do
       post "/Medication", params: valid_medication_payload.except("code"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 400 when resourceType does not match" do

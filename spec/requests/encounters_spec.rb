@@ -16,13 +16,13 @@ RSpec.describe "Encounters", type: :request do
     it "returns 422 when status is missing" do
       post "/Encounter", params: valid_encounter_payload.except("status"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when class is missing" do
       post "/Encounter", params: valid_encounter_payload.except("class"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

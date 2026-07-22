@@ -24,7 +24,7 @@ RSpec.describe "Practitioners", type: :request do
     it "returns 422 for an invalid gender" do
       post "/Practitioner", params: valid_practitioner_payload(gender: "invalid"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 400 when resourceType does not match" do

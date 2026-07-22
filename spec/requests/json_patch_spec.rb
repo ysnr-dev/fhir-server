@@ -74,7 +74,7 @@ RSpec.describe "JSON Patch (PATCH /{type}/:id)", type: :request do
       { "op" => "replace", "path" => "/gender", "value" => "other" }
     ])
 
-    expect(response).to have_http_status(:unprocessable_entity)
+    expect(response).to have_http_status(:unprocessable_content)
     expect(JSON.parse(response.body)["issue"][0]["code"]).to eq("processing")
 
     get "/Patient/#{id}"
@@ -88,7 +88,7 @@ RSpec.describe "JSON Patch (PATCH /{type}/:id)", type: :request do
 
     patch_patient(id, [{ "op" => "remove", "path" => "/maritalStatus" }])
 
-    expect(response).to have_http_status(:unprocessable_entity)
+    expect(response).to have_http_status(:unprocessable_content)
   end
 
   it "returns 400 when the patch changes resourceType" do
@@ -104,7 +104,7 @@ RSpec.describe "JSON Patch (PATCH /{type}/:id)", type: :request do
 
     patch_patient(id, [{ "op" => "replace", "path" => "/gender", "value" => "invalid-gender" }])
 
-    expect(response).to have_http_status(:unprocessable_entity)
+    expect(response).to have_http_status(:unprocessable_content)
   end
 
   it "honors If-Match: applies on the current version, 412 on a stale one" do

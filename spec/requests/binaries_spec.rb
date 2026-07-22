@@ -12,13 +12,13 @@ RSpec.describe "Binary", type: :request do
     it "returns 422 when contentType is missing" do
       post "/Binary", params: valid_binary_payload.except("contentType"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when data is not valid base64" do
       post "/Binary", params: valid_binary_payload(data: "not base64!!"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(JSON.parse(response.body)["issue"].first["expression"]).to include("Binary.data")
     end
   end

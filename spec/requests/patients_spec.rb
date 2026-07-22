@@ -21,7 +21,7 @@ RSpec.describe "Patients", type: :request do
     it "returns 422 when identifier is missing (JP Core 1..*)" do
       post "/Patient", params: valid_patient_payload.except("identifier"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       body = JSON.parse(response.body)
       expect(body["resourceType"]).to eq("OperationOutcome")
       expect(body["issue"]).to include(hash_including("code" => "required"))
@@ -30,7 +30,7 @@ RSpec.describe "Patients", type: :request do
     it "returns 422 for an invalid gender value" do
       post "/Patient", params: valid_patient_payload(gender: "invalid"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       body = JSON.parse(response.body)
       expect(body["issue"]).to include(hash_including("code" => "value"))
     end
@@ -38,13 +38,13 @@ RSpec.describe "Patients", type: :request do
     it "returns 422 for a malformed birthDate" do
       post "/Patient", params: valid_patient_payload(birthDate: "not-a-date"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 for an impossible calendar date" do
       post "/Patient", params: valid_patient_payload(birthDate: "2020-13-40"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 400 when resourceType does not match" do
@@ -135,7 +135,7 @@ RSpec.describe "Patients", type: :request do
 
       put "/Patient/#{id}", params: valid_patient_payload(gender: "invalid"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

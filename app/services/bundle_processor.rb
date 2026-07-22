@@ -45,7 +45,7 @@ class BundleProcessor
 
   def type_error
     Response.new(
-      status: :unprocessable_entity,
+      status: :unprocessable_content,
       body: Fhir::OperationOutcome.single(
         severity: "error",
         code: "value",
@@ -56,7 +56,7 @@ class BundleProcessor
 
   def entries_error
     Response.new(
-      status: :unprocessable_entity,
+      status: :unprocessable_content,
       body: Fhir::OperationOutcome.single(
         severity: "error",
         code: "required",

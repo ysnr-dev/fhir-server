@@ -18,7 +18,7 @@ RSpec.describe "Locations", type: :request do
     it "returns 422 for an invalid status" do
       post "/Location", params: valid_location_payload(status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 400 when resourceType does not match" do

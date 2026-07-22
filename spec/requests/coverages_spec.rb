@@ -35,7 +35,7 @@ RSpec.describe "Coverages", type: :request do
       post "/Coverage",
            params: valid_coverage_payload(beneficiary_id: beneficiary_id, payor_id: payor_id).except("payor"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 for an invalid status" do
@@ -45,7 +45,7 @@ RSpec.describe "Coverages", type: :request do
       post "/Coverage",
            params: valid_coverage_payload(beneficiary_id: beneficiary_id, payor_id: payor_id, status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when beneficiary references a non-existent patient" do
@@ -54,7 +54,7 @@ RSpec.describe "Coverages", type: :request do
       post "/Coverage",
            params: valid_coverage_payload(beneficiary_id: "does-not-exist", payor_id: payor_id), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

@@ -27,7 +27,7 @@ RSpec.describe "Procedures", type: :request do
 
       post "/Procedure", params: valid_procedure_payload(subject_id: subject_id).except("status"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 for an invalid status" do
@@ -35,13 +35,13 @@ RSpec.describe "Procedures", type: :request do
 
       post "/Procedure", params: valid_procedure_payload(subject_id: subject_id, status: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when subject references a non-existent patient" do
       post "/Procedure", params: valid_procedure_payload(subject_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

@@ -28,13 +28,13 @@ RSpec.describe "AllergyIntolerances", type: :request do
       post "/AllergyIntolerance",
            params: valid_allergy_intolerance_payload(patient_id: patient_id, criticality: "bogus"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "returns 422 when patient references a non-existent patient" do
       post "/AllergyIntolerance", params: valid_allergy_intolerance_payload(patient_id: "does-not-exist"), as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
