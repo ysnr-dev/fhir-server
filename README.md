@@ -498,6 +498,10 @@ curl -i -X POST http://localhost:3000/ -H 'Content-Type: application/fhir+json' 
 
 ## 本番デプロイ
 
+> **無料ホスティング(テスト用途)**: Render + Neon での構成・手順は
+> [docs/DEPLOY_RENDER.md](./docs/DEPLOY_RENDER.md) を参照(`render.yaml` /
+> `.github/workflows/purge_expired.yml` が対応するリソース定義)。
+
 ### 前提条件(満たさないと起動しない)
 
 | 環境変数 | 内容 |

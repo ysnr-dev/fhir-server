@@ -1,0 +1,30 @@
+# 期限切れトークン/JTI の日次 purge。
+# Render 無料枠には cron ジョブがないため、GitHub Actions から Neon に直結して
+# `rails fhir:purge_expired` を実行する(README「定期メンテナンス」参照)。
+name: purge-expired
+
+on:
+  schedule:
+    - cron: "0 19 * * *" # JST 04:00
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BUNDLE_WITHOUT: "development:test"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Purge expired tokens and JTIs
+        env:
+          RAILS_ENV: production
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          # production_guardrails の必須チェックを通すためのダミー値。
+          # この cron は HTTP を受けないのでホスト名は使われない。
+          FHIR_ALLOWED_HOSTS: cron.invalid
+        run: bin/rails fhir:purge_expired

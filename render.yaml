@@ -1,0 +1,23 @@
+# Render Blueprint(無料枠)。DB は Render 無料 Postgres が 30 日で失効するため
+# Neon(無料・無期限)を外部利用する。手順は docs/DEPLOY_RENDER.md を参照。
+services:
+  - type: web
+    name: ysnr-fhir-server
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      # Neon の接続文字列(?sslmode=require 付き)。ダッシュボードで設定する。
+      - key: DATABASE_URL
+        sync: false
+      - key: RAILS_MASTER_KEY
+        sync: false
+      # Render のサービス名がそのままホスト名になる。名前衝突でサフィックスが
+      # 付いた場合はこの値も実ホスト名に合わせて更新すること。
+      - key: FHIR_ALLOWED_HOSTS
+        value: ysnr-fhir-server.onrender.com
+      # 無料枠は RAM 512MB のため Puma ワーカーを 1 に抑える。
+      - key: WEB_CONCURRENCY
+        value: "1"
