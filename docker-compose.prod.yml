@@ -1,0 +1,53 @@
+# 本番相当の単一ノード構成例:
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# - 秘密情報はすべて .env.production(gitignore済み)から供給する。
+#   雛形: .env.production.example
+# - TLS終端はこの手前のLB/リバースプロキシで行い、X-Forwarded-Proto: https を
+#   必ず付与すること(force_ssl + assume_ssl 前提)。
+# - 実患者データの運用ではこの db サービスではなくマネージドPostgreSQL
+#   (自動バックアップ・保存時暗号化・PITR)の利用を推奨。その場合は
+#   db サービスを削除し DATABASE_HOST を接続先に向ける。
+# - 複数レプリカ構成にする場合、エントリポイントの db:prepare は
+#   デプロイ手順の独立したマイグレーションステップに分離すること。
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: fhir_server
+      POSTGRES_PASSWORD: ${FHIR_SERVER_DATABASE_PASSWORD:?set in .env.production}
+      POSTGRES_DB: fhir_server_production
+    env_file: .env.production
+    volumes:
+      - pg_data_prod:/var/lib/postgresql
+    # DBポートはホストに公開しない
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fhir_server"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: production
+    env_file: .env.production
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USERNAME: fhir_server
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  pg_data_prod:

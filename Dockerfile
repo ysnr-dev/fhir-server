@@ -1,10 +1,17 @@
-FROM ruby:3.4.10-slim
+# マルチステージ構成:
+#   dev        — 開発用(docker-compose.yml が target: dev で使用。ソースはbind mount)
+#   build      — 本番用gemのビルド(development/test除外)
+#   production — 実行専用(コンパイラなし・非rootユーザー)。デフォルトターゲット。
+FROM ruby:3.4.10-slim AS base
+
+WORKDIR /app
 
 # Packages needed to build native extensions:
 #   - build-essential: compiler toolchain
 #   - libpq-dev:       pg gem
 #   - libyaml-dev:     psych gem (needs libyaml)
 #   - git:             some gems resolve git sources
+FROM base AS builddeps
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
       build-essential \
       libpq-dev \
@@ -12,7 +19,8 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
       git \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# --- 開発用 -----------------------------------------------------------------
+FROM builddeps AS dev
 
 # Install gems first so the layer is cached unless Gemfile changes.
 COPY Gemfile Gemfile.lock ./
@@ -24,3 +32,46 @@ EXPOSE 3000
 
 ENTRYPOINT ["bin/docker-entrypoint.sh"]
 CMD ["bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+
+# --- 本番gemビルド ----------------------------------------------------------
+FROM builddeps AS build
+
+# BUNDLE_DEPLOYMENT はインストール先を vendor/bundle に変えてしまうため、
+# ランタイムへのコピー元となる /usr/local/bundle を明示する。
+ENV BUNDLE_WITHOUT="development:test" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle"
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle install && rm -rf /usr/local/bundle/cache /usr/local/bundle/ruby/*/cache
+
+# --- 本番ランタイム ---------------------------------------------------------
+FROM base AS production
+
+# Runtime-only libraries (no compilers): libpq5 for pg, libyaml for psych,
+# curl for the container healthcheck against /up.
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+      libpq5 \
+      libyaml-0-2 \
+      curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV RAILS_ENV=production \
+    RAILS_LOG_TO_STDOUT=1 \
+    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle"
+
+COPY --from=build /usr/local/bundle /usr/local/bundle
+COPY . .
+
+# 非rootで実行。書き込みが必要なのは tmp/ と log/ のみ。
+RUN useradd --create-home --shell /usr/sbin/nologin rails \
+    && mkdir -p tmp/pids log \
+    && chown -R rails:rails tmp log
+USER rails
+
+EXPOSE 3000
+
+ENTRYPOINT ["bin/docker-entrypoint.sh"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

@@ -1,3 +1,5 @@
+# 開発専用の構成。パスワードのハードコードはローカル開発に閉じているため
+# 許容している(本番は docker-compose.prod.yml + .env.production を使うこと)。
 services:
   db:
     image: postgres:18
@@ -19,7 +21,9 @@ services:
       retries: 10
 
   web:
-    build: .
+    build:
+      context: .
+      target: dev
     environment:
       DATABASE_HOST: db
       DATABASE_USERNAME: postgres

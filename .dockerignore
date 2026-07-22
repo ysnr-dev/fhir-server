@@ -9,7 +9,11 @@ log/
 storage/
 node_modules/
 
-.env
+# Secrets must never be baked into an image; production supplies
+# RAILS_MASTER_KEY etc. via environment variables (.env.production).
+.env*
+config/master.key
+config/credentials/*.key
 *.md
 
 # Local dev artifacts

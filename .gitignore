@@ -28,3 +28,7 @@
 # Ignore master key for decrypting credentials and more.
 /config/master.key
 .DS_Store
+
+# 環境変数ファイル(雛形以外はコミット禁止)
+.env*
+!.env*.example
