@@ -16,7 +16,8 @@ Rails.application.routes.draw do
      MedicationStatement Observation Specimen ImagingStudy DiagnosticReport
      ServiceRequest Practitioner Organization
      PractitionerRole Encounter Location
-     Condition AllergyIntolerance Procedure Immunization Coverage].each do |type|
+     Condition AllergyIntolerance Procedure Immunization Coverage
+     DocumentReference Binary].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
       post   "/#{type}",                   to: "fhir_resources#create"

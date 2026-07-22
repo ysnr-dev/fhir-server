@@ -114,6 +114,10 @@ module Fhir
         "beneficiary" => { path: %w[beneficiary reference], targets: %w[Patient], column: "beneficiary_reference" },
         "patient" => { alias: "beneficiary" },
         "payor" => { multiple: true, jsonb_key: "payor", ref_path: %w[reference], targets: %w[Organization] }
+      },
+      "DocumentReference" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" }
       }
     }.freeze
 

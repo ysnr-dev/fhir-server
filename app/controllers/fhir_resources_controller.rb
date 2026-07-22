@@ -44,6 +44,12 @@ class FhirResourcesController < ApplicationController
       return head :not_modified
     end
 
+    # Per the FHIR spec, reading a Binary with an Accept other than a FHIR
+    # JSON type returns the raw decoded content in its native contentType.
+    if result.success? && resource_type == "Binary" && !fhir_json_requested?
+      return render_binary_content(result)
+    end
+
     render_operation_result(result)
   end
 
@@ -205,6 +211,20 @@ class FhirResourcesController < ApplicationController
     return nil if header.blank?
 
     header.gsub(%r{^W/}, "").delete('"')
+  end
+
+  # Absent or wildcard Accept defaults to the FHIR JSON representation.
+  def fhir_json_requested?
+    accept = request.headers["Accept"].to_s
+    accept.blank? || accept.include?("json") || accept.include?("*/*")
+  end
+
+  def render_binary_content(result)
+    response.set_header("ETag", %(W/"#{result.version_id}"))
+    # Binary.data validity is enforced at write time (BinaryValidator).
+    send_data Base64.strict_decode64(result.resource["data"].to_s),
+              type: result.resource["contentType"] || "application/octet-stream",
+              disposition: "inline"
   end
 
   # If-None-Match takes precedence over If-Modified-Since (RFC 9110 section 13.1.3).

@@ -150,6 +150,20 @@ module Fhir
         search_params: SearchDefinitions::Coverage::PARAMS,
         extraction: ExtractionDefinitions::Coverage::FIELDS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage"
+      },
+      "DocumentReference" => {
+        model: DocumentReference,
+        validator: DocumentReferenceValidator,
+        search_params: SearchDefinitions::DocumentReference::PARAMS,
+        extraction: ExtractionDefinitions::DocumentReference::FIELDS,
+        profile: "http://hl7.org/fhir/StructureDefinition/DocumentReference"
+      },
+      "Binary" => {
+        model: Binary,
+        validator: BinaryValidator,
+        search_params: SearchDefinitions::Binary::PARAMS,
+        extraction: ExtractionDefinitions::Binary::FIELDS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Binary"
       }
     }.freeze
 

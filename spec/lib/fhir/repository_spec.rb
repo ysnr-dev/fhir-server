@@ -252,6 +252,16 @@ RSpec.describe Fhir::Repository do
           "status" => "active",
           "beneficiary" => { "reference" => "Patient/#{patient_id}" },
           "payor" => [{ "reference" => "Organization/#{organization_id}" }] }
+      when "DocumentReference"
+        { "resourceType" => "DocumentReference",
+          "identifier" => [{ "system" => "http://example.org/document", "value" => "smoke-doc" }],
+          "status" => "current",
+          "subject" => { "reference" => "Patient/#{patient_id}" },
+          "content" => [{ "attachment" => { "contentType" => "application/pdf", "title" => "smoke" } }] }
+      when "Binary"
+        { "resourceType" => "Binary",
+          "contentType" => "text/plain",
+          "data" => Base64.strict_encode64("smoke") }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end
@@ -266,7 +276,8 @@ RSpec.describe Fhir::Repository do
 
         record = described_class.create(resource_type, fixture)
         expect(record.version_id).to eq(1)
-        expect(record.resource_identifiers.pluck(:value)).not_to be_empty
+        # Binary is the one registered type with no identifier element in R4.
+        expect(record.resource_identifiers.pluck(:value)).not_to be_empty unless resource_type == "Binary"
 
         updated = described_class.update(resource_type, record, fixture)
         expect(updated.version_id).to eq(2)

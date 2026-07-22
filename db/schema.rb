@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_07_22_000003) do
+ActiveRecord::Schema[7.0].define(version: 2026_07_22_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -68,6 +68,18 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_22_000003) do
     t.index ["client_id"], name: "index_audit_events_on_client_id"
     t.index ["occurred_at"], name: "index_audit_events_on_occurred_at"
     t.index ["resource_type", "resource_id"], name: "index_audit_events_on_resource_type_and_resource_id"
+  end
+
+  create_table "binaries", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deleted"], name: "index_binaries_on_deleted"
+    t.index ["last_updated"], name: "index_binaries_on_last_updated"
   end
 
   create_table "client_assertion_jtis", force: :cascade do |t|
@@ -154,6 +166,28 @@ ActiveRecord::Schema[7.0].define(version: 2026_07_22_000003) do
     t.index ["last_updated"], name: "index_diagnostic_reports_on_last_updated"
     t.index ["status"], name: "index_diagnostic_reports_on_status"
     t.index ["subject_reference"], name: "index_diagnostic_reports_on_subject_reference"
+  end
+
+  create_table "document_references", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "doc_status"
+    t.string "type_code"
+    t.string "type_text"
+    t.string "subject_reference"
+    t.datetime "document_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_document_references_on_content", using: :gin
+    t.index ["deleted"], name: "index_document_references_on_deleted"
+    t.index ["document_date"], name: "index_document_references_on_document_date"
+    t.index ["last_updated"], name: "index_document_references_on_last_updated"
+    t.index ["status"], name: "index_document_references_on_status"
+    t.index ["subject_reference"], name: "index_document_references_on_subject_reference"
+    t.index ["type_code"], name: "index_document_references_on_type_code"
   end
 
   create_table "encounters", id: :string, force: :cascade do |t|

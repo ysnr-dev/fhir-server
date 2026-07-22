@@ -2,7 +2,7 @@
 
 Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです。
 [JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) に準拠した
-21 リソース（`Patient` / `Observation` / `MedicationRequest` / `Encounter` / `Condition` など）の
+23 リソース（`Patient` / `Observation` / `MedicationRequest` / `DocumentReference` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
 複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
@@ -197,7 +197,7 @@ curl -s -X POST http://localhost:3000/oauth/token \
 
 ### 対応リソース
 
-全 21 リソースが同一のエンドポイント群（後述）を持ちます。
+全 23 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
@@ -206,6 +206,10 @@ curl -s -X POST http://localhost:3000/oauth/token \
 | 検査・レポート | Observation / Specimen / ImagingStudy / DiagnosticReport / ServiceRequest |
 | 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization |
 | 保険 | Coverage |
+| 文書 | DocumentReference / Binary |
+
+`Binary` は既定では JSON 表現で返しますが、`Accept: application/pdf` など非 FHIR タイプを指定した
+参照ではデコード済みの生コンテンツを元の `contentType` で返します。
 
 正確な一覧と各リソースの検索パラメータは `GET /metadata`（CapabilityStatement）で確認できます。
 

@@ -42,6 +42,11 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/diagnostic-report-status (required)
     DIAGNOSTIC_REPORT_STATUS = %w[registered partial preliminary final amended corrected appended cancelled entered-in-error unknown].freeze
 
+    # http://hl7.org/fhir/ValueSet/document-reference-status (required)
+    DOCUMENT_REFERENCE_STATUS = %w[current superseded entered-in-error].freeze
+    # http://hl7.org/fhir/ValueSet/composition-status (required) -- DocumentReference.docStatus
+    COMPOSITION_STATUS = %w[preliminary final amended entered-in-error].freeze
+
     # http://hl7.org/fhir/ValueSet/location-status (required)
     LOCATION_STATUS = %w[active suspended inactive].freeze
     # http://hl7.org/fhir/ValueSet/location-mode (required)
