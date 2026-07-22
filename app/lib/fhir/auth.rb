@@ -1,11 +1,13 @@
 module Fhir
-  # Feature switch for SMART Backend Services enforcement. Off by default so
-  # local development and the test suite work without tokens; set
-  # FHIR_AUTH_ENABLED=true to require a Bearer token (and matching system/*
-  # scopes) on every FHIR endpoint. /metadata, /.well-known/smart-configuration,
-  # and /oauth/token always stay public.
+  # Feature switch for SMART Backend Services enforcement. Defaults ON in
+  # production (real data must never be exposed unauthenticated; an explicit
+  # FHIR_AUTH_ENABLED=false there is rejected at boot by
+  # config/initializers/production_guardrails.rb) and OFF elsewhere so local
+  # development and the test suite work without tokens. /metadata,
+  # /.well-known/smart-configuration, and /oauth/token always stay public.
   module Auth
-    mattr_accessor :enabled, default: ENV["FHIR_AUTH_ENABLED"] == "true"
+    mattr_accessor :enabled,
+                   default: ENV.fetch("FHIR_AUTH_ENABLED", Rails.env.production? ? "true" : "false") == "true"
 
     def self.enabled?
       !!enabled

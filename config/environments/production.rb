@@ -17,7 +17,15 @@ Rails.application.configure do
 
   # Ensures that a master key has been made available in either ENV["RAILS_MASTER_KEY"]
   # or in config/master.key. This key is used to decrypt credentials (and other encrypted files).
-  # config.require_master_key = true
+  config.require_master_key = true
+
+  # HostAuthorization: 許可ホストは環境変数で明示する(例:
+  # FHIR_ALLOWED_HOSTS=fhir.example.com,fhir-internal.example.com)。
+  # 空のままだとRailsはチェック自体を無効化してしまうため、未設定は
+  # config/initializers/production_guardrails.rb が起動エラーにする。
+  # /up はLBのHTTPプローブ用に除外。
+  config.hosts = ENV.fetch("FHIR_ALLOWED_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Disable serving static files from the `/public` folder by default since
   # Apache or NGINX already handles this.
@@ -39,7 +47,15 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  # TLS終端プロキシ(LB)配下前提: assume_ssl でプロキシからのリクエストを
+  # HTTPS扱いにする。プロキシは X-Forwarded-Proto: https を送ること
+  # (送られないと force_ssl がリダイレクトループになる)。
+  config.assume_ssl = true
+  config.force_ssl = true
+  config.ssl_options = {
+    hsts: { expires: 1.year, subdomains: false, preload: false },
+    redirect: { exclude: ->(request) { request.path == "/up" } }
+  }
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).

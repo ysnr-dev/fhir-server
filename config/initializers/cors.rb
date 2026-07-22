@@ -1,16 +1,7 @@
-# Be sure to restart your server when you modify this file.
-
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin AJAX requests.
-
-# Read more: https://github.com/cyu/rack-cors
-
-# Rails.application.config.middleware.insert_before 0, Rack::Cors do
-#   allow do
-#     origins "example.com"
+# CORS は意図的に無効(rack-cors 未導入)。
 #
-#     resource "*",
-#       headers: :any,
-#       methods: [:get, :post, :put, :patch, :delete, :options, :head]
-#   end
-# end
+# このサーバーのクライアントは SMART Backend Services(サーバー間通信)のみで、
+# ブラウザから直接呼び出す想定はない。CORS ヘッダーを付けないことで、仮に
+# トークンが漏れてもブラウザ上のスクリプトからは同一オリジンポリシーで
+# 読み取れない。SPA 等のブラウザクライアントを追加する場合は、rack-cors を
+# 導入し許可オリジンを明示すること(その際は認可フロー自体の再設計も必要)。
