@@ -41,6 +41,7 @@ class ApplicationController < ActionController::API
   # RFC 6750: 401 with WWW-Authenticate; the error attribute is omitted when no
   # credentials were presented at all.
   def render_unauthorized(description, error: "invalid_token", issue_code: "login")
+    Fhir::AuthThrottle.register_failure!(request.remote_ip)
     challenge = %(Bearer realm="fhir-server")
     challenge += %(, error="#{error}", error_description="#{description}") if error
     response.set_header("WWW-Authenticate", challenge)

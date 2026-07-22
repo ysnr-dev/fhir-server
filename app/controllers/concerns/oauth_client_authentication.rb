@@ -30,6 +30,7 @@ module OauthClientAuthentication
   end
 
   def oauth_error(status, error, description)
+    Fhir::AuthThrottle.register_failure!(request.remote_ip) if status == :unauthorized
     render json: { error: error, error_description: description }, status: status
   end
 end
