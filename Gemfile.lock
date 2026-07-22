@@ -213,6 +213,13 @@ GEM
       rspec-support (~> 3.13)
     rspec-support (3.13.7)
     securerandom (0.4.1)
+    sentry-rails (6.6.2)
+      railties (>= 5.2.0)
+      sentry-ruby (~> 6.6.2)
+    sentry-ruby (6.6.2)
+      bigdecimal
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      logger
     thor (1.5.0)
     timeout (0.6.1)
     tsort (0.2.0)
@@ -239,6 +246,8 @@ DEPENDENCIES
   rack-attack (~> 6.7)
   rails (~> 8.0.0)
   rspec-rails (~> 6.1)
+  sentry-rails
+  sentry-ruby
   tzinfo-data
 
 RUBY VERSION

@@ -107,6 +107,9 @@ class ApplicationController < ActionController::API
   end
 
   def render_internal_error(exception)
+    # rescue_from が全例外を握るためSentryのRackミドルウェアには届かない。
+    # ここで明示的に送る(DSN未設定ならSentry.initされておらずno-op)。
+    Sentry.capture_exception(exception) if defined?(Sentry) && Sentry.initialized?
     Rails.logger.error("#{exception.class}: #{exception.message}\n#{exception.backtrace&.first(10)&.join("\n")}")
     render_operation_outcome_single(
       status: :internal_server_error,

@@ -1,9 +1,25 @@
 # /oauth/token と /oauth/revoke で共通のクライアント認証。
 # private_key_jwt / client_secret_basic / client_secret_post の3方式。
+# あわせて監査(FhirAuditing)も有効化する: 認証成功時は @audited_client で
+# クライアントを特定、失敗時(401/400)は client=nil のまま記録され、
+# ブルートフォースの痕跡が監査証跡に残る。
 module OauthClientAuthentication
   extend ActiveSupport::Concern
+  include FhirAuditing
 
   private
+
+  def audit_interaction
+    "operation"
+  end
+
+  def audit_client_id
+    @audited_client&.id
+  end
+
+  def audit_client_name
+    @audited_client&.name
+  end
 
   # Returns [client, nil] or [nil, error_description]. A request presenting a
   # client_assertion is authenticated via private_key_jwt; otherwise the
@@ -16,10 +32,14 @@ module OauthClientAuthentication
         # 失効エンドポイントでも audience はトークンエンドポイント(SMARTの慣例)
         audience: "#{base_url}/oauth/token"
       )
-      result.valid? ? [result.client, nil] : [nil, result.error_description]
+      if result.valid?
+        [@audited_client = result.client, nil]
+      else
+        [nil, result.error_description]
+      end
     else
       client = basic_credentials ? OauthClient.authenticate(*basic_credentials) : OauthClient.authenticate(params[:client_id], params[:client_secret])
-      client ? [client, nil] : [nil, "Client authentication failed"]
+      client ? [@audited_client = client, nil] : [nil, "Client authentication failed"]
     end
   end
 

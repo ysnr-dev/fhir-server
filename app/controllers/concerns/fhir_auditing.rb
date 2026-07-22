@@ -23,8 +23,8 @@ module FhirAuditing
     AuditEvent.create!(
       id: SecureRandom.uuid,
       occurred_at: Time.current,
-      client_id: @current_access_token&.oauth_client_id,
-      client_name: @current_access_token&.oauth_client&.name,
+      client_id: audit_client_id,
+      client_name: audit_client_name,
       action: AuditEvent.action_for(interaction),
       interaction: interaction,
       resource_type: audit_resource_type,
@@ -40,6 +40,16 @@ module FhirAuditing
   # Controllers override these to describe what was accessed.
   def audit_interaction
     nil
+  end
+
+  # FHIRエンドポイントではBearerトークンから、OAuthエンドポイントでは
+  # クライアント認証結果(@audited_client)からクライアントを特定する。
+  def audit_client_id
+    @current_access_token&.oauth_client_id
+  end
+
+  def audit_client_name
+    @current_access_token&.oauth_client&.name
   end
 
   def audit_resource_type
