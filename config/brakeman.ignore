@@ -1,0 +1,121 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "4034038f6b25e4eb6c08f1bcb16daeef2ccdb34ab65597fe05af2e5329c46d72",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/fhir/search.rb",
+      "line": 220,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "scope.where(\"'#{resource_type}/' || #{model.table_name}.id IN (#{inner.filtered_scope.select(ref_definition[:column]).to_sql})\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Fhir::Search",
+        "method": "has_fragment"
+      },
+      "user_input": "resource_type",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: resource_type/table_name/column come from the static Fhir::ResourceRegistry and search definitions (allowlisted identifiers), never from user input. User-supplied values are always bound parameters."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "4deff596295975403197e72f9c05760c4553cec0ded15b1234b1c012e74fbf68",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/fhir/search.rb",
+      "line": 273,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "scope.where(\"#{first} IS NOT NULL OR #{second} IS NOT NULL\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Fhir::Search",
+        "method": "both_columns_missing"
+      },
+      "user_input": "first",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: column names come from static search definitions, never from user input."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "c6375d966ed1513b5a65a13bbb86860ddcb214a1b27f1b2452c9d9f4213ff427",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/fhir/search.rb",
+      "line": 266,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "scope.where(\"#{column} IS #{missing ? (\"\") : (\"NOT \")}NULL\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Fhir::Search",
+        "method": "null_fragment"
+      },
+      "user_input": "column",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: column names come from static search definitions, never from user input."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "cde95eaf7ce81f20e189e6b3c57d3f059dc1b499909987b83aa0eec5c6d63297",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/fhir/search.rb",
+      "line": 271,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "scope.where(\"#{first} IS NULL AND #{second} IS NULL\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Fhir::Search",
+        "method": "both_columns_missing"
+      },
+      "user_input": "first",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: column names come from static search definitions, never from user input."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "e0a4697c45dd8f72c2c58e8df753ac810b230ebe5b7a49ee40d122607673bfa5",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/fhir/search.rb",
+      "line": 200,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "Arel.sql(\"'#{definition[:target_type]}/' || id\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Fhir::Search",
+        "method": "chain_fragment"
+      },
+      "user_input": "definition[:target_type]",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: target_type comes from the static search-definition registry (FHIR resource type names), never from user input."
+    }
+  ],
+  "updated": "2026-07-22 12:00:00 +0900",
+  "brakeman_version": "8.0.5"
+}

@@ -10,7 +10,7 @@ gem "rails", "~> 8.0.0"
 gem "pg", "~> 1.1"
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", "~> 6.4"
+gem "puma", "~> 7.2", ">= 7.2.1"
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 # gem "jbuilder"
@@ -49,6 +49,10 @@ group :development, :test do
 
   gem "rspec-rails", "~> 6.1"
   gem "factory_bot_rails", "~> 6.4"
+
+  # CI security scans (.github/workflows/ci.yml)
+  gem "bundler-audit", require: false
+  gem "brakeman", require: false
 end
 
 group :development do
