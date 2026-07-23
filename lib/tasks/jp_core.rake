@@ -21,8 +21,15 @@ namespace :jp_core do
 end
 
 module JpCoreVendor
-  PACKAGE_URL = ENV.fetch("JP_CORE_PACKAGE_URL", "https://jpfhir.jp/fhir/core/1.2.0/package.tgz")
-  PACKAGE_VERSION = "1.2.0".freeze
+  # A version bump normally needs only JP_CORE_PACKAGE_VERSION (e.g.
+  # `JP_CORE_PACKAGE_VERSION=1.3.0 bin/rails jp_core:vendor`), since jpfhir.jp
+  # publishes each release at .../core/<version>/package.tgz. JP_CORE_PACKAGE_URL
+  # is an escape hatch for anything that doesn't follow that pattern (a
+  # pre-release build, a local mirror for offline testing, ...); when set, it
+  # wins outright and PACKAGE_VERSION becomes purely the label recorded in
+  # index.json's _meta -- it does not need to match the URL's own path.
+  PACKAGE_VERSION = ENV.fetch("JP_CORE_PACKAGE_VERSION", "1.2.0").freeze
+  PACKAGE_URL = ENV.fetch("JP_CORE_PACKAGE_URL", "https://jpfhir.jp/fhir/core/#{PACKAGE_VERSION}/package.tgz")
   # Not a reference to Fhir::Profile::JP_CORE_PREFIX: .rake files load before
   # the app's autoloader can resolve app/lib constants, so this stays a
   # separate literal (kept in sync by inspection -- it changes only if the

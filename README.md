@@ -285,8 +285,11 @@ URL を指定すると `code: "not-supported"` の issue が返ります（HTTP 
 
 **同梱データの再生成**: JP Core IG のバージョンが上がった場合や `Fhir::ResourceRegistry` にプロファイル
 URL を追加/変更した場合は、`bundle exec rake jp_core:vendor` で `vendor/jp_core/` を再生成してコミットして
-ください（`JP_CORE_PACKAGE_URL` 環境変数でパッケージ URL を上書き可能）。ランタイムはこの同梱データのみを
-読み、ネットワークアクセスは一切行いません。
+ください。バージョン更新は通常 `JP_CORE_PACKAGE_VERSION=1.3.0 bundle exec rake jp_core:vendor` のように
+バージョン番号を指定するだけで済みます（jpfhir.jp の `.../core/<version>/package.tgz` という URL 規則に
+従って自動的に組み立てます）。この規則に合わないパッケージ（プレリリース版・ローカルミラー等）を使う場合は
+`JP_CORE_PACKAGE_URL` で URL 自体を上書きできます（指定時はこちらが優先されます）。ランタイムは
+コミット済みの同梱データのみを読み、ネットワークアクセスは一切行いません。
 
 ---
 
