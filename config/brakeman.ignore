@@ -114,8 +114,54 @@
         89
       ],
       "note": "False positive: target_type comes from the static search-definition registry (FHIR resource type names), never from user input."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "0ba52921eda7d3ba20859e89177b660601775b903d9b8b98cfeadf617bf5c7fb",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/fhir/search.rb",
+      "line": 303,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "scope.where.not(:id => token_param_ids(clause)).where(\"#{definition[:text_column]} IS NULL\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Fhir::Search",
+        "method": "token_or_text_missing_fragment"
+      },
+      "user_input": "definition[:text_column]",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: text_column comes from static search definitions, never from user input."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "5cb43d555c7584c700af38838567544b360dd5570a277a57140835fa77daf5f5",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/lib/fhir/search.rb",
+      "line": 305,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "scope.where(\"#{model.table_name}.id IN (#{token_param_ids(clause).to_sql}) OR #{definition[:text_column]} IS NOT NULL\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Fhir::Search",
+        "method": "token_or_text_missing_fragment"
+      },
+      "user_input": "definition[:text_column]",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "False positive: table_name and text_column come from static search definitions; token_param_ids is a bound AR relation, never user input."
     }
   ],
-  "updated": "2026-07-22 12:00:00 +0900",
+  "updated": "2026-07-23 10:15:00 +0900",
   "brakeman_version": "8.0.5"
 }
