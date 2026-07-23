@@ -252,6 +252,15 @@ RSpec.describe Fhir::Repository do
           "status" => "active",
           "beneficiary" => { "reference" => "Patient/#{patient_id}" },
           "payor" => [{ "reference" => "Organization/#{organization_id}" }] }
+      when "Composition"
+        { "resourceType" => "Composition",
+          "identifier" => { "system" => "http://example.org/composition", "value" => "smoke-comp" },
+          "status" => "final",
+          "type" => { "coding" => [{ "system" => "http://loinc.org", "code" => "18842-5" }] },
+          "date" => "2026-07-22T10:00:00+09:00",
+          "author" => [{ "reference" => "Practitioner/#{patient_id}" }],
+          "title" => "Smoke Summary",
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
       when "DocumentReference"
         { "resourceType" => "DocumentReference",
           "identifier" => [{ "system" => "http://example.org/document", "value" => "smoke-doc" }],
