@@ -38,11 +38,13 @@ module FhirResourceRecord
     end
   end
 
-  # Rebuilds the resource_identifiers rows from content["identifier"].
+  # Rebuilds the resource_identifiers rows from content["identifier"]. Array.wrap
+  # (not Array()) so a 0..1 single-Identifier element (e.g. Composition.identifier)
+  # is wrapped as one row rather than being splatted into [key, value] pairs.
   def sync_identifiers!
     resource_identifiers.destroy_all
 
-    Array(content["identifier"]).each do |identifier|
+    Array.wrap(content["identifier"]).each do |identifier|
       next if identifier["value"].blank?
 
       resource_identifiers.create!(

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_23_000002) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_23_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -121,6 +121,31 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_23_000002) do
     t.datetime "created_at", null: false
     t.index ["expires_at"], name: "index_client_assertion_jtis_on_expires_at"
     t.index ["oauth_client_id", "jti"], name: "index_client_assertion_jtis_on_oauth_client_id_and_jti", unique: true
+  end
+
+  create_table "compositions", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "type_code"
+    t.string "type_text"
+    t.string "category_code"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.datetime "composition_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_compositions_on_category_code"
+    t.index ["composition_date"], name: "index_compositions_on_composition_date"
+    t.index ["content"], name: "index_compositions_on_content", using: :gin
+    t.index ["deleted"], name: "index_compositions_on_deleted"
+    t.index ["encounter_reference"], name: "index_compositions_on_encounter_reference"
+    t.index ["last_updated"], name: "index_compositions_on_last_updated"
+    t.index ["status"], name: "index_compositions_on_status"
+    t.index ["subject_reference"], name: "index_compositions_on_subject_reference"
+    t.index ["type_code"], name: "index_compositions_on_type_code"
   end
 
   create_table "conditions", id: :string, force: :cascade do |t|

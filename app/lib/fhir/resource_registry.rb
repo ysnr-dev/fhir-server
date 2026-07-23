@@ -172,6 +172,14 @@ module Fhir
         token_extraction: ExtractionDefinitions::Coverage::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage"
       },
+      "Composition" => {
+        model: Composition,
+        validator: CompositionValidator,
+        search_params: SearchDefinitions::Composition::PARAMS,
+        extraction: ExtractionDefinitions::Composition::FIELDS,
+        token_extraction: ExtractionDefinitions::Composition::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Composition"
+      },
       "DocumentReference" => {
         model: DocumentReference,
         validator: DocumentReferenceValidator,

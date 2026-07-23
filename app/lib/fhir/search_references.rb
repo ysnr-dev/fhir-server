@@ -118,6 +118,13 @@ module Fhir
       "DocumentReference" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" }
+      },
+      "Composition" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        "author" => { multiple: true, jsonb_key: "author", ref_path: %w[reference],
+                       targets: %w[Practitioner PractitionerRole Organization Device Patient RelatedPerson] }
       }
     }.freeze
 
