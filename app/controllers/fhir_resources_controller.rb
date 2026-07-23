@@ -98,16 +98,23 @@ class FhirResourcesController < ApplicationController
 
   # POST /{type}/$validate -- validation without persistence. Accepts the
   # resource directly or wrapped in a Parameters resource (parameter "resource").
+  # An optional `profile` (query string, or a Parameters "profile" entry)
+  # checks against that specific profile URL instead of the registry default;
+  # the query string wins when both are given.
   def validate
     payload, parse_error = parse_body
     return render_bad_request(parse_error) if parse_error
 
+    profile = params[:profile]
+
     if payload["resourceType"] == "Parameters"
-      payload = Array(payload["parameter"]).find { |p| p.is_a?(Hash) && p["name"] == "resource" }&.dig("resource")
+      parameters = Array(payload["parameter"]).select { |p| p.is_a?(Hash) }
+      profile ||= parameters.find { |p| p["name"] == "profile" }&.values_at("valueUri", "valueCanonical", "valueString")&.compact&.first
+      payload = parameters.find { |p| p["name"] == "resource" }&.dig("resource")
       return render_bad_request("Parameters must contain a 'resource' parameter") unless payload.is_a?(Hash)
     end
 
-    render_operation_result(Fhir::Operation.validate(resource_type, payload))
+    render_operation_result(Fhir::Operation.validate(resource_type, payload, profile: profile))
   end
 
   # GET /Patient/:id/$everything -- the patient compartment as one Bundle.

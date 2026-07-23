@@ -1,0 +1,197 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_HumanName",
+  "type": "HumanName",
+  "snapshot": {
+    "element": [
+      {
+        "id": "HumanName",
+        "path": "HumanName",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "HumanName",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "HumanName.id",
+        "path": "HumanName.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "HumanName.extension",
+        "path": "HumanName.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "HumanName.extension:nameRepresentationUse",
+        "path": "HumanName.extension",
+        "sliceName": "nameRepresentationUse",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://hl7.org/fhir/StructureDefinition/iso21090-EN-representation|5.2.0"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "HumanName.use",
+        "path": "HumanName.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "HumanName.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/name-use|4.0.1"
+        }
+      },
+      {
+        "id": "HumanName.text",
+        "path": "HumanName.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "HumanName.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "HumanName.family",
+        "path": "HumanName.family",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "HumanName.family",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "HumanName.given",
+        "path": "HumanName.given",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "HumanName.given",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "HumanName.prefix",
+        "path": "HumanName.prefix",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "HumanName.prefix",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "HumanName.suffix",
+        "path": "HumanName.suffix",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "HumanName.suffix",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "HumanName.period",
+        "path": "HumanName.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "HumanName.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      }
+    ]
+  }
+}

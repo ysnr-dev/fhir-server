@@ -56,6 +56,58 @@ RSpec.describe "FHIR operations ($validate, Patient/$everything)", type: :reques
 
       expect(response).to have_http_status(:bad_request)
     end
+
+    describe "JP Core profile validation" do
+      it "reports profile errors alongside an otherwise-valid resource (default mode: warn)" do
+        post "/Patient/$validate", params: valid_patient_payload(notARealField: "oops"), as: :json
+
+        expect(response).to have_http_status(:ok)
+        issues = JSON.parse(response.body)["issue"]
+        expect(issues).to include(a_hash_including("code" => "structure", "diagnostics" => a_string_including("notARealField")))
+      end
+
+      it "checks against an explicit ?profile= URL instead of the registry default" do
+        post "/Patient/$validate?profile=http://jpfhir.jp/fhir/core/StructureDefinition/JP_Patient",
+             params: valid_patient_payload, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)["issue"].first["severity"]).to eq("information")
+      end
+
+      it "accepts a profile URL via a Parameters entry" do
+        wrapped = {
+          "resourceType" => "Parameters",
+          "parameter" => [
+            { "name" => "resource", "resource" => valid_patient_payload },
+            { "name" => "profile", "valueUri" => "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Patient" }
+          ]
+        }
+
+        post "/Patient/$validate", params: wrapped, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)["issue"].first["severity"]).to eq("information")
+      end
+
+      it "reports an unrecognized profile URL as not-supported, HTTP 200, without skipping hand validation" do
+        post "/Patient/$validate?profile=http://example.com/not-a-real-profile",
+             params: { "resourceType" => "Patient" }, as: :json
+
+        expect(response).to have_http_status(:ok)
+        issues = JSON.parse(response.body)["issue"]
+        expect(issues).to include(a_hash_including("code" => "not-supported", "diagnostics" => a_string_including("not-a-real-profile")))
+        expect(issues).to include(a_hash_including("code" => "required")) # hand validator's missing-identifier issue
+      end
+
+      it "skips profile checks entirely in mode :off (unknown-field issue disappears)" do
+        with_profile_mode(:off) do
+          post "/Patient/$validate", params: valid_patient_payload(notARealField: "oops"), as: :json
+        end
+
+        issues = JSON.parse(response.body)["issue"]
+        expect(issues.map { |i| i["severity"] }).to eq(["information"])
+      end
+    end
   end
 
   describe "GET /Patient/:id/$everything" do

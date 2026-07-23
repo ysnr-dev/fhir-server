@@ -1,0 +1,1362 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Practitioner",
+  "type": "Practitioner",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Practitioner",
+        "path": "Practitioner",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Practitioner.id",
+        "path": "Practitioner.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.meta",
+        "path": "Practitioner.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.implicitRules",
+        "path": "Practitioner.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.language",
+        "path": "Practitioner.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.text",
+        "path": "Practitioner.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.contained",
+        "path": "Practitioner.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.extension",
+        "path": "Practitioner.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.modifierExtension",
+        "path": "Practitioner.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.identifier",
+        "path": "Practitioner.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.active",
+        "path": "Practitioner.active",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.active",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.name",
+        "path": "Practitioner.name",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.name",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "HumanName",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_HumanName"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.telecom",
+        "path": "Practitioner.telecom",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.telecom",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "ContactPoint"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.telecom.id",
+        "path": "Practitioner.telecom.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.telecom.extension",
+        "path": "Practitioner.telecom.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "拡張子は常にURLで切り片にされます。",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.telecom.system",
+        "path": "Practitioner.telecom.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/contact-point-system|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.telecom.value",
+        "path": "Practitioner.telecom.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.telecom.use",
+        "path": "Practitioner.telecom.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/contact-point-use|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.telecom.rank",
+        "path": "Practitioner.telecom.rank",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.rank",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.telecom.period",
+        "path": "Practitioner.telecom.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address",
+        "path": "Practitioner.address",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.address",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Address"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.id",
+        "path": "Practitioner.address.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.extension",
+        "path": "Practitioner.address.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.use",
+        "path": "Practitioner.address.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/address-use|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.address.type",
+        "path": "Practitioner.address.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/address-type|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.address.text",
+        "path": "Practitioner.address.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.line",
+        "path": "Practitioner.address.line",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Address.line",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.city",
+        "path": "Practitioner.address.city",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.city",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.district",
+        "path": "Practitioner.address.district",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.district",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.state",
+        "path": "Practitioner.address.state",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.state",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.postalCode",
+        "path": "Practitioner.address.postalCode",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.postalCode",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.country",
+        "path": "Practitioner.address.country",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.country",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.address.period",
+        "path": "Practitioner.address.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.gender",
+        "path": "Practitioner.gender",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.gender",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.birthDate",
+        "path": "Practitioner.birthDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.birthDate",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "date"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.photo",
+        "path": "Practitioner.photo",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.photo",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Attachment"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification",
+        "path": "Practitioner.qualification",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "code"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.qualification",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification.id",
+        "path": "Practitioner.qualification.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification.extension",
+        "path": "Practitioner.qualification.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification.modifierExtension",
+        "path": "Practitioner.qualification.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification.identifier",
+        "path": "Practitioner.qualification.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.qualification.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification.code",
+        "path": "Practitioner.qualification.code",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.code",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://terminology.hl7.org/ValueSet/v2-2.7-0360"
+        }
+      },
+      {
+        "id": "Practitioner.qualification.period",
+        "path": "Practitioner.qualification.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification.issuer",
+        "path": "Practitioner.qualification.issuer",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.issuer",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber",
+        "path": "Practitioner.qualification",
+        "sliceName": "narcoticPrescriptionLicenseNumber",
+        "min": 0,
+        "max": "47",
+        "base": {
+          "path": "Practitioner.qualification",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.id",
+        "path": "Practitioner.qualification.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.extension",
+        "path": "Practitioner.qualification.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.modifierExtension",
+        "path": "Practitioner.qualification.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier",
+        "path": "Practitioner.qualification.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.qualification.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.id",
+        "path": "Practitioner.qualification.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.extension",
+        "path": "Practitioner.qualification.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.use",
+        "path": "Practitioner.qualification.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.type",
+        "path": "Practitioner.qualification.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.system",
+        "path": "Practitioner.qualification.identifier.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.value",
+        "path": "Practitioner.qualification.identifier.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.period",
+        "path": "Practitioner.qualification.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.identifier.assigner",
+        "path": "Practitioner.qualification.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.code",
+        "path": "Practitioner.qualification.code",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.code",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicalLicenseCertificate_VS"
+        },
+        "patternCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://jpfhir.jp/fhir/core/CodeSystem/JP_MedicalLicenseCertificate_CS",
+              "code": "narcotics-practitioner"
+            }
+          ]
+        }
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.period",
+        "path": "Practitioner.qualification.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:narcoticPrescriptionLicenseNumber.issuer",
+        "path": "Practitioner.qualification.issuer",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.issuer",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber",
+        "path": "Practitioner.qualification",
+        "sliceName": "medicalRegistrationNumber",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.id",
+        "path": "Practitioner.qualification.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.extension",
+        "path": "Practitioner.qualification.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.modifierExtension",
+        "path": "Practitioner.qualification.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier",
+        "path": "Practitioner.qualification.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.qualification.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.id",
+        "path": "Practitioner.qualification.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.extension",
+        "path": "Practitioner.qualification.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.use",
+        "path": "Practitioner.qualification.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.type",
+        "path": "Practitioner.qualification.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.system",
+        "path": "Practitioner.qualification.identifier.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/mhlw/IdSystem/medicalRegistrationNumber"
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.value",
+        "path": "Practitioner.qualification.identifier.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.period",
+        "path": "Practitioner.qualification.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.identifier.assigner",
+        "path": "Practitioner.qualification.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.code",
+        "path": "Practitioner.qualification.code",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.code",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicalLicenseCertificate_VS"
+        },
+        "patternCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://jpfhir.jp/fhir/core/CodeSystem/JP_MedicalLicenseCertificate_CS",
+              "code": "medical-registration"
+            }
+          ]
+        }
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.period",
+        "path": "Practitioner.qualification.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.qualification:medicalRegistrationNumber.issuer",
+        "path": "Practitioner.qualification.issuer",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Practitioner.qualification.issuer",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Practitioner.communication",
+        "path": "Practitioner.communication",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Practitioner.communication",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      }
+    ]
+  }
+}

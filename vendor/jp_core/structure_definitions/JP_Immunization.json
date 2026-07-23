@@ -1,0 +1,1144 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Immunization",
+  "type": "Immunization",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Immunization",
+        "path": "Immunization",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Immunization.id",
+        "path": "Immunization.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.meta",
+        "path": "Immunization.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.implicitRules",
+        "path": "Immunization.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.language",
+        "path": "Immunization.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.text",
+        "path": "Immunization.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.contained",
+        "path": "Immunization.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.extension",
+        "path": "Immunization.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.extension:dueDateOfNextDose",
+        "path": "Immunization.extension",
+        "sliceName": "dueDateOfNextDose",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Immunization_DueDateOfNextDose"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Immunization.extension:manufacturedDate",
+        "path": "Immunization.extension",
+        "sliceName": "manufacturedDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Immunization_ManufacturedDate"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Immunization.extension:certificatedDate",
+        "path": "Immunization.extension",
+        "sliceName": "certificatedDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Immunization_CertificatedDate"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Immunization.modifierExtension",
+        "path": "Immunization.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.identifier",
+        "path": "Immunization.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.status",
+        "path": "Immunization.status",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Immunization.status",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-status|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.statusReason",
+        "path": "Immunization.statusReason",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.statusReason",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-status-reason|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.vaccineCode",
+        "path": "Immunization.vaccineCode",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Immunization.vaccineCode",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationCode_Immunization_VS"
+        }
+      },
+      {
+        "id": "Immunization.patient",
+        "path": "Immunization.patient",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Immunization.patient",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.encounter",
+        "path": "Immunization.encounter",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.encounter",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.occurrence[x]",
+        "path": "Immunization.occurrence[x]",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Immunization.occurrence[x]",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          },
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.recorded",
+        "path": "Immunization.recorded",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.recorded",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.primarySource",
+        "path": "Immunization.primarySource",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.primarySource",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reportOrigin",
+        "path": "Immunization.reportOrigin",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.reportOrigin",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-origin|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.location",
+        "path": "Immunization.location",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.location",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.manufacturer",
+        "path": "Immunization.manufacturer",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.manufacturer",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.lotNumber",
+        "path": "Immunization.lotNumber",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.lotNumber",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.expirationDate",
+        "path": "Immunization.expirationDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.expirationDate",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "date"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.site",
+        "path": "Immunization.site",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.site",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationBodySiteJAMIExternal_VS"
+        }
+      },
+      {
+        "id": "Immunization.route",
+        "path": "Immunization.route",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.route",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-route|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.doseQuantity",
+        "path": "Immunization.doseQuantity",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.doseQuantity",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationSimpleQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Immunization.performer",
+        "path": "Immunization.performer",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.performer",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.performer.id",
+        "path": "Immunization.performer.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.performer.extension",
+        "path": "Immunization.performer.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.performer.modifierExtension",
+        "path": "Immunization.performer.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.performer.function",
+        "path": "Immunization.performer.function",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.performer.function",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-function|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.performer.actor",
+        "path": "Immunization.performer.actor",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Immunization.performer.actor",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.note",
+        "path": "Immunization.note",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.note",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Annotation"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reasonCode",
+        "path": "Immunization.reasonCode",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.reasonCode",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-reason|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.reasonReference",
+        "path": "Immunization.reasonReference",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.reasonReference",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.isSubpotent",
+        "path": "Immunization.isSubpotent",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.isSubpotent",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.subpotentReason",
+        "path": "Immunization.subpotentReason",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.subpotentReason",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-subpotent-reason|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.education",
+        "path": "Immunization.education",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.education",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.education.id",
+        "path": "Immunization.education.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.education.extension",
+        "path": "Immunization.education.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.education.modifierExtension",
+        "path": "Immunization.education.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.education.documentType",
+        "path": "Immunization.education.documentType",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.education.documentType",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.education.reference",
+        "path": "Immunization.education.reference",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.education.reference",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.education.publicationDate",
+        "path": "Immunization.education.publicationDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.education.publicationDate",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.education.presentationDate",
+        "path": "Immunization.education.presentationDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.education.presentationDate",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.programEligibility",
+        "path": "Immunization.programEligibility",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.programEligibility",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-program-eligibility|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.fundingSource",
+        "path": "Immunization.fundingSource",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.fundingSource",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-funding-source|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.reaction",
+        "path": "Immunization.reaction",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.reaction",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reaction.id",
+        "path": "Immunization.reaction.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reaction.extension",
+        "path": "Immunization.reaction.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reaction.modifierExtension",
+        "path": "Immunization.reaction.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reaction.date",
+        "path": "Immunization.reaction.date",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.reaction.date",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reaction.detail",
+        "path": "Immunization.reaction.detail",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.reaction.detail",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.reaction.reported",
+        "path": "Immunization.reaction.reported",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.reaction.reported",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied",
+        "path": "Immunization.protocolApplied",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.protocolApplied",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied.id",
+        "path": "Immunization.protocolApplied.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied.extension",
+        "path": "Immunization.protocolApplied.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied.modifierExtension",
+        "path": "Immunization.protocolApplied.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied.series",
+        "path": "Immunization.protocolApplied.series",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.protocolApplied.series",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied.authority",
+        "path": "Immunization.protocolApplied.authority",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.protocolApplied.authority",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied.targetDisease",
+        "path": "Immunization.protocolApplied.targetDisease",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Immunization.protocolApplied.targetDisease",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/immunization-target-disease|4.0.1"
+        }
+      },
+      {
+        "id": "Immunization.protocolApplied.doseNumber[x]",
+        "path": "Immunization.protocolApplied.doseNumber[x]",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Immunization.protocolApplied.doseNumber[x]",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          },
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Immunization.protocolApplied.seriesDoses[x]",
+        "path": "Immunization.protocolApplied.seriesDoses[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Immunization.protocolApplied.seriesDoses[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          },
+          {
+            "code": "string"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -58,7 +58,7 @@ module Fhir
         validator: SpecimenValidator,
         search_params: SearchDefinitions::Specimen::PARAMS,
         extraction: ExtractionDefinitions::Specimen::FIELDS,
-        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Specimen"
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Specimen_Common"
       },
       "ImagingStudy" => {
         model: ImagingStudy,

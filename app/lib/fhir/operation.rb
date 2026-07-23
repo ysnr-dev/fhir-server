@@ -41,8 +41,8 @@ module Fhir
       new(resource_type).patch(id, operations, if_match: if_match)
     end
 
-    def self.validate(resource_type, payload)
-      new(resource_type).validate(payload)
+    def self.validate(resource_type, payload, profile: nil)
+      new(resource_type).validate(payload, profile: profile)
     end
 
     def self.search(resource_type, query_string, base_url:)
@@ -71,7 +71,8 @@ module Fhir
       end
 
       validation = entry[:validator].call(payload)
-      return validation_result(validation) unless validation.valid?
+      blocked = blocking_validation_result(validation, payload)
+      return blocked if blocked
 
       record = id ? repository.create(payload, id: id) : repository.create(payload)
       Result.new(
@@ -101,7 +102,8 @@ module Fhir
       return resource_type_mismatch_result(payload) unless resource_type_matches?(payload)
 
       validation = entry[:validator].call(payload)
-      return validation_result(validation) unless validation.valid?
+      blocked = blocking_validation_result(validation, payload)
+      return blocked if blocked
 
       begin
         updated = repository.update(record, payload, if_match_version: if_match)
@@ -214,7 +216,15 @@ module Fhir
     # the HTTP status is 200 whether or not the resource is valid -- the
     # OperationOutcome carries the verdict; non-200 is reserved for failures of
     # the operation itself (unparseable body, unknown type).
-    def validate(payload)
+    #
+    # `profile`, when given, checks against that specific profile URL instead
+    # of the registry's default for this type (400-free: an unrecognized
+    # profile URL is reported as a "not-supported" issue in the 200 outcome,
+    # not a request failure). Unlike create/update, profile issues are always
+    # merged in here (as long as Fhir::Profile.mode isn't :off) regardless of
+    # :warn vs :enforce -- $validate never blocks anything, so there's no
+    # "don't block yet" distinction to make.
+    def validate(payload, profile: nil)
       return unsupported_type_result unless entry
 
       unless resource_type_matches?(payload)
@@ -229,7 +239,17 @@ module Fhir
       end
 
       validation = entry[:validator].call(payload)
-      if validation.valid?
+      issues = validation.issues.dup
+
+      profile_url, unsupported_profile = resolve_validate_profile(profile)
+      if unsupported_profile
+        issues << { severity: "error", code: "not-supported",
+                     diagnostics: "Profile '#{profile}' is not supported by this server", expression: [] }
+      elsif profile_url
+        issues.concat(Fhir::Profile::Validator.call(payload, profile_url: profile_url).issues)
+      end
+
+      if issues.empty?
         Result.new(
           status: :ok,
           outcome: Fhir::OperationOutcome.single(
@@ -239,7 +259,7 @@ module Fhir
           )
         )
       else
-        Result.new(status: :ok, outcome: Fhir::OperationOutcome.build(validation.issues))
+        Result.new(status: :ok, outcome: Fhir::OperationOutcome.build(issues))
       end
     end
 
@@ -307,8 +327,60 @@ module Fhir
       )
     end
 
-    def validation_result(validation)
-      Result.new(status: :unprocessable_content, outcome: Fhir::OperationOutcome.build(validation.issues))
+    # Returns the 422 Result to short-circuit create/update with, or nil when
+    # the write should proceed. The hand validator's errors always block; the
+    # JP Core profile engine's errors only block in Fhir::Profile.mode
+    # :enforce (in :warn they're logged instead, see #log_profile_warnings;
+    # in :off #profile_issues is already a no-op).
+    def blocking_validation_result(validation, payload)
+      profile_errors = profile_issues(payload)
+      log_profile_warnings(profile_errors) if Fhir::Profile.warn? && profile_errors.any?
+
+      errors = validation.errors.dup
+      errors.concat(profile_errors) if Fhir::Profile.enforce?
+      return nil if errors.empty?
+
+      issues = errors.map { |e| e.merge(severity: "error") } + validation.warnings.map { |w| w.merge(severity: "warning") }
+      Result.new(status: :unprocessable_content, outcome: Fhir::OperationOutcome.build(issues))
+    end
+
+    # Only registry entries with a JP Core profile have a vendored definition
+    # to check the payload against (ImagingStudy/DocumentReference/Binary use
+    # base HL7 profiles and keep relying on their hand validator alone).
+    def profile_issues(payload)
+      return [] if Fhir::Profile.off?
+      return [] unless Fhir::Profile.jp_core_profile?(entry[:profile])
+
+      Fhir::Profile::Validator.call(payload, profile_url: entry[:profile]).errors
+    end
+
+    def log_profile_warnings(profile_errors)
+      sample = profile_errors.first(3).map { |e| Array(e[:expression]).join(",") }.join("; ")
+      more = profile_errors.size > 3 ? ", ..." : ""
+      Rails.logger.info(
+        "[Fhir::Profile] #{resource_type} write has #{profile_errors.size} JP Core profile issue(s) " \
+        "(mode=warn, not blocked): #{sample}#{more}"
+      )
+    end
+
+    # `profile` param given: valid only when it resolves to a vendored
+    # definition (registry profiles and their transitive datatype/extension
+    # closure -- see DefinitionStore); unresolvable is reported as
+    # unsupported rather than silently ignored. No `profile` param: falls
+    # back to the registry's own profile, only when it's a JP Core one.
+    def resolve_validate_profile(profile)
+      return [nil, false] if Fhir::Profile.off?
+
+      if profile.present?
+        return [profile, false] if Fhir::Profile::DefinitionStore.known_profile?(profile)
+
+        return [nil, true]
+      end
+
+      registry_profile = entry[:profile]
+      return [registry_profile, false] if Fhir::Profile.jp_core_profile?(registry_profile)
+
+      [nil, false]
     end
 
     # Maps a failed ConditionalMatch to its HTTP result: unusable criteria are

@@ -19,7 +19,7 @@ RSpec.describe "Specimens", type: :request do
 
       body = JSON.parse(response.body)
       expect(body["resourceType"]).to eq("Specimen")
-      expect(body["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_Specimen"])
+      expect(body["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_Specimen_Common"])
     end
 
     it "returns 422 for an invalid status" do

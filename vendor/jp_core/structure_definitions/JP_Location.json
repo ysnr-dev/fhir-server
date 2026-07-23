@@ -1,0 +1,655 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Location",
+  "type": "Location",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Location",
+        "path": "Location",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Location.id",
+        "path": "Location.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Location.meta",
+        "path": "Location.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "Location.implicitRules",
+        "path": "Location.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Location.language",
+        "path": "Location.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "Location.text",
+        "path": "Location.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "Location.contained",
+        "path": "Location.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "Location.extension",
+        "path": "Location.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Location.modifierExtension",
+        "path": "Location.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Location.identifier",
+        "path": "Location.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Location.status",
+        "path": "Location.status",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.status",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/location-status|4.0.1"
+        }
+      },
+      {
+        "id": "Location.operationalStatus",
+        "path": "Location.operationalStatus",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.operationalStatus",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://terminology.hl7.org/ValueSet/v2-0116"
+        }
+      },
+      {
+        "id": "Location.name",
+        "path": "Location.name",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.name",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Location.alias",
+        "path": "Location.alias",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location.alias",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Location.description",
+        "path": "Location.description",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.description",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Location.mode",
+        "path": "Location.mode",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.mode",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/location-mode|4.0.1"
+        }
+      },
+      {
+        "id": "Location.type",
+        "path": "Location.type",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location.type",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://terminology.hl7.org/ValueSet/v3-ServiceDeliveryLocationRoleType"
+        }
+      },
+      {
+        "id": "Location.telecom",
+        "path": "Location.telecom",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location.telecom",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "ContactPoint"
+          }
+        ]
+      },
+      {
+        "id": "Location.address",
+        "path": "Location.address",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.address",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Address"
+          }
+        ]
+      },
+      {
+        "id": "Location.physicalType",
+        "path": "Location.physicalType",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.physicalType",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/location-physical-type|4.0.1"
+        }
+      },
+      {
+        "id": "Location.position",
+        "path": "Location.position",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.position",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Location.position.id",
+        "path": "Location.position.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Location.position.extension",
+        "path": "Location.position.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Location.position.modifierExtension",
+        "path": "Location.position.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Location.position.longitude",
+        "path": "Location.position.longitude",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Location.position.longitude",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Location.position.latitude",
+        "path": "Location.position.latitude",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Location.position.latitude",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Location.position.altitude",
+        "path": "Location.position.altitude",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.position.altitude",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Location.managingOrganization",
+        "path": "Location.managingOrganization",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.managingOrganization",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Location.partOf",
+        "path": "Location.partOf",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.partOf",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Location.hoursOfOperation",
+        "path": "Location.hoursOfOperation",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location.hoursOfOperation",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Location.hoursOfOperation.id",
+        "path": "Location.hoursOfOperation.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Location.hoursOfOperation.extension",
+        "path": "Location.hoursOfOperation.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Location.hoursOfOperation.modifierExtension",
+        "path": "Location.hoursOfOperation.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Location.hoursOfOperation.daysOfWeek",
+        "path": "Location.hoursOfOperation.daysOfWeek",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location.hoursOfOperation.daysOfWeek",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/days-of-week|4.0.1"
+        }
+      },
+      {
+        "id": "Location.hoursOfOperation.allDay",
+        "path": "Location.hoursOfOperation.allDay",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.hoursOfOperation.allDay",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Location.hoursOfOperation.openingTime",
+        "path": "Location.hoursOfOperation.openingTime",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.hoursOfOperation.openingTime",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "time"
+          }
+        ]
+      },
+      {
+        "id": "Location.hoursOfOperation.closingTime",
+        "path": "Location.hoursOfOperation.closingTime",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.hoursOfOperation.closingTime",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "time"
+          }
+        ]
+      },
+      {
+        "id": "Location.availabilityExceptions",
+        "path": "Location.availabilityExceptions",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Location.availabilityExceptions",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Location.endpoint",
+        "path": "Location.endpoint",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Location.endpoint",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      }
+    ]
+  }
+}

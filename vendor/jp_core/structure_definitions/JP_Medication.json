@@ -1,0 +1,609 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Medication",
+  "type": "Medication",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Medication",
+        "path": "Medication",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Medication",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Medication.id",
+        "path": "Medication.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Medication.meta",
+        "path": "Medication.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "Medication.implicitRules",
+        "path": "Medication.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Medication.language",
+        "path": "Medication.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "Medication.text",
+        "path": "Medication.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "Medication.contained",
+        "path": "Medication.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "Medication.extension",
+        "path": "Medication.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Medication.modifierExtension",
+        "path": "Medication.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Medication.identifier",
+        "path": "Medication.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Medication.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Medication.code",
+        "path": "Medication.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationCode_VS"
+        }
+      },
+      {
+        "id": "Medication.status",
+        "path": "Medication.status",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Medication.status",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/medication-status|4.0.1"
+        }
+      },
+      {
+        "id": "Medication.manufacturer",
+        "path": "Medication.manufacturer",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.manufacturer",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Medication.form",
+        "path": "Medication.form",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.form",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationFormMERIT9_VS"
+        }
+      },
+      {
+        "id": "Medication.amount",
+        "path": "Medication.amount",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.amount",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Ratio",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRatio_Amount"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient",
+        "path": "Medication.ingredient",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Medication.ingredient",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.id",
+        "path": "Medication.ingredient.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.extension",
+        "path": "Medication.ingredient.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "ordered": false,
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.extension:drugNo",
+        "path": "Medication.ingredient.extension",
+        "sliceName": "drugNo",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Medication_Ingredient_DrugNo"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.modifierExtension",
+        "path": "Medication.ingredient.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.item[x]",
+        "path": "Medication.ingredient.item[x]",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Medication.ingredient.item[x]",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.isActive",
+        "path": "Medication.ingredient.isActive",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.ingredient.isActive",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.strength",
+        "path": "Medication.ingredient.strength",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Medication.ingredient.strength",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Ratio",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRatio_Amount"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.strength.id",
+        "path": "Medication.ingredient.strength.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.strength.extension",
+        "path": "Medication.ingredient.strength.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.strength.extension:strengthType",
+        "path": "Medication.ingredient.strength.extension",
+        "sliceName": "strengthType",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Medication_IngredientStrength_StrengthType"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.strength.numerator",
+        "path": "Medication.ingredient.strength.numerator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Ratio.numerator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Medication.ingredient.strength.denominator",
+        "path": "Medication.ingredient.strength.denominator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Ratio.denominator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationQuantity"
+            ]
+          }
+        ],
+        "patternQuantity": {
+          "value": 1,
+          "unit": "回",
+          "system": "http://jpfhir.jp/fhir/core/mhlw/CodeSystem/MedicationUnitMERIT9Code",
+          "code": "TIME"
+        }
+      },
+      {
+        "id": "Medication.batch",
+        "path": "Medication.batch",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.batch",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Medication.batch.id",
+        "path": "Medication.batch.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Medication.batch.extension",
+        "path": "Medication.batch.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Medication.batch.modifierExtension",
+        "path": "Medication.batch.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Medication.batch.lotNumber",
+        "path": "Medication.batch.lotNumber",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.batch.lotNumber",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Medication.batch.expirationDate",
+        "path": "Medication.batch.expirationDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Medication.batch.expirationDate",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      }
+    ]
+  }
+}

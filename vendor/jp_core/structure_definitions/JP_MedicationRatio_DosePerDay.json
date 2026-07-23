@@ -1,0 +1,360 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRatio_DosePerDay",
+  "type": "Ratio",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Ratio",
+        "path": "Ratio",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Ratio",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Ratio.id",
+        "path": "Ratio.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.extension",
+        "path": "Ratio.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.numerator",
+        "path": "Ratio.numerator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Ratio.numerator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Ratio.numerator.id",
+        "path": "Ratio.numerator.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.numerator.extension",
+        "path": "Ratio.numerator.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.numerator.value",
+        "path": "Ratio.numerator.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Quantity.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.numerator.comparator",
+        "path": "Ratio.numerator.comparator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.comparator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1"
+        }
+      },
+      {
+        "id": "Ratio.numerator.unit",
+        "path": "Ratio.numerator.unit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.unit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.numerator.system",
+        "path": "Ratio.numerator.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.numerator.code",
+        "path": "Ratio.numerator.code",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Quantity.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationUnitMERIT9_VS"
+        }
+      },
+      {
+        "id": "Ratio.denominator",
+        "path": "Ratio.denominator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Ratio.denominator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.denominator.id",
+        "path": "Ratio.denominator.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.denominator.extension",
+        "path": "Ratio.denominator.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Ratio.denominator.value",
+        "path": "Ratio.denominator.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ],
+        "fixedDecimal": 1
+      },
+      {
+        "id": "Ratio.denominator.comparator",
+        "path": "Ratio.denominator.comparator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.comparator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1"
+        }
+      },
+      {
+        "id": "Ratio.denominator.unit",
+        "path": "Ratio.denominator.unit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.unit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ],
+        "fixedString": "日"
+      },
+      {
+        "id": "Ratio.denominator.system",
+        "path": "Ratio.denominator.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://unitsofmeasure.org"
+      },
+      {
+        "id": "Ratio.denominator.code",
+        "path": "Ratio.denominator.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/units-of-time"
+        },
+        "fixedCode": "d"
+      }
+    ]
+  }
+}

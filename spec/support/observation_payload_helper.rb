@@ -3,10 +3,19 @@ module ObservationPayloadHelper
     {
       "resourceType" => "Observation",
       "status" => "final",
+      # JP_Observation_Common requires a category slice ("first") coded solely
+      # from JP_SimpleObservationCategory_CS -- it must be its own array item,
+      # not mixed into the same CodeableConcept as the base HL7 coding below,
+      # since the slice's own definition fixes every coding.system within a
+      # matched item to the JP code system.
       "category" => [
         { "coding" => [
           { "system" => "http://terminology.hl7.org/CodeSystem/observation-category",
             "code" => "laboratory", "display" => "Laboratory" }
+        ] },
+        { "coding" => [
+          { "system" => "http://jpfhir.jp/fhir/core/CodeSystem/JP_SimpleObservationCategory_CS",
+            "code" => "laboratory" }
         ] }
       ],
       "code" => {

@@ -1,0 +1,1953 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRequest",
+  "type": "MedicationRequest",
+  "snapshot": {
+    "element": [
+      {
+        "id": "MedicationRequest",
+        "path": "MedicationRequest",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "MedicationRequest.id",
+        "path": "MedicationRequest.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.meta",
+        "path": "MedicationRequest.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.implicitRules",
+        "path": "MedicationRequest.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.language",
+        "path": "MedicationRequest.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.text",
+        "path": "MedicationRequest.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.contained",
+        "path": "MedicationRequest.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.extension",
+        "path": "MedicationRequest.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.modifierExtension",
+        "path": "MedicationRequest.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier",
+        "path": "MedicationRequest.identifier",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "system"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 2,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber",
+        "path": "MedicationRequest.identifier",
+        "sliceName": "rpNumber",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.id",
+        "path": "MedicationRequest.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.extension",
+        "path": "MedicationRequest.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.use",
+        "path": "MedicationRequest.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.type",
+        "path": "MedicationRequest.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.system",
+        "path": "MedicationRequest.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/mhlw/IdSystem/Medication-RPGroupNumber"
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.value",
+        "path": "MedicationRequest.identifier.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.period",
+        "path": "MedicationRequest.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:rpNumber.assigner",
+        "path": "MedicationRequest.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp",
+        "path": "MedicationRequest.identifier",
+        "sliceName": "orderInRp",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.id",
+        "path": "MedicationRequest.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.extension",
+        "path": "MedicationRequest.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.use",
+        "path": "MedicationRequest.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.type",
+        "path": "MedicationRequest.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.system",
+        "path": "MedicationRequest.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/mhlw/IdSystem/MedicationAdministrationIndex"
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.value",
+        "path": "MedicationRequest.identifier.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.period",
+        "path": "MedicationRequest.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:orderInRp.assigner",
+        "path": "MedicationRequest.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier",
+        "path": "MedicationRequest.identifier",
+        "sliceName": "requestIdentifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.id",
+        "path": "MedicationRequest.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.extension",
+        "path": "MedicationRequest.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.use",
+        "path": "MedicationRequest.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.type",
+        "path": "MedicationRequest.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.system",
+        "path": "MedicationRequest.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/IdSystem/resourceInstance-identifier"
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.value",
+        "path": "MedicationRequest.identifier.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.period",
+        "path": "MedicationRequest.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:requestIdentifier.assigner",
+        "path": "MedicationRequest.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon",
+        "path": "MedicationRequest.identifier",
+        "sliceName": "prescriptionIdentifierCommon",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.id",
+        "path": "MedicationRequest.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.extension",
+        "path": "MedicationRequest.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.use",
+        "path": "MedicationRequest.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.type",
+        "path": "MedicationRequest.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.system",
+        "path": "MedicationRequest.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "urn:oid:1.2.392.100495.20.3.11"
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.value",
+        "path": "MedicationRequest.identifier.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.period",
+        "path": "MedicationRequest.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.identifier:prescriptionIdentifierCommon.assigner",
+        "path": "MedicationRequest.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.status",
+        "path": "MedicationRequest.status",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.status",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/medicationrequest-status|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.statusReason",
+        "path": "MedicationRequest.statusReason",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.statusReason",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/medicationrequest-status-reason|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.intent",
+        "path": "MedicationRequest.intent",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.intent",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/medicationrequest-intent|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.category",
+        "path": "MedicationRequest.category",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.category",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationCategory_VS"
+        }
+      },
+      {
+        "id": "MedicationRequest.priority",
+        "path": "MedicationRequest.priority",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.priority",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/request-priority|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.doNotPerform",
+        "path": "MedicationRequest.doNotPerform",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.doNotPerform",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.reported[x]",
+        "path": "MedicationRequest.reported[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.reported[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.medication[x]",
+        "path": "MedicationRequest.medication[x]",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.medication[x]",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationCode_VS"
+        }
+      },
+      {
+        "id": "MedicationRequest.subject",
+        "path": "MedicationRequest.subject",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.subject",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.encounter",
+        "path": "MedicationRequest.encounter",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.encounter",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.supportingInformation",
+        "path": "MedicationRequest.supportingInformation",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.supportingInformation",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.authoredOn",
+        "path": "MedicationRequest.authoredOn",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.authoredOn",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.requester",
+        "path": "MedicationRequest.requester",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.requester",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.performer",
+        "path": "MedicationRequest.performer",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.performer",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.performerType",
+        "path": "MedicationRequest.performerType",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.performerType",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_PractitionerRole_VS"
+        }
+      },
+      {
+        "id": "MedicationRequest.recorder",
+        "path": "MedicationRequest.recorder",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.recorder",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.reasonCode",
+        "path": "MedicationRequest.reasonCode",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.reasonCode",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/condition-code|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.reasonReference",
+        "path": "MedicationRequest.reasonReference",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.reasonReference",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.instantiatesCanonical",
+        "path": "MedicationRequest.instantiatesCanonical",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.instantiatesCanonical",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "canonical"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.instantiatesUri",
+        "path": "MedicationRequest.instantiatesUri",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.instantiatesUri",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.basedOn",
+        "path": "MedicationRequest.basedOn",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.basedOn",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.groupIdentifier",
+        "path": "MedicationRequest.groupIdentifier",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.groupIdentifier",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.courseOfTherapyType",
+        "path": "MedicationRequest.courseOfTherapyType",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.courseOfTherapyType",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/medicationrequest-course-of-therapy|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.insurance",
+        "path": "MedicationRequest.insurance",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.insurance",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.note",
+        "path": "MedicationRequest.note",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.note",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Annotation"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dosageInstruction",
+        "path": "MedicationRequest.dosageInstruction",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.dosageInstruction",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Dosage",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationDosage"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest",
+        "path": "MedicationRequest.dispenseRequest",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.id",
+        "path": "MedicationRequest.dispenseRequest.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.extension",
+        "path": "MedicationRequest.dispenseRequest.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.extension:instructionForDispense",
+        "path": "MedicationRequest.dispenseRequest.extension",
+        "sliceName": "instructionForDispense",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_MedicationRequest_DispenseRequest_InstructionForDispense"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.extension:expectedRepeatCount",
+        "path": "MedicationRequest.dispenseRequest.extension",
+        "sliceName": "expectedRepeatCount",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_MedicationRequest_DispenseRequest_ExpectedRepeatCount"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.modifierExtension",
+        "path": "MedicationRequest.dispenseRequest.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.initialFill",
+        "path": "MedicationRequest.dispenseRequest.initialFill",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.initialFill",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.initialFill.id",
+        "path": "MedicationRequest.dispenseRequest.initialFill.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.initialFill.extension",
+        "path": "MedicationRequest.dispenseRequest.initialFill.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.initialFill.modifierExtension",
+        "path": "MedicationRequest.dispenseRequest.initialFill.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.initialFill.quantity",
+        "path": "MedicationRequest.dispenseRequest.initialFill.quantity",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.initialFill.quantity",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationSimpleQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.initialFill.duration",
+        "path": "MedicationRequest.dispenseRequest.initialFill.duration",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.initialFill.duration",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Duration"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.dispenseInterval",
+        "path": "MedicationRequest.dispenseRequest.dispenseInterval",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.dispenseInterval",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Duration"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.validityPeriod",
+        "path": "MedicationRequest.dispenseRequest.validityPeriod",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.validityPeriod",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.validityPeriod.id",
+        "path": "MedicationRequest.dispenseRequest.validityPeriod.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.validityPeriod.extension",
+        "path": "MedicationRequest.dispenseRequest.validityPeriod.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.validityPeriod.start",
+        "path": "MedicationRequest.dispenseRequest.validityPeriod.start",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Period.start",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.validityPeriod.end",
+        "path": "MedicationRequest.dispenseRequest.validityPeriod.end",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Period.end",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.numberOfRepeatsAllowed",
+        "path": "MedicationRequest.dispenseRequest.numberOfRepeatsAllowed",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.numberOfRepeatsAllowed",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "unsignedInt"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.quantity",
+        "path": "MedicationRequest.dispenseRequest.quantity",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.quantity",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationSimpleQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Duration"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration.id",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration.extension",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration.value",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration.comparator",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration.comparator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.comparator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1"
+        }
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration.unit",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration.unit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.unit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ],
+        "fixedString": "日"
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration.system",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://unitsofmeasure.org"
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.expectedSupplyDuration.code",
+        "path": "MedicationRequest.dispenseRequest.expectedSupplyDuration.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "fixedCode": "d"
+      },
+      {
+        "id": "MedicationRequest.dispenseRequest.performer",
+        "path": "MedicationRequest.dispenseRequest.performer",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.dispenseRequest.performer",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.substitution",
+        "path": "MedicationRequest.substitution",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.substitution",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.substitution.id",
+        "path": "MedicationRequest.substitution.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.substitution.extension",
+        "path": "MedicationRequest.substitution.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.substitution.modifierExtension",
+        "path": "MedicationRequest.substitution.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.substitution.allowed[x]",
+        "path": "MedicationRequest.substitution.allowed[x]",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.substitution.allowed[x]",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationSubstitutionNotAllowedReason_VS"
+        }
+      },
+      {
+        "id": "MedicationRequest.substitution.reason",
+        "path": "MedicationRequest.substitution.reason",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.substitution.reason",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://terminology.hl7.org/ValueSet/v3-SubstanceAdminSubstitutionReason"
+        }
+      },
+      {
+        "id": "MedicationRequest.priorPrescription",
+        "path": "MedicationRequest.priorPrescription",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "MedicationRequest.priorPrescription",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.detectedIssue",
+        "path": "MedicationRequest.detectedIssue",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.detectedIssue",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "MedicationRequest.eventHistory",
+        "path": "MedicationRequest.eventHistory",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "MedicationRequest.eventHistory",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      }
+    ]
+  }
+}

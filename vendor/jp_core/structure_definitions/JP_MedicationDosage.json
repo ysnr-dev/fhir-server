@@ -1,0 +1,1470 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationDosage",
+  "type": "Dosage",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Dosage",
+        "path": "Dosage",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Dosage",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Dosage.id",
+        "path": "Dosage.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.extension",
+        "path": "Dosage.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.extension:periodOfUse",
+        "path": "Dosage.extension",
+        "sliceName": "periodOfUse",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_MedicationDosage_PeriodOfUse"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.extension:usageDuration",
+        "path": "Dosage.extension",
+        "sliceName": "usageDuration",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_MedicationDosage_UsageDuration"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.modifierExtension",
+        "path": "Dosage.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.sequence",
+        "path": "Dosage.sequence",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.sequence",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "integer"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.text",
+        "path": "Dosage.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.additionalInstruction",
+        "path": "Dosage.additionalInstruction",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Dosage.additionalInstruction",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationUsageJAMIAdditional_VS"
+        }
+      },
+      {
+        "id": "Dosage.patientInstruction",
+        "path": "Dosage.patientInstruction",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.patientInstruction",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing",
+        "path": "Dosage.timing",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.timing",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Timing",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationTiming"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.id",
+        "path": "Dosage.timing.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.extension",
+        "path": "Dosage.timing.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.modifierExtension",
+        "path": "Dosage.timing.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.event",
+        "path": "Dosage.timing.event",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.event",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat",
+        "path": "Dosage.timing.repeat",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Element"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.id",
+        "path": "Dosage.timing.repeat.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.extension",
+        "path": "Dosage.timing.repeat.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]",
+        "path": "Dosage.timing.repeat.bounds[x]",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "type",
+              "path": "$this"
+            }
+          ],
+          "ordered": false,
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.bounds[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Duration"
+          },
+          {
+            "code": "Range"
+          },
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration",
+        "path": "Dosage.timing.repeat.bounds[x]",
+        "sliceName": "boundsDuration",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.bounds[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Duration"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration.id",
+        "path": "Dosage.timing.repeat.bounds[x].id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration.extension",
+        "path": "Dosage.timing.repeat.bounds[x].extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration.value",
+        "path": "Dosage.timing.repeat.bounds[x].value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration.comparator",
+        "path": "Dosage.timing.repeat.bounds[x].comparator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.comparator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1"
+        }
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration.unit",
+        "path": "Dosage.timing.repeat.bounds[x].unit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.unit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ],
+        "fixedString": "日"
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration.system",
+        "path": "Dosage.timing.repeat.bounds[x].system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://unitsofmeasure.org"
+      },
+      {
+        "id": "Dosage.timing.repeat.bounds[x]:boundsDuration.code",
+        "path": "Dosage.timing.repeat.bounds[x].code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "fixedCode": "d"
+      },
+      {
+        "id": "Dosage.timing.repeat.count",
+        "path": "Dosage.timing.repeat.count",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.count",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.countMax",
+        "path": "Dosage.timing.repeat.countMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.countMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.duration",
+        "path": "Dosage.timing.repeat.duration",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.duration",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.durationMax",
+        "path": "Dosage.timing.repeat.durationMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.durationMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.durationUnit",
+        "path": "Dosage.timing.repeat.durationUnit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.durationUnit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/units-of-time|4.0.1"
+        }
+      },
+      {
+        "id": "Dosage.timing.repeat.frequency",
+        "path": "Dosage.timing.repeat.frequency",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.frequency",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.frequencyMax",
+        "path": "Dosage.timing.repeat.frequencyMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.frequencyMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.period",
+        "path": "Dosage.timing.repeat.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.periodMax",
+        "path": "Dosage.timing.repeat.periodMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.periodMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.periodUnit",
+        "path": "Dosage.timing.repeat.periodUnit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.periodUnit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/units-of-time|4.0.1"
+        }
+      },
+      {
+        "id": "Dosage.timing.repeat.dayOfWeek",
+        "path": "Dosage.timing.repeat.dayOfWeek",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.repeat.dayOfWeek",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/days-of-week|4.0.1"
+        }
+      },
+      {
+        "id": "Dosage.timing.repeat.timeOfDay",
+        "path": "Dosage.timing.repeat.timeOfDay",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.repeat.timeOfDay",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "time"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.repeat.when",
+        "path": "Dosage.timing.repeat.when",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.repeat.when",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/event-timing|4.0.1"
+        }
+      },
+      {
+        "id": "Dosage.timing.repeat.offset",
+        "path": "Dosage.timing.repeat.offset",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.offset",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "unsignedInt"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.timing.code",
+        "path": "Dosage.timing.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationUsageJAMI_VS"
+        }
+      },
+      {
+        "id": "Dosage.asNeeded[x]",
+        "path": "Dosage.asNeeded[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.asNeeded[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.site",
+        "path": "Dosage.site",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.site",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationBodySiteJAMIExternal_VS"
+        }
+      },
+      {
+        "id": "Dosage.route",
+        "path": "Dosage.route",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.route",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationRouteHL70162_VS"
+        }
+      },
+      {
+        "id": "Dosage.method",
+        "path": "Dosage.method",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.method",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/administration-method-codes|4.0.1"
+        }
+      },
+      {
+        "id": "Dosage.method.id",
+        "path": "Dosage.method.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.extension",
+        "path": "Dosage.method.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding",
+        "path": "Dosage.method.coding",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "system"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1",
+        "path": "Dosage.method.coding",
+        "sliceName": "unitDigit1",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationMethodJAMIBasicUsage_VS"
+        }
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1.id",
+        "path": "Dosage.method.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1.extension",
+        "path": "Dosage.method.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1.system",
+        "path": "Dosage.method.coding.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jami.jp/CodeSystem/MedicationMethodBasicUsage"
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1.version",
+        "path": "Dosage.method.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1.code",
+        "path": "Dosage.method.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1.display",
+        "path": "Dosage.method.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit1.userSelected",
+        "path": "Dosage.method.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2",
+        "path": "Dosage.method.coding",
+        "sliceName": "unitDigit2",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationMethodJAMIDetailUsage_VS"
+        }
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2.id",
+        "path": "Dosage.method.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2.extension",
+        "path": "Dosage.method.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2.system",
+        "path": "Dosage.method.coding.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jami.jp/CodeSystem/MedicationMethodDetailUsage"
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2.version",
+        "path": "Dosage.method.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2.code",
+        "path": "Dosage.method.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2.display",
+        "path": "Dosage.method.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.coding:unitDigit2.userSelected",
+        "path": "Dosage.method.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.method.text",
+        "path": "Dosage.method.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate",
+        "path": "Dosage.doseAndRate",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Dosage.doseAndRate",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Element"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate.id",
+        "path": "Dosage.doseAndRate.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate.extension",
+        "path": "Dosage.doseAndRate.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate.type",
+        "path": "Dosage.doseAndRate.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.doseAndRate.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_MedicationIngredientStrengthStrengthType_VS"
+        }
+      },
+      {
+        "id": "Dosage.doseAndRate.dose[x]",
+        "path": "Dosage.doseAndRate.dose[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.doseAndRate.dose[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationSimpleQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate.rate[x]",
+        "path": "Dosage.doseAndRate.rate[x]",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "type",
+              "path": "$this"
+            }
+          ],
+          "ordered": false,
+          "rules": "closed"
+        },
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.doseAndRate.rate[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Ratio"
+          },
+          {
+            "code": "Range"
+          },
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://hl7.org/fhir/StructureDefinition/SimpleQuantity|4.0.1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate.rate[x]:rateRatio",
+        "path": "Dosage.doseAndRate.rate[x]",
+        "sliceName": "rateRatio",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.doseAndRate.rate[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Ratio",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRatio_DosePerDay"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate.rate[x]:rateRange",
+        "path": "Dosage.doseAndRate.rate[x]",
+        "sliceName": "rateRange",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.doseAndRate.rate[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Range",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRange_UnitOfTime"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.doseAndRate.rate[x]:rateQuantity",
+        "path": "Dosage.doseAndRate.rate[x]",
+        "sliceName": "rateQuantity",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.doseAndRate.rate[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://hl7.org/fhir/StructureDefinition/SimpleQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.maxDosePerPeriod",
+        "path": "Dosage.maxDosePerPeriod",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.maxDosePerPeriod",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Ratio",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRatio_DosePerPeriod"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.maxDosePerAdministration",
+        "path": "Dosage.maxDosePerAdministration",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.maxDosePerAdministration",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationSimpleQuantity"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Dosage.maxDosePerLifetime",
+        "path": "Dosage.maxDosePerLifetime",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Dosage.maxDosePerLifetime",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationSimpleQuantity"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

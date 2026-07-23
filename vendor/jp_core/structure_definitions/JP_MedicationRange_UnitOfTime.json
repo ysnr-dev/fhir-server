@@ -1,0 +1,359 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRange_UnitOfTime",
+  "type": "Range",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Range",
+        "path": "Range",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Range",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Range.id",
+        "path": "Range.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Range.extension",
+        "path": "Range.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Range.low",
+        "path": "Range.low",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Range.low",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://hl7.org/fhir/StructureDefinition/SimpleQuantity|4.0.1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Range.low.id",
+        "path": "Range.low.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Range.low.extension",
+        "path": "Range.low.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Range.low.value",
+        "path": "Range.low.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Range.low.comparator",
+        "path": "Range.low.comparator",
+        "min": 0,
+        "max": "0",
+        "base": {
+          "path": "Quantity.comparator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1"
+        }
+      },
+      {
+        "id": "Range.low.unit",
+        "path": "Range.low.unit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.unit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Range.low.system",
+        "path": "Range.low.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Range.low.code",
+        "path": "Range.low.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/units-of-time"
+        }
+      },
+      {
+        "id": "Range.high",
+        "path": "Range.high",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Range.high",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://hl7.org/fhir/StructureDefinition/SimpleQuantity|4.0.1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Range.high.id",
+        "path": "Range.high.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Range.high.extension",
+        "path": "Range.high.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Range.high.value",
+        "path": "Range.high.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Range.high.comparator",
+        "path": "Range.high.comparator",
+        "min": 0,
+        "max": "0",
+        "base": {
+          "path": "Quantity.comparator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1"
+        }
+      },
+      {
+        "id": "Range.high.unit",
+        "path": "Range.high.unit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.unit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Range.high.system",
+        "path": "Range.high.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Range.high.code",
+        "path": "Range.high.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/units-of-time"
+        }
+      }
+    ]
+  }
+}

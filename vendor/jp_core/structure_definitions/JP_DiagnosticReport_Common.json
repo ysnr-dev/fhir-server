@@ -1,0 +1,734 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_DiagnosticReport_Common",
+  "type": "DiagnosticReport",
+  "snapshot": {
+    "element": [
+      {
+        "id": "DiagnosticReport",
+        "path": "DiagnosticReport",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "DiagnosticReport.id",
+        "path": "DiagnosticReport.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.meta",
+        "path": "DiagnosticReport.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.implicitRules",
+        "path": "DiagnosticReport.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.language",
+        "path": "DiagnosticReport.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "DiagnosticReport.text",
+        "path": "DiagnosticReport.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.contained",
+        "path": "DiagnosticReport.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.extension",
+        "path": "DiagnosticReport.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.modifierExtension",
+        "path": "DiagnosticReport.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.identifier",
+        "path": "DiagnosticReport.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.basedOn",
+        "path": "DiagnosticReport.basedOn",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.basedOn",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.status",
+        "path": "DiagnosticReport.status",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.status",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/diagnostic-report-status|4.0.1"
+        }
+      },
+      {
+        "id": "DiagnosticReport.category",
+        "path": "DiagnosticReport.category",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.category",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/diagnostic-service-sections|4.0.1"
+        }
+      },
+      {
+        "id": "DiagnosticReport.category.id",
+        "path": "DiagnosticReport.category.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.extension",
+        "path": "DiagnosticReport.category.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding",
+        "path": "DiagnosticReport.category.coding",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding.id",
+        "path": "DiagnosticReport.category.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding.extension",
+        "path": "DiagnosticReport.category.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding.system",
+        "path": "DiagnosticReport.category.coding.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding.version",
+        "path": "DiagnosticReport.category.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding.code",
+        "path": "DiagnosticReport.category.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding.display",
+        "path": "DiagnosticReport.category.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.coding.userSelected",
+        "path": "DiagnosticReport.category.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.category.text",
+        "path": "DiagnosticReport.category.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.code",
+        "path": "DiagnosticReport.code",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.code",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_DocumentCodes_DiagnosticReport_VS"
+        }
+      },
+      {
+        "id": "DiagnosticReport.subject",
+        "path": "DiagnosticReport.subject",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.subject",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.encounter",
+        "path": "DiagnosticReport.encounter",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.encounter",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.effective[x]",
+        "path": "DiagnosticReport.effective[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.effective[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          },
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.issued",
+        "path": "DiagnosticReport.issued",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.issued",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "instant"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.performer",
+        "path": "DiagnosticReport.performer",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.performer",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.resultsInterpreter",
+        "path": "DiagnosticReport.resultsInterpreter",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.resultsInterpreter",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.specimen",
+        "path": "DiagnosticReport.specimen",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.specimen",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.result",
+        "path": "DiagnosticReport.result",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.result",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.imagingStudy",
+        "path": "DiagnosticReport.imagingStudy",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.imagingStudy",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.media",
+        "path": "DiagnosticReport.media",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.media",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.media.id",
+        "path": "DiagnosticReport.media.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.media.extension",
+        "path": "DiagnosticReport.media.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.media.modifierExtension",
+        "path": "DiagnosticReport.media.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.media.comment",
+        "path": "DiagnosticReport.media.comment",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.media.comment",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.media.link",
+        "path": "DiagnosticReport.media.link",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.media.link",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.conclusion",
+        "path": "DiagnosticReport.conclusion",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DiagnosticReport.conclusion",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "DiagnosticReport.conclusionCode",
+        "path": "DiagnosticReport.conclusionCode",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.conclusionCode",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/clinical-findings|4.0.1"
+        }
+      },
+      {
+        "id": "DiagnosticReport.presentedForm",
+        "path": "DiagnosticReport.presentedForm",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DiagnosticReport.presentedForm",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Attachment"
+          }
+        ]
+      }
+    ]
+  }
+}

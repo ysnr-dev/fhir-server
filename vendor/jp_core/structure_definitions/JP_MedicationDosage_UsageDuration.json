@@ -1,0 +1,223 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_MedicationDosage_UsageDuration",
+  "type": "Extension",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Extension",
+        "path": "Extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Extension",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Extension.id",
+        "path": "Extension.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Extension.extension",
+        "path": "Extension.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "0",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Extension.url",
+        "path": "Extension.url",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Extension.url",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_MedicationDosage_UsageDuration"
+      },
+      {
+        "id": "Extension.value[x]",
+        "path": "Extension.value[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Extension.value[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Duration"
+          }
+        ]
+      },
+      {
+        "id": "Extension.value[x].id",
+        "path": "Extension.value[x].id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Extension.value[x].extension",
+        "path": "Extension.value[x].extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Extension.value[x].value",
+        "path": "Extension.value[x].value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Extension.value[x].comparator",
+        "path": "Extension.value[x].comparator",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.comparator",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/quantity-comparator|4.0.1"
+        }
+      },
+      {
+        "id": "Extension.value[x].unit",
+        "path": "Extension.value[x].unit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.unit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ],
+        "fixedString": "日"
+      },
+      {
+        "id": "Extension.value[x].system",
+        "path": "Extension.value[x].system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://unitsofmeasure.org"
+      },
+      {
+        "id": "Extension.value[x].code",
+        "path": "Extension.value[x].code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Quantity.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "fixedCode": "d"
+      }
+    ]
+  }
+}

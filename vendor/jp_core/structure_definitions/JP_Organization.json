@@ -1,0 +1,1326 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Organization",
+  "type": "Organization",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Organization",
+        "path": "Organization",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Organization.id",
+        "path": "Organization.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Organization.meta",
+        "path": "Organization.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "Organization.implicitRules",
+        "path": "Organization.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Organization.language",
+        "path": "Organization.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.text",
+        "path": "Organization.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "Organization.contained",
+        "path": "Organization.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "Organization.extension",
+        "path": "Organization.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.extension:prefectureNo",
+        "path": "Organization.extension",
+        "sliceName": "prefectureNo",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Organization_PrefectureNo"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Organization.extension:organizationCategory",
+        "path": "Organization.extension",
+        "sliceName": "organizationCategory",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Organization_InsuranceOrganizationCategory"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Organization.extension:organizationNo",
+        "path": "Organization.extension",
+        "sliceName": "organizationNo",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Organization_InsuranceOrganizationNo"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Organization.modifierExtension",
+        "path": "Organization.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier",
+        "path": "Organization.identifier",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "system"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier.id",
+        "path": "Organization.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier.extension",
+        "path": "Organization.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier.use",
+        "path": "Organization.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.identifier.type",
+        "path": "Organization.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.identifier.system",
+        "path": "Organization.identifier.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier.value",
+        "path": "Organization.identifier.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier.period",
+        "path": "Organization.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier.assigner",
+        "path": "Organization.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode",
+        "path": "Organization.identifier",
+        "sliceName": "medicalInstitutionCode",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.id",
+        "path": "Organization.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.extension",
+        "path": "Organization.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.use",
+        "path": "Organization.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.type",
+        "path": "Organization.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.system",
+        "path": "Organization.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/IdSystem/insurance-medical-institution-no"
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.value",
+        "path": "Organization.identifier.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.period",
+        "path": "Organization.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:medicalInstitutionCode.assigner",
+        "path": "Organization.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:insurerNumber",
+        "path": "Organization.identifier",
+        "sliceName": "insurerNumber",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.id",
+        "path": "Organization.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.extension",
+        "path": "Organization.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.use",
+        "path": "Organization.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.type",
+        "path": "Organization.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.system",
+        "path": "Organization.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/mhlw/IdSystem/InsurerNumber"
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.value",
+        "path": "Organization.identifier.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.period",
+        "path": "Organization.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Organization.identifier:insurerNumber.assigner",
+        "path": "Organization.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Organization.active",
+        "path": "Organization.active",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Organization.active",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Organization.type",
+        "path": "Organization.type",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.type",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/organization-type|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.name",
+        "path": "Organization.name",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Organization.name",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.alias",
+        "path": "Organization.alias",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.alias",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.telecom",
+        "path": "Organization.telecom",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.telecom",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "ContactPoint"
+          }
+        ]
+      },
+      {
+        "id": "Organization.telecom.id",
+        "path": "Organization.telecom.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Organization.telecom.extension",
+        "path": "Organization.telecom.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "拡張子は常にURLで切り片にされます。",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.telecom.system",
+        "path": "Organization.telecom.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/contact-point-system|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.telecom.value",
+        "path": "Organization.telecom.value",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.telecom.use",
+        "path": "Organization.telecom.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/contact-point-use|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.telecom.rank",
+        "path": "Organization.telecom.rank",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.rank",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Organization.telecom.period",
+        "path": "Organization.telecom.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "ContactPoint.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address",
+        "path": "Organization.address",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.address",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Address"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.id",
+        "path": "Organization.address.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.extension",
+        "path": "Organization.address.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.use",
+        "path": "Organization.address.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/address-use|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.address.type",
+        "path": "Organization.address.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/address-type|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.address.text",
+        "path": "Organization.address.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.line",
+        "path": "Organization.address.line",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Address.line",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.city",
+        "path": "Organization.address.city",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.city",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.district",
+        "path": "Organization.address.district",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.district",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.state",
+        "path": "Organization.address.state",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.state",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.postalCode",
+        "path": "Organization.address.postalCode",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.postalCode",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.country",
+        "path": "Organization.address.country",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.country",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Organization.address.period",
+        "path": "Organization.address.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Address.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Organization.partOf",
+        "path": "Organization.partOf",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Organization.partOf",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Organization.contact",
+        "path": "Organization.contact",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.contact",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Organization.contact.id",
+        "path": "Organization.contact.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Organization.contact.extension",
+        "path": "Organization.contact.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.contact.modifierExtension",
+        "path": "Organization.contact.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Organization.contact.purpose",
+        "path": "Organization.contact.purpose",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Organization.contact.purpose",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/contactentity-type|4.0.1"
+        }
+      },
+      {
+        "id": "Organization.contact.name",
+        "path": "Organization.contact.name",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Organization.contact.name",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "HumanName",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/StructureDefinition/JP_HumanName"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Organization.contact.telecom",
+        "path": "Organization.contact.telecom",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.contact.telecom",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "ContactPoint"
+          }
+        ]
+      },
+      {
+        "id": "Organization.contact.address",
+        "path": "Organization.contact.address",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Organization.contact.address",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Address"
+          }
+        ]
+      },
+      {
+        "id": "Organization.endpoint",
+        "path": "Organization.endpoint",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Organization.endpoint",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      }
+    ]
+  }
+}

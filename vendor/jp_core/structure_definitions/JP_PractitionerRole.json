@@ -1,0 +1,579 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_PractitionerRole",
+  "type": "PractitionerRole",
+  "snapshot": {
+    "element": [
+      {
+        "id": "PractitionerRole",
+        "path": "PractitionerRole",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "PractitionerRole.id",
+        "path": "PractitionerRole.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.meta",
+        "path": "PractitionerRole.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.implicitRules",
+        "path": "PractitionerRole.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.language",
+        "path": "PractitionerRole.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "PractitionerRole.text",
+        "path": "PractitionerRole.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.contained",
+        "path": "PractitionerRole.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.extension",
+        "path": "PractitionerRole.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.modifierExtension",
+        "path": "PractitionerRole.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.identifier",
+        "path": "PractitionerRole.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.active",
+        "path": "PractitionerRole.active",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.active",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.period",
+        "path": "PractitionerRole.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.practitioner",
+        "path": "PractitionerRole.practitioner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.practitioner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.organization",
+        "path": "PractitionerRole.organization",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.organization",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.code",
+        "path": "PractitionerRole.code",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.code",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_PractitionerRole_VS"
+        }
+      },
+      {
+        "id": "PractitionerRole.specialty",
+        "path": "PractitionerRole.specialty",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.specialty",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/c80-practice-codes|4.0.1"
+        }
+      },
+      {
+        "id": "PractitionerRole.location",
+        "path": "PractitionerRole.location",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.location",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.healthcareService",
+        "path": "PractitionerRole.healthcareService",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.healthcareService",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.telecom",
+        "path": "PractitionerRole.telecom",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.telecom",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "ContactPoint"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availableTime",
+        "path": "PractitionerRole.availableTime",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.availableTime",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availableTime.id",
+        "path": "PractitionerRole.availableTime.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availableTime.extension",
+        "path": "PractitionerRole.availableTime.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availableTime.modifierExtension",
+        "path": "PractitionerRole.availableTime.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availableTime.daysOfWeek",
+        "path": "PractitionerRole.availableTime.daysOfWeek",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.availableTime.daysOfWeek",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/days-of-week|4.0.1"
+        }
+      },
+      {
+        "id": "PractitionerRole.availableTime.allDay",
+        "path": "PractitionerRole.availableTime.allDay",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.availableTime.allDay",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availableTime.availableStartTime",
+        "path": "PractitionerRole.availableTime.availableStartTime",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.availableTime.availableStartTime",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "time"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availableTime.availableEndTime",
+        "path": "PractitionerRole.availableTime.availableEndTime",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.availableTime.availableEndTime",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "time"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.notAvailable",
+        "path": "PractitionerRole.notAvailable",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.notAvailable",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.notAvailable.id",
+        "path": "PractitionerRole.notAvailable.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.notAvailable.extension",
+        "path": "PractitionerRole.notAvailable.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.notAvailable.modifierExtension",
+        "path": "PractitionerRole.notAvailable.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.notAvailable.description",
+        "path": "PractitionerRole.notAvailable.description",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.notAvailable.description",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.notAvailable.during",
+        "path": "PractitionerRole.notAvailable.during",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.notAvailable.during",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.availabilityExceptions",
+        "path": "PractitionerRole.availabilityExceptions",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "PractitionerRole.availabilityExceptions",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "PractitionerRole.endpoint",
+        "path": "PractitionerRole.endpoint",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "PractitionerRole.endpoint",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      }
+    ]
+  }
+}

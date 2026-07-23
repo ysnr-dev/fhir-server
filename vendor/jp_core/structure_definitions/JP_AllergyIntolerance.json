@@ -1,0 +1,619 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_AllergyIntolerance",
+  "type": "AllergyIntolerance",
+  "snapshot": {
+    "element": [
+      {
+        "id": "AllergyIntolerance",
+        "path": "AllergyIntolerance",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "AllergyIntolerance",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.id",
+        "path": "AllergyIntolerance.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.meta",
+        "path": "AllergyIntolerance.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.implicitRules",
+        "path": "AllergyIntolerance.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.language",
+        "path": "AllergyIntolerance.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.text",
+        "path": "AllergyIntolerance.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.contained",
+        "path": "AllergyIntolerance.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.extension",
+        "path": "AllergyIntolerance.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.modifierExtension",
+        "path": "AllergyIntolerance.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.identifier",
+        "path": "AllergyIntolerance.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "AllergyIntolerance.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.clinicalStatus",
+        "path": "AllergyIntolerance.clinicalStatus",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.clinicalStatus",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/allergyintolerance-clinical|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.verificationStatus",
+        "path": "AllergyIntolerance.verificationStatus",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.verificationStatus",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/allergyintolerance-verification|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.type",
+        "path": "AllergyIntolerance.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/allergy-intolerance-type|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.category",
+        "path": "AllergyIntolerance.category",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "AllergyIntolerance.category",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/allergy-intolerance-category|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.criticality",
+        "path": "AllergyIntolerance.criticality",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.criticality",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.code",
+        "path": "AllergyIntolerance.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_AllergyIntolerance_VS"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.patient",
+        "path": "AllergyIntolerance.patient",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.patient",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.encounter",
+        "path": "AllergyIntolerance.encounter",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.encounter",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.onset[x]",
+        "path": "AllergyIntolerance.onset[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.onset[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          },
+          {
+            "code": "Age"
+          },
+          {
+            "code": "Period"
+          },
+          {
+            "code": "Range"
+          },
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.recordedDate",
+        "path": "AllergyIntolerance.recordedDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.recordedDate",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.recorder",
+        "path": "AllergyIntolerance.recorder",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.recorder",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.asserter",
+        "path": "AllergyIntolerance.asserter",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.asserter",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.lastOccurrence",
+        "path": "AllergyIntolerance.lastOccurrence",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.lastOccurrence",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.note",
+        "path": "AllergyIntolerance.note",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "AllergyIntolerance.note",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Annotation"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.reaction",
+        "path": "AllergyIntolerance.reaction",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "AllergyIntolerance.reaction",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.reaction.id",
+        "path": "AllergyIntolerance.reaction.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.reaction.extension",
+        "path": "AllergyIntolerance.reaction.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.reaction.modifierExtension",
+        "path": "AllergyIntolerance.reaction.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.reaction.substance",
+        "path": "AllergyIntolerance.reaction.substance",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.reaction.substance",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/substance-code|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.reaction.manifestation",
+        "path": "AllergyIntolerance.reaction.manifestation",
+        "min": 1,
+        "max": "*",
+        "base": {
+          "path": "AllergyIntolerance.reaction.manifestation",
+          "min": 1,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/clinical-findings|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.reaction.description",
+        "path": "AllergyIntolerance.reaction.description",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.reaction.description",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.reaction.onset",
+        "path": "AllergyIntolerance.reaction.onset",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.reaction.onset",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "AllergyIntolerance.reaction.severity",
+        "path": "AllergyIntolerance.reaction.severity",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.reaction.severity",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/reaction-event-severity|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.reaction.exposureRoute",
+        "path": "AllergyIntolerance.reaction.exposureRoute",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "AllergyIntolerance.reaction.exposureRoute",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/route-codes|4.0.1"
+        }
+      },
+      {
+        "id": "AllergyIntolerance.reaction.note",
+        "path": "AllergyIntolerance.reaction.note",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "AllergyIntolerance.reaction.note",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Annotation"
+          }
+        ]
+      }
+    ]
+  }
+}

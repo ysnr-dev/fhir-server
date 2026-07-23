@@ -1,0 +1,1638 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Procedure",
+  "type": "Procedure",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Procedure",
+        "path": "Procedure",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Procedure.id",
+        "path": "Procedure.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.meta",
+        "path": "Procedure.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.implicitRules",
+        "path": "Procedure.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.language",
+        "path": "Procedure.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "Procedure.text",
+        "path": "Procedure.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.contained",
+        "path": "Procedure.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.extension",
+        "path": "Procedure.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.modifierExtension",
+        "path": "Procedure.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.identifier",
+        "path": "Procedure.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.instantiatesCanonical",
+        "path": "Procedure.instantiatesCanonical",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.instantiatesCanonical",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "canonical"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.instantiatesUri",
+        "path": "Procedure.instantiatesUri",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.instantiatesUri",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.basedOn",
+        "path": "Procedure.basedOn",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.basedOn",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.partOf",
+        "path": "Procedure.partOf",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.partOf",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.status",
+        "path": "Procedure.status",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Procedure.status",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/event-status|4.0.1"
+        }
+      },
+      {
+        "id": "Procedure.statusReason",
+        "path": "Procedure.statusReason",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.statusReason",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureNotPerformedReason_VS"
+        }
+      },
+      {
+        "id": "Procedure.category",
+        "path": "Procedure.category",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.category",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCategory_VS"
+        }
+      },
+      {
+        "id": "Procedure.code",
+        "path": "Procedure.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCodesMedical_VS"
+        }
+      },
+      {
+        "id": "Procedure.code.id",
+        "path": "Procedure.code.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.extension",
+        "path": "Procedure.code.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding",
+        "path": "Procedure.code.coding",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "system"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:medical",
+        "path": "Procedure.code.coding",
+        "sliceName": "medical",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCodesMedical_VS"
+        }
+      },
+      {
+        "id": "Procedure.code.coding:medical.id",
+        "path": "Procedure.code.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:medical.extension",
+        "path": "Procedure.code.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:medical.system",
+        "path": "Procedure.code.coding.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/CodeSystem/JP_ProcedureCodesMedical_CS"
+      },
+      {
+        "id": "Procedure.code.coding:medical.version",
+        "path": "Procedure.code.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:medical.code",
+        "path": "Procedure.code.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:medical.display",
+        "path": "Procedure.code.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:medical.userSelected",
+        "path": "Procedure.code.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:stem7",
+        "path": "Procedure.code.coding",
+        "sliceName": "stem7",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCodesSTEM7_VS"
+        }
+      },
+      {
+        "id": "Procedure.code.coding:stem7.id",
+        "path": "Procedure.code.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:stem7.extension",
+        "path": "Procedure.code.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:stem7.system",
+        "path": "Procedure.code.coding.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/CodeSystem/JP_ProcedureCodesSTEM7_CS"
+      },
+      {
+        "id": "Procedure.code.coding:stem7.version",
+        "path": "Procedure.code.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:stem7.code",
+        "path": "Procedure.code.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:stem7.display",
+        "path": "Procedure.code.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:stem7.userSelected",
+        "path": "Procedure.code.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:dental",
+        "path": "Procedure.code.coding",
+        "sliceName": "dental",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCodesDental_VS"
+        }
+      },
+      {
+        "id": "Procedure.code.coding:dental.id",
+        "path": "Procedure.code.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:dental.extension",
+        "path": "Procedure.code.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:dental.system",
+        "path": "Procedure.code.coding.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/mhlw/CodeSystem/masterH-dentalProcedure"
+      },
+      {
+        "id": "Procedure.code.coding:dental.version",
+        "path": "Procedure.code.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:dental.code",
+        "path": "Procedure.code.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:dental.display",
+        "path": "Procedure.code.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:dental.userSelected",
+        "path": "Procedure.code.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:nurse",
+        "path": "Procedure.code.coding",
+        "sliceName": "nurse",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCodesNurse_VS"
+        }
+      },
+      {
+        "id": "Procedure.code.coding:nurse.id",
+        "path": "Procedure.code.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:nurse.extension",
+        "path": "Procedure.code.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:nurse.system",
+        "path": "Procedure.code.coding.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://medis.or.jp/CodeSystem/master-nursingAction-16digits"
+      },
+      {
+        "id": "Procedure.code.coding:nurse.version",
+        "path": "Procedure.code.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:nurse.code",
+        "path": "Procedure.code.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:nurse.display",
+        "path": "Procedure.code.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:nurse.userSelected",
+        "path": "Procedure.code.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:ichi",
+        "path": "Procedure.code.coding",
+        "sliceName": "ichi",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCodesICHI_VS"
+        }
+      },
+      {
+        "id": "Procedure.code.coding:ichi.id",
+        "path": "Procedure.code.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:ichi.extension",
+        "path": "Procedure.code.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:ichi.system",
+        "path": "Procedure.code.coding.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/CodeSystem/JP_Undefined_CS"
+      },
+      {
+        "id": "Procedure.code.coding:ichi.version",
+        "path": "Procedure.code.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:ichi.code",
+        "path": "Procedure.code.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:ichi.display",
+        "path": "Procedure.code.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.coding:ichi.userSelected",
+        "path": "Procedure.code.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.code.text",
+        "path": "Procedure.code.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.subject",
+        "path": "Procedure.subject",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Procedure.subject",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.encounter",
+        "path": "Procedure.encounter",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.encounter",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.performed[x]",
+        "path": "Procedure.performed[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.performed[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          },
+          {
+            "code": "Period"
+          },
+          {
+            "code": "string"
+          },
+          {
+            "code": "Age"
+          },
+          {
+            "code": "Range"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.recorder",
+        "path": "Procedure.recorder",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.recorder",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.asserter",
+        "path": "Procedure.asserter",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.asserter",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.performer",
+        "path": "Procedure.performer",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.performer",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.performer.id",
+        "path": "Procedure.performer.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.performer.extension",
+        "path": "Procedure.performer.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.performer.modifierExtension",
+        "path": "Procedure.performer.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.performer.function",
+        "path": "Procedure.performer.function",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.performer.function",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedurePerformerRole_VS"
+        }
+      },
+      {
+        "id": "Procedure.performer.actor",
+        "path": "Procedure.performer.actor",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Procedure.performer.actor",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.performer.onBehalfOf",
+        "path": "Procedure.performer.onBehalfOf",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.performer.onBehalfOf",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.location",
+        "path": "Procedure.location",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.location",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.reasonCode",
+        "path": "Procedure.reasonCode",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.reasonCode",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureReason_VS"
+        }
+      },
+      {
+        "id": "Procedure.reasonReference",
+        "path": "Procedure.reasonReference",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.reasonReference",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.bodySite",
+        "path": "Procedure.bodySite",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.bodySite",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/body-site|4.0.1"
+        }
+      },
+      {
+        "id": "Procedure.outcome",
+        "path": "Procedure.outcome",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.outcome",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureOutcome_VS"
+        }
+      },
+      {
+        "id": "Procedure.report",
+        "path": "Procedure.report",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.report",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.complication",
+        "path": "Procedure.complication",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.complication",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureCondition_VS"
+        }
+      },
+      {
+        "id": "Procedure.complicationDetail",
+        "path": "Procedure.complicationDetail",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.complicationDetail",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.followUp",
+        "path": "Procedure.followUp",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.followUp",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureFollowUp_VS"
+        }
+      },
+      {
+        "id": "Procedure.note",
+        "path": "Procedure.note",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.note",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Annotation"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.focalDevice",
+        "path": "Procedure.focalDevice",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.focalDevice",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.focalDevice.id",
+        "path": "Procedure.focalDevice.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.focalDevice.extension",
+        "path": "Procedure.focalDevice.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.focalDevice.modifierExtension",
+        "path": "Procedure.focalDevice.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.focalDevice.action",
+        "path": "Procedure.focalDevice.action",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Procedure.focalDevice.action",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureDeviceAction_VS"
+        }
+      },
+      {
+        "id": "Procedure.focalDevice.manipulated",
+        "path": "Procedure.focalDevice.manipulated",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Procedure.focalDevice.manipulated",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.usedReference",
+        "path": "Procedure.usedReference",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.usedReference",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Procedure.usedCode",
+        "path": "Procedure.usedCode",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Procedure.usedCode",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://jpfhir.jp/fhir/core/ValueSet/JP_ProcedureDeviceKind_VS"
+        }
+      }
+    ]
+  }
+}

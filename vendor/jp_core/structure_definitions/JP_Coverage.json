@@ -1,0 +1,1327 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage",
+  "type": "Coverage",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Coverage",
+        "path": "Coverage",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Coverage",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Coverage.id",
+        "path": "Coverage.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.meta",
+        "path": "Coverage.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.implicitRules",
+        "path": "Coverage.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.language",
+        "path": "Coverage.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.text",
+        "path": "Coverage.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.contained",
+        "path": "Coverage.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.extension",
+        "path": "Coverage.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.extension:insuredPersonSymbol",
+        "path": "Coverage.extension",
+        "sliceName": "insuredPersonSymbol",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Coverage_InsuredPersonSymbol"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Coverage.extension:insuredPersonNumber",
+        "path": "Coverage.extension",
+        "sliceName": "insuredPersonNumber",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Coverage_InsuredPersonNumber"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Coverage.extension:insuredPersonSubNumber",
+        "path": "Coverage.extension",
+        "sliceName": "insuredPersonSubNumber",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension",
+            "profile": [
+              "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Coverage_InsuredPersonSubNumber"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Coverage.modifierExtension",
+        "path": "Coverage.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier",
+        "path": "Coverage.identifier",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "system"
+            }
+          ],
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Coverage.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier",
+        "path": "Coverage.identifier",
+        "sliceName": "insuranceIdentifier",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.id",
+        "path": "Coverage.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.extension",
+        "path": "Coverage.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.use",
+        "path": "Coverage.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.type",
+        "path": "Coverage.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.system",
+        "path": "Coverage.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/clins/Idsystem/JP_Insurance_memberID"
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.value",
+        "path": "Coverage.identifier.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.period",
+        "path": "Coverage.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceIdentifier.assigner",
+        "path": "Coverage.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier",
+        "path": "Coverage.identifier",
+        "sliceName": "insuranceCsvIdentifier",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.id",
+        "path": "Coverage.identifier.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.extension",
+        "path": "Coverage.identifier.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.use",
+        "path": "Coverage.identifier.use",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.use",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-use|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.type",
+        "path": "Coverage.identifier.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/identifier-type|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.system",
+        "path": "Coverage.identifier.system",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ],
+        "fixedUri": "http://jpfhir.jp/fhir/core/IdSystem/JP_Coverage_id"
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.value",
+        "path": "Coverage.identifier.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Identifier.value",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.period",
+        "path": "Coverage.identifier.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.identifier:insuranceCsvIdentifier.assigner",
+        "path": "Coverage.identifier.assigner",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Identifier.assigner",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.status",
+        "path": "Coverage.status",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coverage.status",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/fm-status|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.type",
+        "path": "Coverage.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/coverage-type|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.policyHolder",
+        "path": "Coverage.policyHolder",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.policyHolder",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.subscriber",
+        "path": "Coverage.subscriber",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.subscriber",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.subscriberId",
+        "path": "Coverage.subscriberId",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.subscriberId",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.beneficiary",
+        "path": "Coverage.beneficiary",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coverage.beneficiary",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.dependent",
+        "path": "Coverage.dependent",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.dependent",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.relationship",
+        "path": "Coverage.relationship",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.relationship",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/subscriber-relationship|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.period",
+        "path": "Coverage.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.payor",
+        "path": "Coverage.payor",
+        "min": 1,
+        "max": "*",
+        "base": {
+          "path": "Coverage.payor",
+          "min": 1,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.class",
+        "path": "Coverage.class",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Coverage.class",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.class.id",
+        "path": "Coverage.class.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.class.extension",
+        "path": "Coverage.class.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.class.modifierExtension",
+        "path": "Coverage.class.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.class.type",
+        "path": "Coverage.class.type",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coverage.class.type",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/coverage-class|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.class.value",
+        "path": "Coverage.class.value",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coverage.class.value",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.class.name",
+        "path": "Coverage.class.name",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.class.name",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.order",
+        "path": "Coverage.order",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.order",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.network",
+        "path": "Coverage.network",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.network",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary",
+        "path": "Coverage.costToBeneficiary",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Coverage.costToBeneficiary",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.id",
+        "path": "Coverage.costToBeneficiary.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.extension",
+        "path": "Coverage.costToBeneficiary.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.modifierExtension",
+        "path": "Coverage.costToBeneficiary.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type",
+        "path": "Coverage.costToBeneficiary.type",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.costToBeneficiary.type",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/coverage-copay-type|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.id",
+        "path": "Coverage.costToBeneficiary.type.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.extension",
+        "path": "Coverage.costToBeneficiary.type.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding",
+        "path": "Coverage.costToBeneficiary.type.coding",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "CodeableConcept.coding",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding.id",
+        "path": "Coverage.costToBeneficiary.type.coding.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding.extension",
+        "path": "Coverage.costToBeneficiary.type.coding.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding.system",
+        "path": "Coverage.costToBeneficiary.type.coding.system",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.system",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding.version",
+        "path": "Coverage.costToBeneficiary.type.coding.version",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.version",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding.code",
+        "path": "Coverage.costToBeneficiary.type.coding.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding.display",
+        "path": "Coverage.costToBeneficiary.type.coding.display",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.display",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.coding.userSelected",
+        "path": "Coverage.costToBeneficiary.type.coding.userSelected",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coding.userSelected",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.type.text",
+        "path": "Coverage.costToBeneficiary.type.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "CodeableConcept.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "string"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.value[x]",
+        "path": "Coverage.costToBeneficiary.value[x]",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coverage.costToBeneficiary.value[x]",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Quantity",
+            "profile": [
+              "http://hl7.org/fhir/StructureDefinition/SimpleQuantity|4.0.1"
+            ]
+          },
+          {
+            "code": "Money"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.exception",
+        "path": "Coverage.costToBeneficiary.exception",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Coverage.costToBeneficiary.exception",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.exception.id",
+        "path": "Coverage.costToBeneficiary.exception.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.exception.extension",
+        "path": "Coverage.costToBeneficiary.exception.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.exception.modifierExtension",
+        "path": "Coverage.costToBeneficiary.exception.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.costToBeneficiary.exception.type",
+        "path": "Coverage.costToBeneficiary.exception.type",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "Coverage.costToBeneficiary.exception.type",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "example",
+          "valueSet": "http://hl7.org/fhir/ValueSet/coverage-financial-exception|4.0.1"
+        }
+      },
+      {
+        "id": "Coverage.costToBeneficiary.exception.period",
+        "path": "Coverage.costToBeneficiary.exception.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.costToBeneficiary.exception.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.subrogation",
+        "path": "Coverage.subrogation",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Coverage.subrogation",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "Coverage.contract",
+        "path": "Coverage.contract",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Coverage.contract",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      }
+    ]
+  }
+}

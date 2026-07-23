@@ -1,0 +1,433 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationTiming",
+  "type": "Timing",
+  "snapshot": {
+    "element": [
+      {
+        "id": "Timing",
+        "path": "Timing",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "Timing.id",
+        "path": "Timing.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Timing.extension",
+        "path": "Timing.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Timing.modifierExtension",
+        "path": "Timing.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Timing.event",
+        "path": "Timing.event",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.event",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "dateTime"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat",
+        "path": "Timing.repeat",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Element"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.id",
+        "path": "Timing.repeat.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.extension",
+        "path": "Timing.repeat.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "Extensions are always sliced by (at least) url",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.bounds[x]",
+        "path": "Timing.repeat.bounds[x]",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.bounds[x]",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Duration"
+          },
+          {
+            "code": "Range"
+          },
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.count",
+        "path": "Timing.repeat.count",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.count",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.countMax",
+        "path": "Timing.repeat.countMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.countMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.duration",
+        "path": "Timing.repeat.duration",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.duration",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.durationMax",
+        "path": "Timing.repeat.durationMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.durationMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.durationUnit",
+        "path": "Timing.repeat.durationUnit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.durationUnit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/units-of-time|4.0.1"
+        }
+      },
+      {
+        "id": "Timing.repeat.frequency",
+        "path": "Timing.repeat.frequency",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.frequency",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.frequencyMax",
+        "path": "Timing.repeat.frequencyMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.frequencyMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "positiveInt"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.period",
+        "path": "Timing.repeat.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.periodMax",
+        "path": "Timing.repeat.periodMax",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.periodMax",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "decimal"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.periodUnit",
+        "path": "Timing.repeat.periodUnit",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.periodUnit",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/units-of-time|4.0.1"
+        }
+      },
+      {
+        "id": "Timing.repeat.dayOfWeek",
+        "path": "Timing.repeat.dayOfWeek",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.repeat.dayOfWeek",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/days-of-week|4.0.1"
+        }
+      },
+      {
+        "id": "Timing.repeat.timeOfDay",
+        "path": "Timing.repeat.timeOfDay",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.repeat.timeOfDay",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "time"
+          }
+        ]
+      },
+      {
+        "id": "Timing.repeat.when",
+        "path": "Timing.repeat.when",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Timing.repeat.when",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/event-timing|4.0.1"
+        }
+      },
+      {
+        "id": "Timing.repeat.offset",
+        "path": "Timing.repeat.offset",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.repeat.offset",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "unsignedInt"
+          }
+        ]
+      },
+      {
+        "id": "Timing.code",
+        "path": "Timing.code",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Timing.code",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/timing-abbreviation|4.0.1"
+        }
+      }
+    ]
+  }
+}
