@@ -294,15 +294,16 @@ module Fhir
     end
 
     # token_or_text is missing only when BOTH the token rows and the text column are
-    # absent; present when either exists.
+    # absent; present when either exists. Built with Arel rather than interpolated
+    # SQL so the table/column identifiers are never spliced into a raw string.
     def token_or_text_missing_fragment(scope, definition, clause, missing)
-      ids = token_param_ids(clause)
-      text_column = definition[:text_column]
+      table = model.arel_table
+      text_col = table[definition[:text_column]]
 
       if missing
-        scope.where.not(id: ids).where("#{text_column} IS NULL")
+        scope.where.not(id: token_param_ids(clause)).where(text_col.eq(nil))
       else
-        scope.where("#{model.table_name}.id IN (#{ids.to_sql}) OR #{text_column} IS NOT NULL")
+        scope.where(table[:id].in(token_param_ids(clause).arel).or(text_col.not_eq(nil)))
       end
     end
 
