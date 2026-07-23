@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_23_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_23_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -593,6 +593,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_23_000001) do
     t.index ["resource_type", "resource_id"], name: "index_resource_identifiers_on_resource_type_and_resource_id"
     t.index ["system", "value"], name: "index_resource_identifiers_on_system_and_value"
     t.index ["value"], name: "index_resource_identifiers_on_value"
+  end
+
+  create_table "resource_tokens", force: :cascade do |t|
+    t.string "resource_type", null: false
+    t.string "resource_id", null: false
+    t.string "param_name", null: false
+    t.string "system"
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resource_type", "param_name", "code"], name: "index_resource_tokens_on_resource_type_and_param_name_and_code"
+    t.index ["resource_type", "param_name", "system", "code"], name: "idx_on_resource_type_param_name_system_code_a947949d85"
+    t.index ["resource_type", "resource_id"], name: "index_resource_tokens_on_resource_type_and_resource_id"
   end
 
   create_table "resource_versions", force: :cascade do |t|

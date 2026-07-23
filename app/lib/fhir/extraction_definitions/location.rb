@@ -9,6 +9,11 @@ module Fhir
         organization_reference: { path: "managingOrganization.reference" },
         partof_reference: { path: "partOf.reference" }
       }.freeze
+
+      TOKENS = {
+        "status" => { path: "status", kind: :code },
+        "type"   => { path: "type", kind: :codeable_concept_list }
+      }.freeze
     end
   end
 end

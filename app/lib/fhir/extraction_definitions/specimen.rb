@@ -10,6 +10,14 @@ module Fhir
         accession_value: { path: "accessionIdentifier.value" },
         collected_time: { path: "collection.collectedDateTime", transform: :datetime }
       }.freeze
+
+      # accession searches accessionIdentifier (system|value), so it is indexed as an
+      # Identifier rather than a coding.
+      TOKENS = {
+        "status"    => { path: "status", kind: :code },
+        "type"      => { path: "type", kind: :codeable_concept },
+        "accession" => { path: "accessionIdentifier", kind: :identifier }
+      }.freeze
     end
   end
 end

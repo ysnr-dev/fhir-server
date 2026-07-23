@@ -10,6 +10,11 @@ module Fhir
         beneficiary_reference: { path: "beneficiary.reference" },
         dependent: { path: "dependent" }
       }.freeze
+
+      TOKENS = {
+        "status" => { path: "status", kind: :code },
+        "type"   => { path: "type", kind: :codeable_concept }
+      }.freeze
     end
   end
 end

@@ -17,6 +17,14 @@ module Fhir
         onset_time: { path: "onsetDateTime", transform: :datetime },
         recorded_time: { path: "recordedDate", transform: :datetime }
       }.freeze
+
+      TOKENS = {
+        "clinical-status"     => { path: "clinicalStatus", kind: :codeable_concept },
+        "verification-status" => { path: "verificationStatus", kind: :codeable_concept },
+        "category"            => { path: "category", kind: :codeable_concept_list },
+        "severity"            => { path: "severity", kind: :codeable_concept },
+        "code"                => { path: "code", kind: :codeable_concept }
+      }.freeze
     end
   end
 end

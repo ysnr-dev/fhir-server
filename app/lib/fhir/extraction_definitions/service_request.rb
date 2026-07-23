@@ -11,6 +11,12 @@ module Fhir
         code: { path: "code", transform: :coding_code },
         code_text: { path: "code", transform: :concept_text }
       }.freeze
+
+      TOKENS = {
+        "status" => { path: "status", kind: :code },
+        "intent" => { path: "intent", kind: :code },
+        "code"   => { path: "code", kind: :codeable_concept }
+      }.freeze
     end
   end
 end

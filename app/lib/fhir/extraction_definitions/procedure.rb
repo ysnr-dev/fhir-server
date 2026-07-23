@@ -12,6 +12,12 @@ module Fhir
         encounter_reference: { path: "encounter.reference" },
         performed_time: { path: "performedDateTime", transform: :datetime }
       }.freeze
+
+      TOKENS = {
+        "status"   => { path: "status", kind: :code },
+        "category" => { path: "category", kind: :codeable_concept },
+        "code"     => { path: "code", kind: :codeable_concept }
+      }.freeze
     end
   end
 end

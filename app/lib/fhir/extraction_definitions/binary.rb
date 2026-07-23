@@ -6,6 +6,9 @@ module Fhir
       FIELDS = {
         content_type: { path: "contentType" }
       }.freeze
+
+      # Binary defines no standard search parameters.
+      TOKENS = {}.freeze
     end
   end
 end

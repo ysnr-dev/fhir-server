@@ -13,6 +13,12 @@ module Fhir
         encounter_reference: { path: "encounter.reference" },
         effective_time: { path: "effectiveDateTime", transform: :datetime }
       }.freeze
+
+      TOKENS = {
+        "status"   => { path: "status", kind: :code },
+        "category" => { path: "category", kind: :codeable_concept_list },
+        "code"     => { path: "code", kind: :codeable_concept }
+      }.freeze
     end
   end
 end

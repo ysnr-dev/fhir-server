@@ -166,20 +166,71 @@ RSpec.describe Fhir::Search do
   end
 
   describe "token system|code handling" do
-    before do
-      create("Encounter", { "identifier" => [{ "value" => "tok-1" }], "status" => "finished", "class" => { "code" => "AMB" } })
-    end
+    let(:act_code) { "http://terminology.hl7.org/CodeSystem/v3-ActCode" }
 
-    it "matches on code alone" do
+    it "matches on code alone regardless of system" do
+      create("Encounter", { "identifier" => [{ "value" => "tok-1" }], "status" => "finished",
+                            "class" => { "system" => act_code, "code" => "AMB" } })
+
       expect(search("Encounter", { "class" => "AMB" }).total).to eq(1)
     end
 
-    it "matches when a system is prefixed, ignoring the system portion" do
-      expect(search("Encounter", { "class" => "http://terminology.hl7.org/CodeSystem/v3-ActCode|AMB" }).total).to eq(1)
+    it "matches a full system|code pair" do
+      create("Encounter", { "identifier" => [{ "value" => "tok-2" }], "status" => "finished",
+                            "class" => { "system" => act_code, "code" => "AMB" } })
+
+      expect(search("Encounter", { "class" => "#{act_code}|AMB" }).total).to eq(1)
     end
 
-    it "matches with an empty system prefix" do
-      expect(search("Encounter", { "class" => "|AMB" }).total).to eq(1)
+    it "distinguishes the same code under a different system" do
+      create("Encounter", { "identifier" => [{ "value" => "tok-3" }], "status" => "finished",
+                            "class" => { "system" => act_code, "code" => "AMB" } })
+      create("Encounter", { "identifier" => [{ "value" => "tok-4" }], "status" => "finished",
+                            "class" => { "system" => "http://example.org/local", "code" => "AMB" } })
+
+      result = search("Encounter", { "class" => "#{act_code}|AMB" })
+
+      expect(result.total).to eq(1)
+      expect(result.records.first.content.dig("identifier", 0, "value")).to eq("tok-3")
+    end
+
+    it "matches any code within a system via system|" do
+      create("Encounter", { "identifier" => [{ "value" => "tok-5" }], "status" => "finished",
+                            "class" => { "system" => act_code, "code" => "AMB" } })
+      create("Encounter", { "identifier" => [{ "value" => "tok-6" }], "status" => "planned",
+                            "class" => { "system" => "http://example.org/local", "code" => "VR" } })
+
+      expect(search("Encounter", { "class" => "#{act_code}|" }).total).to eq(1)
+    end
+
+    it "matches only codes with no system via |code" do
+      create("Encounter", { "identifier" => [{ "value" => "tok-7" }], "status" => "finished",
+                            "class" => { "code" => "AMB" } })
+      create("Encounter", { "identifier" => [{ "value" => "tok-8" }], "status" => "finished",
+                            "class" => { "system" => act_code, "code" => "AMB" } })
+
+      result = search("Encounter", { "class" => "|AMB" })
+
+      expect(result.total).to eq(1)
+      expect(result.records.first.content.dig("identifier", 0, "value")).to eq("tok-7")
+    end
+
+    it "finds a resource by any of its multiple codings" do
+      create("Observation", { "identifier" => [{ "value" => "multi-1" }], "status" => "final",
+                              "code" => { "coding" => [
+                                { "system" => "http://loinc.org", "code" => "1234-5" },
+                                { "system" => "urn:oid:1.2.392.200119.4.504", "code" => "3B035" }
+                              ] } })
+
+      expect(search("Observation", { "code" => "http://loinc.org|1234-5" }).total).to eq(1)
+      expect(search("Observation", { "code" => "urn:oid:1.2.392.200119.4.504|3B035" }).total).to eq(1)
+    end
+
+    it "still matches the free-text side of a token_or_text param" do
+      create("Observation", { "identifier" => [{ "value" => "txt-1" }], "status" => "final",
+                              "code" => { "text" => "血糖" } })
+
+      expect(search("Observation", { "code" => "血糖" }).total).to eq(1)
     end
   end
 

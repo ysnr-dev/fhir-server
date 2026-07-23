@@ -9,6 +9,10 @@ module Fhir
         given: { path: "name", transform: :official_given },
         name_text: { path: "name", transform: :all_name_representations }
       }.freeze
+
+      TOKENS = {
+        "gender" => { path: "gender", kind: :code }
+      }.freeze
     end
   end
 end

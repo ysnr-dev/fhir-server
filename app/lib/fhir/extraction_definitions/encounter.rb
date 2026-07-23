@@ -12,6 +12,13 @@ module Fhir
         period_start: { path: "period.start", transform: :datetime },
         period_end: { path: "period.end", transform: :datetime }
       }.freeze
+
+      # `class` is a bare Coding (dig the Coding itself, not class.code) so its system
+      # is captured alongside the code.
+      TOKENS = {
+        "status" => { path: "status", kind: :code },
+        "class"  => { path: "class", kind: :coding }
+      }.freeze
     end
   end
 end

@@ -86,6 +86,7 @@ module Fhir
         record.sync_search_fields!
         record.save!
         record.sync_identifiers!
+        record.sync_tokens!
 
         ResourceVersion.create!(
           resource_type: resource_type,
@@ -119,6 +120,7 @@ module Fhir
         record.sync_search_fields!
         record.save!
         record.sync_identifiers!
+        record.sync_tokens!
 
         ResourceVersion.create!(
           resource_type: resource_type,

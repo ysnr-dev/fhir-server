@@ -6,6 +6,7 @@ module FhirResourceRecord
   # FHIR resourceType with no separate mapping.
   included do
     has_many :resource_identifiers, as: :resource, dependent: :destroy
+    has_many :resource_tokens, as: :resource, dependent: :destroy
     has_many :resource_versions, -> { order(version_id: :asc) }, as: :resource, dependent: :destroy
   end
 
@@ -16,6 +17,12 @@ module FhirResourceRecord
     # it when the Ruby class name can't match the resourceType, e.g. InsuranceCoverage).
     def extraction_fields
       Fhir::ResourceRegistry.entry_for(polymorphic_name).fetch(:extraction)
+    end
+
+    # The declarative param_name -> token spec map (see Fhir::ExtractionDefinitions::*::TOKENS),
+    # driving sync_tokens! via Fhir::TokenExtractor.
+    def token_extraction_fields
+      Fhir::ResourceRegistry.entry_for(polymorphic_name).fetch(:token_extraction)
     end
   end
 
@@ -42,6 +49,17 @@ module FhirResourceRecord
         system: identifier["system"],
         value: identifier["value"]
       )
+    end
+  end
+
+  # Rebuilds the resource_tokens rows (one per coding, all codings) from content,
+  # driven by the resource's declarative token map. Called alongside sync_identifiers!
+  # so token search can match the full system|code pair.
+  def sync_tokens!
+    resource_tokens.destroy_all
+
+    Fhir::TokenExtractor.rows(content, self.class.token_extraction_fields).each do |row|
+      resource_tokens.create!(param_name: row[:param_name], system: row[:system], code: row[:code])
     end
   end
 end

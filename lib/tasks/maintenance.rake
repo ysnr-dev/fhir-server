@@ -29,4 +29,22 @@ namespace :fhir do
     puts "marked #{stale.size} stale in-progress export(s) as failed"
     puts "purged #{expired_count} export(s) finished more than #{retention_days} days ago"
   end
+
+  desc "resource_tokens を content から再構築する(system|code token 検索の導入時に一度実行)"
+  task reindex_tokens: :environment do
+    # resource_tokens は書き込み時にしか埋まらないため、テーブル導入前から存在する
+    # リソースには token 行が無い。全リソースを走査して sync_tokens! を呼び直す。
+    total = 0
+    Fhir::ResourceRegistry.types.each do |type|
+      model = Fhir::ResourceRegistry.entry_for(type).fetch(:model)
+      count = 0
+      model.find_each do |record|
+        record.sync_tokens!
+        count += 1
+      end
+      total += count
+      puts "reindexed #{count} #{type} record(s)"
+    end
+    puts "done: reindexed tokens for #{total} record(s) across #{Fhir::ResourceRegistry.types.size} types"
+  end
 end

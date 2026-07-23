@@ -8,6 +8,11 @@ module Fhir
         role_code: { path: "code", transform: :concept_list_code },
         specialty_code: { path: "specialty", transform: :concept_list_code }
       }.freeze
+
+      TOKENS = {
+        "role"      => { path: "code", kind: :codeable_concept_list },
+        "specialty" => { path: "specialty", kind: :codeable_concept_list }
+      }.freeze
     end
   end
 end

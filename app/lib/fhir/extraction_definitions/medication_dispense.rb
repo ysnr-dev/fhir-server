@@ -9,6 +9,11 @@ module Fhir
         medication_code: { path: "medicationCodeableConcept", transform: :coding_code },
         medication_text: { path: "medicationCodeableConcept", transform: :concept_text }
       }.freeze
+
+      TOKENS = {
+        "status" => { path: "status", kind: :code },
+        "code"   => { path: "medicationCodeableConcept", kind: :codeable_concept }
+      }.freeze
     end
   end
 end

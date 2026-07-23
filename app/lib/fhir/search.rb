@@ -23,8 +23,10 @@ module Fhir
 
     # _id and _lastUpdated behave like any other search param (comma-OR, repeat-AND)
     # rather than being handled as special cases.
+    # _id is a token matched against the primary key column (backing: :column), never
+    # via resource_tokens -- it has no coding and no token rows.
     SYSTEM_PARAMS = {
-      "_id" => { type: :token, column: :id },
+      "_id" => { type: :token, column: :id, backing: :column },
       "_lastUpdated" => { type: :datetime, column: :last_updated }
     }.freeze
 
@@ -102,6 +104,12 @@ module Fhir
       end
     end
 
+    # The canonical PARAMS key a clause resolves to (resource_tokens.param_name is keyed
+    # by canonical name, so an alias like `patient` must map back to `subject`).
+    def canonical_name(name)
+      alias_index[name] || name
+    end
+
     def supported_modifier?(definition, modifier)
       return true if modifier.nil?
 
@@ -138,7 +146,7 @@ module Fhir
       kind, definition, inner = resolution
       case kind
       when :plain then apply_clause(scope, definition, clause)
-      when :missing then missing_fragment(scope, definition, clause.values == %w[true])
+      when :missing then missing_fragment(scope, definition, clause, clause.values == %w[true])
       when :chain then chain_fragment(scope, definition, inner)
       when :has then has_fragment(scope, definition, inner)
       end
@@ -235,13 +243,15 @@ module Fhir
 
     # --- :missing -------------------------------------------------------------
 
-    def missing_fragment(scope, definition, missing)
+    def missing_fragment(scope, definition, clause, missing)
       case definition[:type]
       when :identifier
         ids = ResourceIdentifier.where(resource_type: resource_type).select(:resource_id)
         missing ? scope.where.not(id: ids) : scope.where(id: ids)
+      when :token
+        token_missing_fragment(scope, definition, clause, missing)
       when :token_or_text
-        both_columns_missing(scope, definition[:token_column], definition[:text_column], missing)
+        token_or_text_missing_fragment(scope, definition, clause, missing)
       when :date, :datetime
         if definition[:end_column]
           both_columns_missing(scope, definition[:column], definition[:end_column], missing)
@@ -274,10 +284,36 @@ module Fhir
       end
     end
 
+    # present == has at least one resource_tokens row for this param (_id excepted:
+    # it is column-backed, so its presence is the PK's nullability).
+    def token_missing_fragment(scope, definition, clause, missing)
+      return null_fragment(scope, definition[:column], missing) if definition[:backing] == :column
+
+      ids = token_param_ids(clause)
+      missing ? scope.where.not(id: ids) : scope.where(id: ids)
+    end
+
+    # token_or_text is missing only when BOTH the token rows and the text column are
+    # absent; present when either exists.
+    def token_or_text_missing_fragment(scope, definition, clause, missing)
+      ids = token_param_ids(clause)
+      text_column = definition[:text_column]
+
+      if missing
+        scope.where.not(id: ids).where("#{text_column} IS NULL")
+      else
+        scope.where("#{model.table_name}.id IN (#{ids.to_sql}) OR #{text_column} IS NOT NULL")
+      end
+    end
+
+    def token_param_ids(clause)
+      ResourceToken.where(resource_type: resource_type, param_name: canonical_name(clause.name)).select(:resource_id)
+    end
+
     def apply_clause(scope, definition, clause)
       case definition[:type]
       when :string then string_fragment(scope, definition[:column], clause, word_boundary: definition[:word_boundary])
-      when :token then token_fragment(scope, definition[:column], clause)
+      when :token then token_fragment(scope, definition, clause)
       when :boolean then boolean_fragment(scope, definition[:column], clause)
       when :date, :datetime then date_fragment(scope, definition, clause)
       when :reference then reference_fragment(scope, definition, clause)
@@ -327,10 +363,19 @@ module Fhir
 
     # --- :token / :token_or_text --------------------------------------------
 
-    # Token columns only ever store the code (not the system), so the system portion
-    # of a `system|code` value is accepted but ignored -- every JP Core token param
-    # implemented so far has a single fixed CodeSystem binding.
-    def token_fragment(scope, column, clause)
+    # Token search matches (system, code) rows in resource_tokens (one row per coding,
+    # all codings), so `system|code` is honored and multi-coded elements are found by
+    # any of their codings. _id is the sole exception (backing: :column): it matches the
+    # primary-key column directly. The flat token columns (status, class_code, ...) are
+    # still populated for _sort but no longer used for matching.
+    def token_fragment(scope, definition, clause)
+      return column_token_fragment(scope, definition[:column], clause) if definition[:backing] == :column
+
+      token_ids = token_id_scope(canonical_name(clause.name), clause.values)
+      token_ids ? scope.where(id: token_ids) : scope
+    end
+
+    def column_token_fragment(scope, column, clause)
       codes = clause.values.map { |v| token_code(v) }
       return scope if codes.empty?
 
@@ -341,11 +386,43 @@ module Fhir
       value.include?("|") ? value.split("|", 2).last : value
     end
 
+    # A resource_tokens subquery selecting the resource_ids whose (system, code) rows
+    # satisfy any of the clause values, or nil when there are no values to match.
+    def token_id_scope(param_name, values)
+      fragments = values.map { |v| token_value_fragment(v) }
+      return nil if fragments.empty?
+
+      sql = fragments.map(&:first).join(" OR ")
+      binds = fragments.flat_map(&:last)
+      ResourceToken.where(resource_type: resource_type, param_name: param_name).where(sql, *binds).select(:resource_id)
+    end
+
+    # The four FHIR token forms: `code` (any system), `system|code`, `system|` (any
+    # code in the system), `|code` (code with no system).
+    def token_value_fragment(value)
+      return ["code = ?", [value]] unless value.include?("|")
+
+      system, code = value.split("|", 2)
+      if system.empty?
+        ["(system IS NULL AND code = ?)", [code]]
+      elsif code.empty?
+        ["system = ?", [system]]
+      else
+        ["(system = ? AND code = ?)", [system, code]]
+      end
+    end
+
+    # token side (resource_tokens membership) OR text side (text_column ILIKE). The
+    # token subquery is embedded via to_sql so it can be OR-combined with the text
+    # fragments, mirroring has_fragment.
     def token_or_text_fragment(scope, definition, clause)
       mode = string_mode(clause.modifier)
-      fragments = clause.values.map do |v|
-        text_sql, text_binds = string_value_fragment(definition[:text_column], v, mode, false)
-        ["(#{definition[:token_column]} = ? OR #{text_sql})", [token_code(v), *text_binds]]
+      token_ids = token_id_scope(canonical_name(clause.name), clause.values)
+
+      fragments = []
+      fragments << ["#{model.table_name}.id IN (#{token_ids.to_sql})", []] if token_ids
+      clause.values.each do |v|
+        fragments << string_value_fragment(definition[:text_column], v, mode, false)
       end
       where_or(scope, fragments)
     end

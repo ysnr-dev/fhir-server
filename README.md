@@ -608,6 +608,16 @@ docker compose -f docker-compose.prod.yml up -d
 - LBのヘルスチェックは `GET /up`(認証・監査・SSL/ホスト検査の対象外)。
 - 実患者データの運用ではマネージドPostgreSQL(自動バックアップ・保存時暗号化)を推奨。
 
+#### token検索インデックス(resource_tokens)の初期化
+
+`system|code` に対応した token 検索は `resource_tokens` テーブルを使う。このテーブルは
+リソースの書き込み時にしか埋まらないため、**既存データがある環境ではマイグレーション後に
+一度だけ**再構築タスクを実行する(新規構築の環境では不要):
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T web bin/rails fhir:reindex_tokens
+```
+
 ### 定期メンテナンス
 
 期限切れトークン/JTIの掃除、および Bulk Data $export のスタックジョブ失敗化・期限切れジョブ削除を

@@ -9,6 +9,11 @@ module Fhir
         subject_reference: { path: "subject.reference" },
         document_date: { path: "date", transform: :datetime }
       }.freeze
+
+      TOKENS = {
+        "status" => { path: "status", kind: :code },
+        "type"   => { path: "type", kind: :codeable_concept }
+      }.freeze
     end
   end
 end

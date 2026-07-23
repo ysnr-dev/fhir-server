@@ -10,6 +10,11 @@ module Fhir
         encounter_reference: { path: "encounter.reference" },
         started: { path: "started", transform: :datetime }
       }.freeze
+
+      TOKENS = {
+        "status"   => { path: "status", kind: :code },
+        "modality" => { path: "modality", kind: :coding_list }
+      }.freeze
     end
   end
 end

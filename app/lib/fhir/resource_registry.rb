@@ -9,6 +9,7 @@ module Fhir
         validator: PatientValidator,
         search_params: SearchDefinitions::Patient::PARAMS,
         extraction: ExtractionDefinitions::Patient::FIELDS,
+        token_extraction: ExtractionDefinitions::Patient::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Patient"
       },
       "MedicationRequest" => {
@@ -16,6 +17,7 @@ module Fhir
         validator: MedicationRequestValidator,
         search_params: SearchDefinitions::MedicationRequest::PARAMS,
         extraction: ExtractionDefinitions::MedicationRequest::FIELDS,
+        token_extraction: ExtractionDefinitions::MedicationRequest::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRequest"
       },
       "Medication" => {
@@ -23,6 +25,7 @@ module Fhir
         validator: MedicationValidator,
         search_params: SearchDefinitions::Medication::PARAMS,
         extraction: ExtractionDefinitions::Medication::FIELDS,
+        token_extraction: ExtractionDefinitions::Medication::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Medication"
       },
       "MedicationDispense" => {
@@ -30,6 +33,7 @@ module Fhir
         validator: MedicationDispenseValidator,
         search_params: SearchDefinitions::MedicationDispense::PARAMS,
         extraction: ExtractionDefinitions::MedicationDispense::FIELDS,
+        token_extraction: ExtractionDefinitions::MedicationDispense::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationDispense"
       },
       "MedicationAdministration" => {
@@ -37,6 +41,7 @@ module Fhir
         validator: MedicationAdministrationValidator,
         search_params: SearchDefinitions::MedicationAdministration::PARAMS,
         extraction: ExtractionDefinitions::MedicationAdministration::FIELDS,
+        token_extraction: ExtractionDefinitions::MedicationAdministration::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationAdministration"
       },
       "MedicationStatement" => {
@@ -44,6 +49,7 @@ module Fhir
         validator: MedicationStatementValidator,
         search_params: SearchDefinitions::MedicationStatement::PARAMS,
         extraction: ExtractionDefinitions::MedicationStatement::FIELDS,
+        token_extraction: ExtractionDefinitions::MedicationStatement::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationStatement"
       },
       "Observation" => {
@@ -51,6 +57,7 @@ module Fhir
         validator: ObservationValidator,
         search_params: SearchDefinitions::Observation::PARAMS,
         extraction: ExtractionDefinitions::Observation::FIELDS,
+        token_extraction: ExtractionDefinitions::Observation::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Observation_Common"
       },
       "Specimen" => {
@@ -58,6 +65,7 @@ module Fhir
         validator: SpecimenValidator,
         search_params: SearchDefinitions::Specimen::PARAMS,
         extraction: ExtractionDefinitions::Specimen::FIELDS,
+        token_extraction: ExtractionDefinitions::Specimen::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Specimen_Common"
       },
       "ImagingStudy" => {
@@ -65,6 +73,7 @@ module Fhir
         validator: ImagingStudyValidator,
         search_params: SearchDefinitions::ImagingStudy::PARAMS,
         extraction: ExtractionDefinitions::ImagingStudy::FIELDS,
+        token_extraction: ExtractionDefinitions::ImagingStudy::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/ImagingStudy"
       },
       "DiagnosticReport" => {
@@ -72,6 +81,7 @@ module Fhir
         validator: DiagnosticReportValidator,
         search_params: SearchDefinitions::DiagnosticReport::PARAMS,
         extraction: ExtractionDefinitions::DiagnosticReport::FIELDS,
+        token_extraction: ExtractionDefinitions::DiagnosticReport::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_DiagnosticReport_Common"
       },
       "ServiceRequest" => {
@@ -79,6 +89,7 @@ module Fhir
         validator: ServiceRequestValidator,
         search_params: SearchDefinitions::ServiceRequest::PARAMS,
         extraction: ExtractionDefinitions::ServiceRequest::FIELDS,
+        token_extraction: ExtractionDefinitions::ServiceRequest::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_ServiceRequest_Common"
       },
       "Practitioner" => {
@@ -86,6 +97,7 @@ module Fhir
         validator: PractitionerValidator,
         search_params: SearchDefinitions::Practitioner::PARAMS,
         extraction: ExtractionDefinitions::Practitioner::FIELDS,
+        token_extraction: ExtractionDefinitions::Practitioner::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Practitioner"
       },
       "Organization" => {
@@ -93,6 +105,7 @@ module Fhir
         validator: OrganizationValidator,
         search_params: SearchDefinitions::Organization::PARAMS,
         extraction: ExtractionDefinitions::Organization::FIELDS,
+        token_extraction: ExtractionDefinitions::Organization::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Organization"
       },
       "PractitionerRole" => {
@@ -100,6 +113,7 @@ module Fhir
         validator: PractitionerRoleValidator,
         search_params: SearchDefinitions::PractitionerRole::PARAMS,
         extraction: ExtractionDefinitions::PractitionerRole::FIELDS,
+        token_extraction: ExtractionDefinitions::PractitionerRole::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_PractitionerRole"
       },
       "Encounter" => {
@@ -107,6 +121,7 @@ module Fhir
         validator: EncounterValidator,
         search_params: SearchDefinitions::Encounter::PARAMS,
         extraction: ExtractionDefinitions::Encounter::FIELDS,
+        token_extraction: ExtractionDefinitions::Encounter::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Encounter"
       },
       "Location" => {
@@ -114,6 +129,7 @@ module Fhir
         validator: LocationValidator,
         search_params: SearchDefinitions::Location::PARAMS,
         extraction: ExtractionDefinitions::Location::FIELDS,
+        token_extraction: ExtractionDefinitions::Location::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Location"
       },
       "Condition" => {
@@ -121,6 +137,7 @@ module Fhir
         validator: ConditionValidator,
         search_params: SearchDefinitions::Condition::PARAMS,
         extraction: ExtractionDefinitions::Condition::FIELDS,
+        token_extraction: ExtractionDefinitions::Condition::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Condition"
       },
       "AllergyIntolerance" => {
@@ -128,6 +145,7 @@ module Fhir
         validator: AllergyIntoleranceValidator,
         search_params: SearchDefinitions::AllergyIntolerance::PARAMS,
         extraction: ExtractionDefinitions::AllergyIntolerance::FIELDS,
+        token_extraction: ExtractionDefinitions::AllergyIntolerance::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_AllergyIntolerance"
       },
       "Procedure" => {
@@ -135,6 +153,7 @@ module Fhir
         validator: ProcedureValidator,
         search_params: SearchDefinitions::Procedure::PARAMS,
         extraction: ExtractionDefinitions::Procedure::FIELDS,
+        token_extraction: ExtractionDefinitions::Procedure::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Procedure"
       },
       "Immunization" => {
@@ -142,6 +161,7 @@ module Fhir
         validator: ImmunizationValidator,
         search_params: SearchDefinitions::Immunization::PARAMS,
         extraction: ExtractionDefinitions::Immunization::FIELDS,
+        token_extraction: ExtractionDefinitions::Immunization::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Immunization"
       },
       "Coverage" => {
@@ -149,6 +169,7 @@ module Fhir
         validator: CoverageValidator,
         search_params: SearchDefinitions::Coverage::PARAMS,
         extraction: ExtractionDefinitions::Coverage::FIELDS,
+        token_extraction: ExtractionDefinitions::Coverage::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage"
       },
       "DocumentReference" => {
@@ -156,6 +177,7 @@ module Fhir
         validator: DocumentReferenceValidator,
         search_params: SearchDefinitions::DocumentReference::PARAMS,
         extraction: ExtractionDefinitions::DocumentReference::FIELDS,
+        token_extraction: ExtractionDefinitions::DocumentReference::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/DocumentReference"
       },
       "Binary" => {
@@ -163,6 +185,7 @@ module Fhir
         validator: BinaryValidator,
         search_params: SearchDefinitions::Binary::PARAMS,
         extraction: ExtractionDefinitions::Binary::FIELDS,
+        token_extraction: ExtractionDefinitions::Binary::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/Binary"
       }
     }.freeze

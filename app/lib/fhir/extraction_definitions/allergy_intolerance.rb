@@ -14,6 +14,16 @@ module Fhir
         patient_reference: { path: "patient.reference" },
         recorded_time: { path: "recordedDate", transform: :datetime }
       }.freeze
+
+      # Token search sources (resource_tokens), keyed by canonical search-param name.
+      TOKENS = {
+        "clinical-status"     => { path: "clinicalStatus", kind: :codeable_concept },
+        "verification-status" => { path: "verificationStatus", kind: :codeable_concept },
+        "type"                => { path: "type", kind: :code },
+        "category"            => { path: "category", kind: :code_list },
+        "criticality"         => { path: "criticality", kind: :code },
+        "code"                => { path: "code", kind: :codeable_concept }
+      }.freeze
     end
   end
 end
