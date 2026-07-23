@@ -478,6 +478,47 @@ curl -i -X POST http://localhost:3000/ -H 'Content-Type: application/fhir+json' 
 
 ---
 
+### Bulk Data $export（一括エクスポート）の例
+
+[Bulk Data Access IG v2.0.0](http://hl7.org/fhir/uv/bulkdata/) に準拠した非同期エクスポート。
+システム全体（`/$export`）または全患者コンパートメント（`/Patient/$export`。Group リソース未実装のため
+`Group/$export` は非対応）を NDJSON で取得できます。`Prefer: respond-async` ヘッダーが必須です。
+
+```bash
+# 1. キックオフ -> 202 + Content-Location（ステータスURL）
+curl -si -H "Prefer: respond-async" http://localhost:3000/\$export
+# => HTTP/1.1 202 Accepted
+#    Content-Location: http://localhost:3000/$export/status/{id}
+
+# 2. ステータスをポーリング（実行中は202、完了で200 + マニフェスト）
+curl -s http://localhost:3000/\$export/status/{id}
+# => {"transactionTime":"...","request":"...","requiresAccessToken":false,
+#     "output":[{"type":"Patient","url":"http://.../\$export/files/{fileId}","count":2}, ...],"error":[]}
+
+# 3. 出力ファイルをダウンロード（application/fhir+ndjson、1行1リソース）
+curl -s http://localhost:3000/\$export/files/{fileId}
+
+# キャンセル（実行中のみ）
+curl -si -X DELETE http://localhost:3000/\$export/status/{id}
+```
+
+対応パラメータ: `_type`（カンマ区切り、Patient/$export では未指定でも Patient は常に含まれる）、
+`_since`（ISO 8601、増分エクスポート用）、`_outputFormat`（NDJSON系のみ）。それ以外のパラメータは
+デフォルトで 400 エラーになるが、`Prefer: respond-async, handling=lenient` を付けると無視される。
+
+**制限事項**:
+- 出力は Postgres に保存(Render無料枠に永続ディスクが無いため)。1ファイルの上限
+  `BULK_EXPORT_MAX_FILE_BYTES`(既定10MB、超過時は自動分割)、エクスポート全体の上限
+  `BULK_EXPORT_MAX_TOTAL_BYTES`(既定50MB、超過で失敗)。クライアントごと同時1件まで(429)。
+- 完了・失敗・キャンセル済みのジョブは `BULK_EXPORT_RETENTION_DAYS`(既定3日)で自動削除される
+  (下記「定期メンテナンス」参照)。
+- 削除済みリソースはマニフェストの `deleted[]` 配列としては通知されない(出力から単に除外される)。
+- ワーカーdynoが無いため、ジョブはWebプロセス内で実行される(ActiveJobの`:async`アダプタ)。
+  デプロイ等でプロセスが再起動すると実行中のジョブは失われ、次のポーリングまたは日次cronで
+  自動的に `failed` になる(クライアントは再度キックオフすればよい)。
+
+---
+
 ### エラーレスポンス例
 
 ```json
@@ -527,10 +568,12 @@ docker compose -f docker-compose.prod.yml up -d
 
 ### 定期メンテナンス
 
-期限切れトークン/JTIの掃除を日次cronで実行する:
+期限切れトークン/JTIの掃除、および Bulk Data $export のスタックジョブ失敗化・期限切れジョブ削除を
+日次cronで実行する(Render+Neon構成では `.github/workflows/purge_expired.yml` がこれを代行する):
 
 ```
 0 4 * * * docker compose -f /path/to/docker-compose.prod.yml exec -T web bin/rails fhir:purge_expired
+0 4 * * * docker compose -f /path/to/docker-compose.prod.yml exec -T web bin/rails fhir:purge_bulk_exports
 ```
 
 ### デプロイ後スモークテスト

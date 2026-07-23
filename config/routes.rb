@@ -12,6 +12,15 @@ Rails.application.routes.draw do
   get "/AuditEvent/:id", to: "audit_events#show"
   post "/", to: "bundles#create"
 
+  # Bulk Data $export (Bulk Data Access IG v2.0.0). Must be declared before the
+  # resource-type loop below so "/Patient/$export" is matched here rather than
+  # falling through to "GET /Patient/:id" with :id == "$export".
+  match "/$export",         to: "bulk_exports#kickoff", via: %i[get post], defaults: { kind: "system" }
+  match "/Patient/$export", to: "bulk_exports#kickoff", via: %i[get post], defaults: { kind: "patient" }
+  get    "/$export/status/:id", to: "bulk_exports#status"
+  delete "/$export/status/:id", to: "bulk_exports#cancel"
+  get    "/$export/files/:id",  to: "bulk_exports#download"
+
   # One identical route set per supported FHIR resource type, all dispatched to
   # FhirResourcesController with the type injected via defaults. Kept as literal
   # strings (rather than Fhir::ResourceRegistry.types) so loading routes never

@@ -28,3 +28,10 @@ jobs:
           # この cron は HTTP を受けないのでホスト名は使われない。
           FHIR_ALLOWED_HOSTS: cron.invalid
         run: bin/rails fhir:purge_expired
+      - name: Purge stale/expired bulk exports
+        env:
+          RAILS_ENV: production
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          FHIR_ALLOWED_HOSTS: cron.invalid
+        run: bin/rails fhir:purge_bulk_exports

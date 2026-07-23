@@ -112,7 +112,8 @@ docker run --rm \
 | `NEON_DATABASE_URL` | Neon #1 の接続文字列 |
 | `RAILS_MASTER_KEY` | fhir-server の master.key |
 
-`.github/workflows/purge_expired.yml` が毎日 JST 4:00 に `fhir:purge_expired` を実行する。
+`.github/workflows/purge_expired.yml` が毎日 JST 4:00 に `fhir:purge_expired` と
+`fhir:purge_bulk_exports`(Bulk Data $export のスタックジョブ失敗化・期限切れジョブ削除)を実行する。
 初回は **Actions タブ → purge-expired → Run workflow** で手動実行して成功を確認する。
 
 ## 5. MCP(ローカル起動)の接続先設定

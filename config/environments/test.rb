@@ -36,6 +36,11 @@ Rails.application.configure do
   # Store uploaded files on the local file system in a temporary directory.
   config.active_storage.service = :test
 
+  # Deterministic in specs: jobs queue instead of running on the :async
+  # thread pool, so BulkExportJob only runs when a spec explicitly calls
+  # perform_enqueued_jobs.
+  config.active_job.queue_adapter = :test
+
   config.action_mailer.perform_caching = false
 
   # Tell Action Mailer not to deliver emails to the real world.

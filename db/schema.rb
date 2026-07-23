@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_22_000005) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_23_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -82,6 +82,36 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_22_000005) do
     t.datetime "updated_at", null: false
     t.index ["deleted"], name: "index_binaries_on_deleted"
     t.index ["last_updated"], name: "index_binaries_on_last_updated"
+  end
+
+  create_table "bulk_export_files", id: :string, force: :cascade do |t|
+    t.string "bulk_export_id", null: false
+    t.string "resource_type", null: false
+    t.integer "sequence", default: 1, null: false
+    t.text "content", null: false
+    t.integer "resource_count", null: false
+    t.integer "byte_size", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bulk_export_id"], name: "index_bulk_export_files_on_bulk_export_id"
+  end
+
+  create_table "bulk_exports", id: :string, force: :cascade do |t|
+    t.string "kind", null: false
+    t.string "status", default: "in_progress", null: false
+    t.jsonb "types"
+    t.datetime "since"
+    t.string "output_format", null: false
+    t.datetime "transaction_time"
+    t.string "request_url", null: false
+    t.string "oauth_client_id"
+    t.text "error_message"
+    t.string "group_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_bulk_exports_on_created_at"
+    t.index ["oauth_client_id"], name: "index_bulk_exports_on_oauth_client_id"
+    t.index ["status"], name: "index_bulk_exports_on_status"
   end
 
   create_table "client_assertion_jtis", force: :cascade do |t|
@@ -630,4 +660,5 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_22_000005) do
   end
 
   add_foreign_key "access_tokens", "oauth_clients"
+  add_foreign_key "bulk_export_files", "bulk_exports", on_delete: :cascade
 end

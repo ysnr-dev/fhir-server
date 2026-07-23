@@ -50,16 +50,7 @@ module Fhir
     attr_reader :patient, :base_url, :types, :since
 
     def compartment_records
-      reference = "Patient/#{patient.id}"
-
-      compartment_types.flat_map do |type|
-        entry = ResourceRegistry.entry_for(type)
-        columns = patient_reference_columns(entry)
-        next [] if columns.empty?
-
-        scope = entry[:model].where(deleted: false)
-        scope.where(columns.map { |column| "#{column} = ?" }.join(" OR "), *([reference] * columns.size)).order(:id)
-      end
+      compartment_types.flat_map { |type| PatientCompartment.scope_for_patient(type, patient).order(:id) }
     end
 
     def compartment_types
@@ -70,16 +61,6 @@ module Fhir
       raise InvalidType, "Unsupported _type value(s): #{unknown.join(', ')}" if unknown.any?
 
       candidates & types
-    end
-
-    # Every reference search param targeting Patient is an extracted column in
-    # the current registry (no multiple:true Patient references exist), so
-    # compartment membership is a plain indexed column match.
-    def patient_reference_columns(entry)
-      entry[:search_params].values
-                           .select { |definition| definition[:type] == :reference && definition[:target_type] == "Patient" && !definition[:multiple] }
-                           .map { |definition| definition[:column] }
-                           .uniq
     end
   end
 end

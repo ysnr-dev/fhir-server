@@ -25,7 +25,10 @@ module Fhir
       rest = {
         "mode" => "server",
         "interaction" => SERVER_INTERACTIONS.map { |code| { "code" => code } },
-        "resource" => ResourceRegistry.types.map { |type| resource_component(type) } + [audit_event_component]
+        "resource" => ResourceRegistry.types.map { |type| resource_component(type) } + [audit_event_component],
+        "operation" => [
+          { "name" => "export", "definition" => "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/export" }
+        ]
       }
       rest = { "security" => security_component(base_url) }.merge(rest) if Auth.enabled?
 
@@ -36,6 +39,7 @@ module Fhir
         "kind" => "instance",
         "fhirVersion" => "4.0.1",
         "format" => %w[application/fhir+json json],
+        "instantiates" => ["http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data"],
         "rest" => [rest]
       }
     end
@@ -106,6 +110,7 @@ module Fhir
       ]
       if resource_type == "Patient"
         list << { "name" => "everything", "definition" => "http://hl7.org/fhir/OperationDefinition/Patient-everything" }
+        list << { "name" => "patient-export", "definition" => "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/patient-export" }
       end
       list
     end
