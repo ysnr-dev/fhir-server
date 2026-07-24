@@ -93,7 +93,7 @@ class Oauth::BrowserController < ActionController::Base
 
     @scopes = params[:scope].to_s.split
     return redirect_with_error("invalid_scope", "scope is required") if @scopes.empty?
-    return redirect_with_error("invalid_scope", "Only patient/*.read style scopes are supported") unless
+    return redirect_with_error("invalid_scope", "Only read-only patient/ scopes (e.g. patient/*.read or patient/*.rs) are supported") unless
       @scopes.all? { |scope| Fhir::Scopes.valid_patient?(scope) || Fhir::Scopes.valid_context?(scope) }
     # offline/online_access alone grants nothing to refresh -- there must be at
     # least one resource scope for the refresh token to reproduce.

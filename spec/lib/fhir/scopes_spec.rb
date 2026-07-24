@@ -33,6 +33,37 @@ RSpec.describe Fhir::Scopes do
       expect(described_class.valid?("system/Patient.delete")).to be(false)
       expect(described_class.valid?("email")).to be(false)
     end
+
+    it "accepts SMART v2 CRUDS access on system scopes" do
+      expect(described_class.valid?("system/Patient.rs")).to be(true)
+      expect(described_class.valid?("system/*.cud")).to be(true)
+      expect(described_class.valid?("system/Encounter.cruds")).to be(true)
+      expect(described_class.valid?("system/Observation.r")).to be(true)
+    end
+
+    it "accepts read-only SMART v2 CRUDS access on patient scopes" do
+      expect(described_class.valid?("patient/Observation.rs")).to be(true)
+      expect(described_class.valid?("patient/*.rs")).to be(true)
+      expect(described_class.valid?("patient/Observation.r")).to be(true)
+      expect(described_class.valid?("patient/Observation.s")).to be(true)
+    end
+
+    it "rejects patient v2 scopes that would grant writes" do
+      expect(described_class.valid?("patient/Observation.cruds")).to be(false)
+      expect(described_class.valid?("patient/Observation.cud")).to be(false)
+      expect(described_class.valid?("patient/Observation.rus")).to be(false)
+    end
+
+    it "rejects malformed v2 access: non-canonical order, repeats, or empty" do
+      expect(described_class.valid?("system/Patient.sr")).to be(false)
+      expect(described_class.valid?("system/Patient.rr")).to be(false)
+      expect(described_class.valid?("system/Patient.x")).to be(false)
+      expect(described_class.valid?("system/Patient.")).to be(false)
+    end
+
+    it "rejects v2 ?query search-parameter constraints as unsupported" do
+      expect(described_class.valid?("patient/Observation.rs?category=laboratory")).to be(false)
+    end
   end
 
   describe ".valid_context? / .refresh_requested? / .identity_requested?" do
@@ -106,6 +137,26 @@ RSpec.describe Fhir::Scopes do
       expect(scopes.allows?("Observation", :read)).to be(true)
       expect(scopes.allows?("Observation", :write)).to be(false)
       expect(scopes.allows?("Condition", :read)).to be(false)
+    end
+
+    it "maps SMART v2 CRUDS letters onto read/write" do
+      rs = described_class.new(%w[system/Observation.rs])
+      expect(rs.allows?("Observation", :read)).to be(true)
+      expect(rs.allows?("Observation", :write)).to be(false)
+
+      cud = described_class.new(%w[system/Observation.cud])
+      expect(cud.allows?("Observation", :read)).to be(false)
+      expect(cud.allows?("Observation", :write)).to be(true)
+
+      cruds = described_class.new(%w[system/*.cruds])
+      expect(cruds.allows?("Observation", :read)).to be(true)
+      expect(cruds.allows?("Coverage", :write)).to be(true)
+    end
+
+    it "treats a v2 search-only letter as read" do
+      scopes = described_class.new(%w[system/Observation.s])
+      expect(scopes.allows?("Observation", :read)).to be(true)
+      expect(scopes.allows?("Observation", :write)).to be(false)
     end
   end
 

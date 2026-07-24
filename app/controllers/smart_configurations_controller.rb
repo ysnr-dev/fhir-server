@@ -18,7 +18,8 @@ class SmartConfigurationsController < ApplicationController
       "token_endpoint_auth_signing_alg_values_supported" => Fhir::ClientAssertion::ALGORITHMS,
       "id_token_signing_alg_values_supported" => [Fhir::SigningKey::ALG],
       "scopes_supported" => %w[
-        system/*.read system/*.write system/*.* patient/*.read
+        system/*.read system/*.write system/*.* system/*.rs system/*.cud system/*.cruds
+        patient/*.read patient/*.rs
         offline_access online_access openid fhirUser profile
       ],
       "capabilities" => %w[
@@ -27,6 +28,7 @@ class SmartConfigurationsController < ApplicationController
         sso-openid-connect
         permission-patient
         permission-v1
+        permission-v2
         permission-offline
         permission-online
         client-public

@@ -300,6 +300,14 @@ RSpec.describe "SMART standalone launch", type: :request do
       expect(body["capabilities"]).to include("launch-standalone", "context-standalone-patient")
     end
 
+    it "advertises both v1 and v2 permission support" do
+      get "/.well-known/smart-configuration"
+
+      body = JSON.parse(response.body)
+      expect(body["capabilities"]).to include("permission-v1", "permission-v2")
+      expect(body["scopes_supported"]).to include("system/*.cruds", "patient/*.rs")
+    end
+
     it "advertises the authorize URI in the CapabilityStatement" do
       get "/metadata"
 
