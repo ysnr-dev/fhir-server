@@ -83,12 +83,25 @@ class OauthTokensController < ApplicationController
       )
     end
 
+    # openid asks for an OpenID Connect id_token identifying the logged-in user.
+    # Issued only here, at the code exchange -- not on refresh, where there is
+    # no authorization-request nonce to bind and re-identifying an unchanged
+    # user adds nothing (OIDC allows omitting it on refresh).
+    id_token = nil
+    if Fhir::Scopes.identity_requested?(code.scope_list)
+      id_token = Fhir::IdToken.issue(
+        user: code.user, patient_id: code.patient_id, client: client,
+        scopes: code.scope_list, issuer: base_url, nonce: code.nonce
+      )
+    end
+
     render json: {
       access_token: raw_token,
       token_type: "bearer",
       expires_in: AccessToken::TTL.to_i,
       scope: code.scopes,
       refresh_token: raw_refresh,
+      id_token: id_token,
       # SMART launch context: tells the app which patient the token is for,
       # so it does not have to guess or ask.
       patient: code.patient_id

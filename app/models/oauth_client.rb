@@ -91,10 +91,11 @@ class OauthClient < ApplicationRecord
     patient = granted.any? { |scope| Fhir::Scopes.valid_patient?(scope) }
     context = granted.any? { |scope| Fhir::Scopes.valid_context?(scope) }
     errors.add(:scopes, "cannot mix system/ and patient/ scopes") if system && patient
-    # Refresh tokens exist only for the interactive flow; a backend client can
-    # always mint a fresh access token itself, so offline/online_access on a
-    # system-scope registration is a configuration mistake, not a feature.
-    errors.add(:scopes, "offline_access/online_access require patient/ scopes") if context && !patient
+    # The context scopes (offline/online_access, openid/fhirUser/profile) only
+    # mean anything in the interactive flow: a backend client mints its own
+    # access tokens and has no user to identify. So they require a patient/
+    # scope alongside them -- on a system registration they are a mistake.
+    errors.add(:scopes, "offline_access/openid style scopes require patient/ scopes") if context && !patient
   end
 
   def launch_clients_have_redirect_uris

@@ -19,35 +19,49 @@ RSpec.describe Fhir::Scopes do
       expect(described_class.valid?("patient/Observation.*")).to be(false)
     end
 
-    it "accepts the refresh-token context scopes" do
+    it "accepts the refresh-token and identity context scopes" do
       expect(described_class.valid?("offline_access")).to be(true)
       expect(described_class.valid?("online_access")).to be(true)
+      expect(described_class.valid?("openid")).to be(true)
+      expect(described_class.valid?("fhirUser")).to be(true)
+      expect(described_class.valid?("profile")).to be(true)
     end
 
     it "rejects unimplemented launch contexts and malformed scopes" do
       expect(described_class.valid?("user/*.read")).to be(false)
       expect(described_class.valid?("system/patient.read")).to be(false)
       expect(described_class.valid?("system/Patient.delete")).to be(false)
-      expect(described_class.valid?("openid")).to be(false)
+      expect(described_class.valid?("email")).to be(false)
     end
   end
 
-  describe ".valid_context? / .refresh_requested?" do
-    it "recognises the context scopes and nothing else" do
+  describe ".valid_context? / .refresh_requested? / .identity_requested?" do
+    it "recognises the refresh and identity context scopes" do
       expect(described_class.valid_context?("offline_access")).to be(true)
       expect(described_class.valid_context?("online_access")).to be(true)
+      expect(described_class.valid_context?("openid")).to be(true)
+      expect(described_class.valid_context?("fhirUser")).to be(true)
       expect(described_class.valid_context?("patient/*.read")).to be(false)
     end
 
-    it "detects a refresh request in a scope list" do
+    it "detects a refresh request from the refresh scopes only" do
       expect(described_class.refresh_requested?(%w[patient/*.read offline_access])).to be(true)
+      expect(described_class.refresh_requested?(%w[patient/*.read online_access])).to be(true)
+      expect(described_class.refresh_requested?(%w[patient/*.read openid])).to be(false)
       expect(described_class.refresh_requested?(%w[patient/*.read])).to be(false)
+    end
+
+    it "detects an identity request from openid only" do
+      expect(described_class.identity_requested?(%w[patient/*.read openid])).to be(true)
+      # fhirUser/profile shape the id_token but do not trigger one on their own.
+      expect(described_class.identity_requested?(%w[patient/*.read fhirUser])).to be(false)
+      expect(described_class.identity_requested?(%w[patient/*.read offline_access])).to be(false)
     end
   end
 
   describe "#allows? with context scopes" do
-    it "grants no resource access through them" do
-      scopes = described_class.new(%w[offline_access online_access])
+    it "grants no resource access through refresh or identity scopes" do
+      scopes = described_class.new(%w[offline_access online_access openid fhirUser profile])
       expect(scopes.allows?("Patient", :read)).to be(false)
       expect(scopes.allows?("*", :read)).to be(false)
     end

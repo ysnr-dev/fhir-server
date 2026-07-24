@@ -17,7 +17,7 @@ class AuthorizationCode < ApplicationRecord
   has_many :refresh_tokens, dependent: :destroy
 
   # Returns [record, raw_code].
-  def self.issue(client:, user:, scopes:, redirect_uri:, code_challenge:, code_challenge_method: "S256")
+  def self.issue(client:, user:, scopes:, redirect_uri:, code_challenge:, code_challenge_method: "S256", nonce: nil)
     raw = SecureRandom.urlsafe_base64(32)
     record = create!(
       oauth_client: client,
@@ -27,6 +27,7 @@ class AuthorizationCode < ApplicationRecord
       redirect_uri: redirect_uri,
       code_challenge: code_challenge,
       code_challenge_method: code_challenge_method,
+      nonce: nonce.presence,
       code_digest: OauthClient.digest(raw),
       expires_at: TTL.from_now
     )

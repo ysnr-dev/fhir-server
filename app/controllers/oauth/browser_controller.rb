@@ -15,7 +15,7 @@ class Oauth::BrowserController < ActionController::Base
   before_action { response.set_header("Cache-Control", "no-store") }
   before_action :load_authorize_request
 
-  AUTHORIZE_PARAMS = %w[client_id redirect_uri scope state code_challenge code_challenge_method].freeze
+  AUTHORIZE_PARAMS = %w[client_id redirect_uri scope state code_challenge code_challenge_method nonce].freeze
 
   # GET /oauth/authorize
   def authorize
@@ -51,7 +51,8 @@ class Oauth::BrowserController < ActionController::Base
       scopes: @scopes,
       redirect_uri: @redirect_uri,
       code_challenge: @code_challenge,
-      code_challenge_method: @code_challenge_method
+      code_challenge_method: @code_challenge_method,
+      nonce: @nonce
     )
 
     redirect_to_client(code: raw)
@@ -77,6 +78,7 @@ class Oauth::BrowserController < ActionController::Base
       @client.redirect_uri_registered?(@redirect_uri)
 
     @state = params[:state].to_s
+    @nonce = params[:nonce].to_s
     @code_challenge = params[:code_challenge].to_s
     @code_challenge_method = params[:code_challenge_method].presence || "S256"
 
@@ -140,11 +142,15 @@ class Oauth::BrowserController < ActionController::Base
     "Composition" => "診療文書"
   }.freeze
 
-  # The context scopes are not "閲覧" of anything -- they change how long the
-  # app keeps access, which is exactly what the patient needs to understand.
+  # The context scopes are not "閲覧" of anything -- the refresh scopes change
+  # how long the app keeps access, the identity scopes tell the app who you are.
+  # Both are things the patient should understand plainly.
   CONTEXT_SCOPE_LABELS = {
     "offline_access" => "ログアウト後も再ログインなしでアクセスを継続する(長期間)",
-    "online_access" => "ログイン中のあいだアクセスを継続する"
+    "online_access" => "ログイン中のあいだアクセスを継続する",
+    "openid" => "あなたがログイン本人であることの確認",
+    "fhirUser" => "ログイン中の患者情報とのひも付け",
+    "profile" => "ログイン中の患者情報とのひも付け"
   }.freeze
 
   def scope_description(scope)

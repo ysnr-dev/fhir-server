@@ -14,6 +14,12 @@ module Fhir
   #     grant no resource access themselves, so #parse ignores them and they
   #     never satisfy #allows?. Only the interactive flow honours them.
   #
+  #   openid  fhirUser  profile
+  #     Identity scopes (OpenID Connect): they ask for an id_token identifying
+  #     the logged-in user. Like the refresh context scopes, they grant no
+  #     resource access. `openid` triggers the id_token; `fhirUser`/`profile`
+  #     add the fhirUser claim to it.
+  #
   # user/ scopes belong to the interactive provider-facing flows, which this
   # server does not implement -- such scopes are ignored if present.
   #
@@ -26,7 +32,12 @@ module Fhir
     # Phase 1 grants no write through the interactive flow, so patient/X.write
     # and patient/X.* are not merely unhandled -- they are invalid.
     PATIENT_PATTERN = %r{\Apatient/(\*|[A-Z][A-Za-z]*)\.(read)\z}
-    CONTEXT_SCOPES = %w[offline_access online_access].freeze
+    REFRESH_SCOPES = %w[offline_access online_access].freeze
+    IDENTITY_SCOPES = %w[openid fhirUser profile].freeze
+    # Context scopes carry no resource access; they request refresh/identity
+    # tokens instead. Grouped together for the "must accompany a patient/ scope"
+    # registration rule, split apart where behaviour differs (see the helpers).
+    CONTEXT_SCOPES = (REFRESH_SCOPES + IDENTITY_SCOPES).freeze
 
     def self.valid?(scope)
       valid_system?(scope) || valid_patient?(scope) || valid_context?(scope)
@@ -46,7 +57,14 @@ module Fhir
 
     # Whether this scope list asks for a refresh token at all.
     def self.refresh_requested?(scopes)
-      scopes.intersect?(CONTEXT_SCOPES)
+      scopes.intersect?(REFRESH_SCOPES)
+    end
+
+    # Whether this scope list asks for an OpenID Connect id_token. `openid` is
+    # the trigger; fhirUser/profile only shape its claims, so on their own they
+    # produce no id_token.
+    def self.identity_requested?(scopes)
+      scopes.include?("openid")
     end
 
     def initialize(scopes)

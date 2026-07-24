@@ -224,6 +224,18 @@ curl -s -X POST http://localhost:3000/oauth/token \
 
 `POST /oauth/revoke` にリフレッシュトークンを渡すとグラント全体（アクセストークン含む）が失効します。
 
+**OpenID Connect（ユーザー識別）**: スコープに `openid` を含めて同意を得ると、
+トークンレスポンスに `id_token`（RS384 署名の JWT）が含まれます。
+`sub`（ログインユーザーの安定 ID）を持ち、`fhirUser` / `profile` スコープを併せて要求すると
+`fhirUser` クレーム（`{base_url}/Patient/{id}` の絶対 URL）が付与されます。
+認可リクエストで `nonce` を渡すと id_token にそのまま反映されます。
+アプリは `GET /.well-known/jwks.json` で公開鍵を取得して署名を検証できます
+（discovery の `issuer` / `jwks_uri` / `id_token_signing_alg_values_supported` を参照）。
+
+> **本番運用の注意**: id_token の署名鍵は環境変数 `OIDC_SIGNING_KEY`（RSA 秘密鍵 PEM）で固定してください。
+> 未設定だとプロセス起動ごとに一時鍵が生成され、複数インスタンスや再起動をまたいだ id_token の検証が失敗します
+> （`openid` を使わない構成では不要）。
+
 ### 対応リソース
 
 全 23 リソースが同一のエンドポイント群（後述）を持ちます。

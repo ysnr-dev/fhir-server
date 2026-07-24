@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_24_000005) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_25_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,6 +90,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_24_000005) do
     t.datetime "used_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "nonce"
     t.index ["code_digest"], name: "index_authorization_codes_on_code_digest", unique: true
     t.index ["expires_at"], name: "index_authorization_codes_on_expires_at"
     t.index ["oauth_client_id"], name: "index_authorization_codes_on_oauth_client_id"

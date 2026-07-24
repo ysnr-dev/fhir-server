@@ -4,6 +4,7 @@ Rails.application.routes.draw do
 
   get "/metadata", to: "capability_statements#show"
   get "/.well-known/smart-configuration", to: "smart_configurations#show"
+  get "/.well-known/jwks.json", to: "jwks#show"
   post "/oauth/token", to: "oauth_tokens#create"
   post "/oauth/revoke", to: "oauth_revocations#create"
 
