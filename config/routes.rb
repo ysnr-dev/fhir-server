@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "/.well-known/jwks.json", to: "jwks#show"
   post "/oauth/token", to: "oauth_tokens#create"
   post "/oauth/revoke", to: "oauth_revocations#create"
+  post "/oauth/introspect", to: "oauth_introspections#create"
 
   # Interactive SMART standalone launch. The only HTML in this app; everything
   # under it renders login/consent and returns the user to the client app.

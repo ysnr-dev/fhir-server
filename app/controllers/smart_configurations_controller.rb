@@ -10,6 +10,7 @@ class SmartConfigurationsController < ApplicationController
       "authorization_endpoint" => "#{base_url}/oauth/authorize",
       "token_endpoint" => "#{base_url}/oauth/token",
       "revocation_endpoint" => "#{base_url}/oauth/revoke",
+      "introspection_endpoint" => "#{base_url}/oauth/introspect",
       "grant_types_supported" => %w[client_credentials authorization_code refresh_token],
       "response_types_supported" => ["code"],
       # S256 only: "plain" offers no protection against an intercepted code.
