@@ -15,7 +15,12 @@ class ApplicationController < ActionController::API
   # checks: array of [resource_type, :read | :write] pairs the request needs.
   # Returns true when the request may proceed; renders 401/403 (and returns
   # false) otherwise. A no-op when auth is disabled (Fhir::Auth).
-  def authorize_fhir_request!(checks)
+  #
+  # require_system: for interactions that inherently reach past a single patient
+  # compartment (server-wide history, the audit trail, bulk export). Those can
+  # never be satisfied by a patient-context token, and `patient/*.read` would
+  # otherwise pass the wildcard check -- see Fhir::Scopes.
+  def authorize_fhir_request!(checks, require_system: false)
     return true unless Fhir::Auth.enabled?
 
     raw = bearer_token
@@ -30,8 +35,24 @@ class ApplicationController < ActionController::API
     # attributed to the client in the audit trail (FhirAuditing).
     @current_access_token = token
 
-    denied = checks.find { |type, access| !token.scope_set.allows?(type, access) }
-    denied ? render_forbidden(denied) : true
+    denied = checks.find do |type, access|
+      require_system ? !token.scope_set.system_allows?(type, access) : !token.scope_set.allows?(type, access)
+    end
+    denied ? render_forbidden(denied, require_system: require_system) : true
+  end
+
+  # The patient compartment this request is confined to, or nil when it is not
+  # confined at all (system token, or auth disabled). Everything downstream
+  # treats nil as "no filtering", which is what keeps the Backend Services path
+  # byte-for-byte unchanged.
+  def access_context
+    return @access_context if defined?(@access_context)
+
+    token = @current_access_token
+    @access_context =
+      if token&.patient_context?
+        Fhir::PatientContext.new(patient_id: token.patient_id, scope_set: token.scope_set)
+      end
   end
 
   def bearer_token
@@ -49,14 +70,25 @@ class ApplicationController < ActionController::API
     false
   end
 
-  def render_forbidden((resource_type, access))
+  def render_forbidden((resource_type, access), require_system: false)
     render_operation_outcome_single(
       status: :forbidden,
       severity: "error",
       code: "forbidden",
-      diagnostics: "Insufficient scope: this interaction requires system/#{resource_type}.#{access}"
+      diagnostics: "Insufficient scope: this interaction requires #{required_scope(resource_type, access, require_system)}"
     )
     false
+  end
+
+  # Name the scope the caller could actually have asked for: a patient-context
+  # token cannot obtain system/ scopes, so quoting them back would be a dead end
+  # -- except on the system-only interactions, where that really is the answer.
+  def required_scope(resource_type, access, require_system)
+    if !require_system && @current_access_token&.patient_context?
+      "patient/#{resource_type}.#{access}"
+    else
+      "system/#{resource_type}.#{access}"
+    end
   end
 
   def parse_body

@@ -4,9 +4,10 @@
 class HistoriesController < ApplicationController
   include FhirAuditing # first, so halted (401/403) requests are audited too
 
-  # System-level history spans every resource type, so it needs a
-  # wildcard-type read grant (system/*.read or system/*.*).
-  before_action -> { authorize_fhir_request!([["*", :read]]) }
+  # System-level history spans every resource type -- and every patient -- so it
+  # needs a wildcard-type SYSTEM read grant (system/*.read or system/*.*). A
+  # patient-context token can never widen to this, hence require_system.
+  before_action -> { authorize_fhir_request!([["*", :read]], require_system: true) }
 
   def index
     history_params = parse_history_params

@@ -30,12 +30,12 @@ class FhirResourcesController < ApplicationController
   }.freeze
 
   def index
-    result = Fhir::Operation.search(resource_type, request.query_string, base_url: base_url)
+    result = Fhir::Operation.search(resource_type, request.query_string, base_url: base_url, context: access_context)
     render_operation_result(result)
   end
 
   def show
-    result = Fhir::Operation.read(resource_type, params[:id])
+    result = Fhir::Operation.read(resource_type, params[:id], context: access_context)
 
     # Conditional read: 304 with the current ETag and no body when the client's
     # cached copy is still current.
@@ -122,12 +122,15 @@ class FhirResourcesController < ApplicationController
     model = Fhir::ResourceRegistry.entry_for(resource_type).fetch(:model)
     record = model.find_by(id: params[:id])
     return render_not_found unless record
+    # Another patient's compartment is a 404, not a 403 -- same reasoning as
+    # Fhir::Operation#read.
+    return render_not_found if access_context && access_context.patient_id != record.id
     return render_gone if record.deleted?
 
     since = parse_since_param
     return if since == :invalid # already rendered 400
 
-    bundle = Fhir::PatientEverything.call(patient: record, base_url: base_url, types: type_filter_param, since: since)
+    bundle = Fhir::PatientEverything.call(patient: record, base_url: base_url, types: everything_types, since: since)
     render_fhir_resource(bundle, status: :ok)
   rescue Fhir::PatientEverything::InvalidType => e
     render_operation_outcome_single(status: :bad_request, severity: "error", code: "value", diagnostics: e.message)
@@ -189,7 +192,10 @@ class FhirResourcesController < ApplicationController
     return unless Fhir::Auth.enabled?
 
     access = WRITE_ACTIONS.include?(action_name) ? :write : :read
-    authorize_fhir_request!([[resource_type, access]])
+    # Type-level history returns every version of every record of the type,
+    # across all patients, and there is no compartment-filtered form of it --
+    # so it is system-scope only.
+    authorize_fhir_request!([[resource_type, access]], require_system: action_name == "type_history")
   end
 
   def audit_interaction
@@ -208,9 +214,13 @@ class FhirResourcesController < ApplicationController
     response.get_header("Location")&.match(%r{/#{resource_type}/([^/]+)/_history/})&.captures&.first
   end
 
+  # Loaded by id, so the compartment check happens after the fact. Treating an
+  # out-of-compartment hit as a miss lets the existing `unless @record` guards
+  # render the same 404 a nonexistent id would -- no existence disclosure.
   def set_record
     model = Fhir::ResourceRegistry.entry_for(resource_type).fetch(:model)
-    @record = model.find_by(id: params[:id])
+    record = model.find_by(id: params[:id])
+    @record = record if record && (access_context.nil? || access_context.allows_record?(resource_type, record))
   end
 
   def if_match_version
@@ -261,6 +271,29 @@ class FhirResourcesController < ApplicationController
   def type_filter_param
     raw = params[:_type]
     raw.present? ? raw.split(",").map(&:strip).reject(&:blank?) : nil
+  end
+
+  # $everything sweeps the whole compartment, so it can reach types the caller
+  # never named and the up-front scope check never saw. Narrow it to the types
+  # actually consented to; an unnamed _type then means "everything I may read"
+  # rather than "everything". An explicitly requested but unconsented type is
+  # dropped silently, matching how search treats clauses it will not honour.
+  def type_filter_for_context
+    Fhir::ResourceRegistry.types.select { |type| access_context.readable_type?(type) }
+  end
+
+  def everything_types
+    return type_filter_param unless access_context
+
+    requested = type_filter_param
+    return type_filter_for_context unless requested
+
+    # Reject genuinely unknown types (400) before the consent filter would
+    # silently swallow them along with the merely-unconsented ones.
+    unknown = requested - Fhir::ResourceRegistry.types
+    raise Fhir::PatientEverything::InvalidType, "Unsupported _type value(s): #{unknown.join(', ')}" if unknown.any?
+
+    requested & type_filter_for_context
   end
 
   # Returns a Time, nil (absent), or :invalid after rendering the 400.

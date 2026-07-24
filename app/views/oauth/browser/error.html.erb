@@ -1,0 +1,6 @@
+<% content_for :title, "リクエストエラー" %>
+<h1>リクエストを処理できません</h1>
+<p><%= @message %></p>
+<%# No link back: the redirect_uri failed verification, which is precisely why
+    this page renders here instead of redirecting. %>
+<p class="muted">このアプリの開発者にお問い合わせください。</p>

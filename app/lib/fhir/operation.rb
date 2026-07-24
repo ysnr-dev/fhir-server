@@ -17,8 +17,8 @@ module Fhir
       new(resource_type).create(payload, id: id, if_none_exist: if_none_exist)
     end
 
-    def self.read(resource_type, id)
-      new(resource_type).read(id)
+    def self.read(resource_type, id, context: nil)
+      new(resource_type, context: context).read(id)
     end
 
     def self.update(resource_type, id, payload, if_match: nil)
@@ -45,13 +45,18 @@ module Fhir
       new(resource_type).validate(payload, profile: profile)
     end
 
-    def self.search(resource_type, query_string, base_url:)
-      new(resource_type).search(query_string, base_url: base_url)
+    def self.search(resource_type, query_string, base_url:, context: nil)
+      new(resource_type, context: context).search(query_string, base_url: base_url)
     end
 
-    def initialize(resource_type)
+    # context: a Fhir::PatientContext confining reads to one patient
+    # compartment, or nil for unrestricted access. Only the read paths consult
+    # it -- writes are unreachable with a patient-context token, which carries
+    # read-only scopes.
+    def initialize(resource_type, context: nil)
       @resource_type = resource_type
       @entry = ResourceRegistry.entry_for(resource_type)
+      @context = context
     end
 
     def create(payload, id: nil, if_none_exist: nil)
@@ -89,6 +94,10 @@ module Fhir
 
       record = entry[:model].find_by(id: id)
       return not_found_result(id) unless record
+      # Outside the caller's compartment reads as "not found", ahead of the
+      # deleted check: 410 would confirm the resource exists, and 403 would
+      # confirm it too. Existence is itself patient information.
+      return not_found_result(id) if context && !context.allows_record?(resource_type, record)
       return gone_result(id) if record.deleted?
 
       Result.new(status: :ok, resource: resource_for(record), version_id: record.version_id, resource_id: record.id)
@@ -267,13 +276,15 @@ module Fhir
       return unsupported_type_result unless entry
 
       search_params = SearchParams.parse(query_string.to_s)
-      result = Search.call(resource_type, search_params)
+      result = Search.call(resource_type, search_params, context: context)
       # _summary=count renders no entries, so resolving includes would be wasted work.
       included =
         if search_params.summary == "count"
           []
         else
-          IncludeResolver.call(resource_type: resource_type, records: result.records, search_params: search_params)
+          IncludeResolver.call(
+            resource_type: resource_type, records: result.records, search_params: search_params, context: context
+          )
         end
       bundle = BundleBuilder.searchset(
         result: result, base_url: base_url, search_params: search_params, resource_type: resource_type,
@@ -284,7 +295,7 @@ module Fhir
 
     private
 
-    attr_reader :resource_type, :entry
+    attr_reader :resource_type, :entry, :context
 
     def repository
       @repository ||= Repository.new(resource_type)

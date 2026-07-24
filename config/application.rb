@@ -30,5 +30,15 @@ module FhirServer
     # SSL/HostAuthorization等の検査後・ルーティング前に位置する
     # (paramsのパースはコントローラ到達時に遅延実行されるため間に合う)。
     config.middleware.use RequestSizeLimiter
+
+    # 対話型SMART launchのログイン/同意画面(Oauth::BrowserController)だけが
+    # セッションを使う。FHIR API側はBearerトークンのみで、セッションを一切
+    # 参照しない — この境界がCSRFの影響範囲をブラウザ3画面に閉じ込める。
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore,
+                          key: "_fhir_server_session",
+                          same_site: :lax,
+                          httponly: true,
+                          secure: Rails.env.production?
   end
 end

@@ -5,11 +5,16 @@
 # するなら Rack::Attack.cache.store を Redis 等の共有ストアに差し替えること。
 class Rack::Attack
   OAUTH_PATHS = ["/oauth/token", "/oauth/revoke"].freeze
+  # 対話型launchのブラウザ3画面。ログインフォームを晒すため、APIとは別枠で
+  # 制限する(Bearerを持たないのでapi/ipに巻き込むと人間の操作を阻害する)。
+  BROWSER_OAUTH_PATHS = ["/oauth/authorize", "/oauth/login", "/oauth/consent"].freeze
 
   RATE_TOKEN_IP     = Integer(ENV.fetch("FHIR_RATE_TOKEN_IP", 10))      # /分
   RATE_TOKEN_CLIENT = Integer(ENV.fetch("FHIR_RATE_TOKEN_CLIENT", 30))  # /5分
   RATE_API_TOKEN    = Integer(ENV.fetch("FHIR_RATE_API_TOKEN", 300))    # /分
   RATE_API_IP       = Integer(ENV.fetch("FHIR_RATE_API_IP", 120))       # /分
+  RATE_AUTHORIZE_IP = Integer(ENV.fetch("FHIR_RATE_AUTHORIZE_IP", 30))  # /分
+  RATE_LOGIN_IP     = Integer(ENV.fetch("FHIR_RATE_LOGIN_IP", 10))      # /分
 
   self.cache.store = ActiveSupport::Cache::MemoryStore.new
 
@@ -46,9 +51,20 @@ class Rack::Attack
     client_id_hint(req) if req.post? && OAUTH_PATHS.include?(req.path)
   end
 
+  # --- 対話型launchのブラウザ画面 --------------------------------------------
+  throttle("oauth-browser/ip", limit: RATE_AUTHORIZE_IP, period: 1.minute) do |req|
+    req.ip if BROWSER_OAUTH_PATHS.include?(req.path)
+  end
+
+  # ログイン試行はさらに厳しく。失敗は Fhir::AuthThrottle 経由で
+  # auth-failure-ban にも積まれるので、二段構えになる。
+  throttle("oauth-login/ip", limit: RATE_LOGIN_IP, period: 1.minute) do |req|
+    req.ip if req.post? && req.path == "/oauth/login"
+  end
+
   # --- FHIR API 全般 ---------------------------------------------------------
   throttle("api/token", limit: RATE_API_TOKEN, period: 1.minute) do |req|
-    next if OAUTH_PATHS.include?(req.path) || req.path == "/up"
+    next if OAUTH_PATHS.include?(req.path) || BROWSER_OAUTH_PATHS.include?(req.path) || req.path == "/up"
 
     auth = req.get_header("HTTP_AUTHORIZATION")
     # 生トークンをキャッシュキーに載せないようダイジェスト化
@@ -56,7 +72,7 @@ class Rack::Attack
   end
 
   throttle("api/ip", limit: RATE_API_IP, period: 1.minute) do |req|
-    next if OAUTH_PATHS.include?(req.path) || req.path == "/up"
+    next if OAUTH_PATHS.include?(req.path) || BROWSER_OAUTH_PATHS.include?(req.path) || req.path == "/up"
 
     auth = req.get_header("HTTP_AUTHORIZATION")
     req.ip unless auth&.match?(/\ABearer /i)

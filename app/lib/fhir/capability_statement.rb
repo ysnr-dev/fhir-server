@@ -45,8 +45,8 @@ module Fhir
     end
 
     # Advertised only while enforcement is on, using the standard SMART
-    # oauth-uris extension so clients can discover the token endpoint from
-    # /metadata as well as /.well-known/smart-configuration.
+    # oauth-uris extension so clients can discover the token and authorize
+    # endpoints from /metadata as well as /.well-known/smart-configuration.
     def security_component(base_url)
       {
         "service" => [
@@ -59,7 +59,10 @@ module Fhir
         "extension" => [
           {
             "url" => "http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris",
-            "extension" => [{ "url" => "token", "valueUri" => "#{base_url}/oauth/token" }]
+            "extension" => [
+              { "url" => "authorize", "valueUri" => "#{base_url}/oauth/authorize" },
+              { "url" => "token", "valueUri" => "#{base_url}/oauth/token" }
+            ]
           }
         ]
       }

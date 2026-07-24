@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_23_000003) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_24_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,9 +22,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_23_000003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "revoked_at"
+    t.bigint "user_id"
+    t.string "patient_id"
+    t.bigint "authorization_code_id"
+    t.index ["authorization_code_id"], name: "index_access_tokens_on_authorization_code_id"
     t.index ["expires_at"], name: "index_access_tokens_on_expires_at"
     t.index ["oauth_client_id"], name: "index_access_tokens_on_oauth_client_id"
     t.index ["token_digest"], name: "index_access_tokens_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_access_tokens_on_user_id"
   end
 
   create_table "allergy_intolerances", id: :string, force: :cascade do |t|
@@ -70,6 +75,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_23_000003) do
     t.index ["client_id"], name: "index_audit_events_on_client_id"
     t.index ["occurred_at"], name: "index_audit_events_on_occurred_at"
     t.index ["resource_type", "resource_id"], name: "index_audit_events_on_resource_type_and_resource_id"
+  end
+
+  create_table "authorization_codes", force: :cascade do |t|
+    t.string "code_digest", null: false
+    t.string "oauth_client_id", null: false
+    t.bigint "user_id", null: false
+    t.string "patient_id", null: false
+    t.string "scopes", null: false
+    t.string "redirect_uri", null: false
+    t.string "code_challenge", null: false
+    t.string "code_challenge_method", default: "S256", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code_digest"], name: "index_authorization_codes_on_code_digest", unique: true
+    t.index ["expires_at"], name: "index_authorization_codes_on_expires_at"
+    t.index ["oauth_client_id"], name: "index_authorization_codes_on_oauth_client_id"
+    t.index ["user_id"], name: "index_authorization_codes_on_user_id"
   end
 
   create_table "binaries", id: :string, force: :cascade do |t|
@@ -471,6 +495,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_23_000003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "jwks"
+    t.string "redirect_uris"
+    t.string "client_type", default: "confidential", null: false
   end
 
   create_table "observations", id: :string, force: :cascade do |t|
@@ -697,6 +723,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_23_000003) do
     t.index ["type_code"], name: "index_specimens_on_type_code"
   end
 
+  create_table "users", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.string "name"
+    t.string "patient_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["patient_id"], name: "index_users_on_patient_id", unique: true
+  end
+
+  add_foreign_key "access_tokens", "authorization_codes"
   add_foreign_key "access_tokens", "oauth_clients"
+  add_foreign_key "access_tokens", "users"
+  add_foreign_key "authorization_codes", "oauth_clients"
+  add_foreign_key "authorization_codes", "users"
   add_foreign_key "bulk_export_files", "bulk_exports", on_delete: :cascade
+  add_foreign_key "users", "patients"
 end

@@ -104,7 +104,7 @@ RSpec.describe "SMART Backend Services enforcement", type: :request do
 
       get "/.well-known/smart-configuration"
       expect(response).to have_http_status(:ok)
-      expect(JSON.parse(response.body)["grant_types_supported"]).to eq(["client_credentials"])
+      expect(JSON.parse(response.body)["grant_types_supported"]).to include("client_credentials")
       expect(JSON.parse(response.body)["token_endpoint"]).to end_with("/oauth/token")
 
       client, secret = OauthClient.register(name: "pub", scopes: "system/*.read")
@@ -117,9 +117,8 @@ RSpec.describe "SMART Backend Services enforcement", type: :request do
 
       security = JSON.parse(response.body)["rest"].first["security"]
       expect(security.dig("service", 0, "coding", 0, "code")).to eq("SMART-on-FHIR")
-      token_uri = security["extension"].first["extension"].first
-      expect(token_uri["url"]).to eq("token")
-      expect(token_uri["valueUri"]).to end_with("/oauth/token")
+      oauth_uris = security["extension"].first["extension"]
+      expect(oauth_uris.find { |uri| uri["url"] == "token" }["valueUri"]).to end_with("/oauth/token")
     end
 
     it "authorizes an end-to-end token flow: register -> token -> API call" do

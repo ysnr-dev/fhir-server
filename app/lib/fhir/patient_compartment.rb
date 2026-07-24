@@ -22,13 +22,27 @@ module Fhir
     # Scope of `type`'s (non-deleted) records that belong to `patient`'s
     # compartment. Empty relation when `type` has no Patient-targeting column.
     def scope_for_patient(type, patient)
+      scope_for_patient_id(type, patient.id)
+    end
+
+    # Same, addressed by logical id. Access control (Fhir::PatientContext) works
+    # from the id on the token and never needs to load the Patient row.
+    def scope_for_patient_id(type, patient_id)
       entry = ResourceRegistry.entry_for(type)
       columns = reference_columns_for(type)
       return entry[:model].none if columns.empty?
 
-      reference = "Patient/#{patient.id}"
+      reference = "Patient/#{patient_id}"
       entry[:model].where(deleted: false)
                    .where(columns.map { |column| "#{column} = ?" }.join(" OR "), *([reference] * columns.size))
+    end
+
+    # Whether an already-loaded record sits in `patient_id`'s compartment.
+    # False for types with no Patient-targeting column: membership cannot be
+    # established, so it is not granted.
+    def member?(type, record, patient_id)
+      reference = "Patient/#{patient_id}"
+      reference_columns_for(type).any? { |column| record[column] == reference }
     end
 
     # Scope of `type`'s (non-deleted) records that belong to ANY patient's

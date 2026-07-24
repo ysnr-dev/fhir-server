@@ -10,7 +10,7 @@ class BundlesController < ApplicationController
     @audit_bundle_type = payload["type"] if BundleProcessor::VALID_TYPES.include?(payload["type"])
     return unless authorize_fhir_request!(entry_scope_checks(payload))
 
-    result = BundleProcessor.call(payload, base_url: base_url)
+    result = BundleProcessor.call(payload, base_url: base_url, context: access_context)
     render json: result.body, status: result.status, content_type: FhirResponse::FHIR_CONTENT_TYPE
   end
 

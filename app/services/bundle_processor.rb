@@ -23,13 +23,17 @@ class BundleProcessor
 
   Response = Struct.new(:status, :body, keyword_init: true)
 
-  def self.call(bundle, base_url:)
-    new(bundle, base_url).call
+  def self.call(bundle, base_url:, context: nil)
+    new(bundle, base_url, context: context).call
   end
 
-  def initialize(bundle, base_url)
+  # context: a Fhir::PatientContext applied to the GET entries. Write entries
+  # need no handling -- a patient-context token carries read-only scopes, so
+  # BundlesController rejects the whole bundle before it gets here.
+  def initialize(bundle, base_url, context: nil)
     @bundle = bundle
     @base_url = base_url
+    @context = context
   end
 
   def call
@@ -41,7 +45,7 @@ class BundleProcessor
 
   private
 
-  attr_reader :bundle, :base_url
+  attr_reader :bundle, :base_url, :context
 
   def type_error
     Response.new(
@@ -144,9 +148,9 @@ class BundleProcessor
       Fhir::Operation.create(resource_type, resource, id: id_override, if_none_exist: req["ifNoneExist"])
     when "GET"
       if id.present?
-        Fhir::Operation.read(resource_type, id)
+        Fhir::Operation.read(resource_type, id, context: context)
       else
-        Fhir::Operation.search(resource_type, query_string.to_s, base_url: base_url)
+        Fhir::Operation.search(resource_type, query_string.to_s, base_url: base_url, context: context)
       end
     when "PUT"
       if id.present?

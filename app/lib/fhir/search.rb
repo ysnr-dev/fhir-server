@@ -32,16 +32,19 @@ module Fhir
 
     Result = Struct.new(:records, :total, :count, :offset, keyword_init: true)
 
-    def self.call(resource_type, search_params)
-      new(resource_type, search_params).call
+    def self.call(resource_type, search_params, context: nil)
+      new(resource_type, search_params, context: context).call
     end
 
-    def initialize(resource_type, search_params)
+    # context: a Fhir::PatientContext confining results to one patient
+    # compartment, or nil for an unrestricted search.
+    def initialize(resource_type, search_params, context: nil)
       entry = ResourceRegistry.entry_for(resource_type)
       @resource_type = resource_type
       @model = entry.fetch(:model)
       @search_param_defs = entry.fetch(:search_params)
       @search_params = search_params
+      @context = context
     end
 
     def call
@@ -58,7 +61,11 @@ module Fhir
     # with no count/ordering/paging. Also the entry point for the INNER query of
     # a chained or _has clause, and for Fhir::ConditionalMatch.
     def filtered_scope
-      scope = model.where(deleted: false)
+      # The compartment restriction replaces the base scope rather than being
+      # ANDed on afterwards, so it also governs the INNER query of a chain or
+      # _has -- otherwise `?_has:Observation:performer:code=X` would leak which
+      # other patients have a matching Observation.
+      scope = context&.base_scope_for(resource_type) || model.where(deleted: false)
 
       search_params.clauses.each do |clause|
         resolution = resolve_clause(clause)
@@ -90,7 +97,7 @@ module Fhir
 
     private
 
-    attr_reader :resource_type, :model, :search_param_defs, :search_params
+    attr_reader :resource_type, :model, :search_param_defs, :search_params, :context
 
     SORTABLE_META = { "_id" => :id, "_lastUpdated" => :last_updated }.freeze
 
@@ -195,7 +202,7 @@ module Fhir
     def inner_search(type, param, tail_modifier, values)
       Search.new(type, SearchParams.new([
         SearchParams::Clause.new(name: param, modifier: tail_modifier, values: values)
-      ]))
+      ]), context: context)
     end
 
     def chain_fragment(scope, definition, inner)

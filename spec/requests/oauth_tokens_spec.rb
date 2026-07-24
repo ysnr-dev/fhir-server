@@ -49,7 +49,7 @@ RSpec.describe "OAuth token endpoint (POST /oauth/token)", type: :request do
   end
 
   it "rejects other grant types with unsupported_grant_type" do
-    post "/oauth/token", params: { grant_type: "authorization_code", client_id: client.id, client_secret: secret }
+    post "/oauth/token", params: { grant_type: "password", client_id: client.id, client_secret: secret }
 
     expect(response).to have_http_status(:bad_request)
     expect(JSON.parse(response.body)["error"]).to eq("unsupported_grant_type")

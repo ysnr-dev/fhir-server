@@ -18,7 +18,7 @@ class BulkExportsController < ApplicationController
     return render_bad_request("Unsupported parameter(s): #{bulk_params.unsupported_params.join(', ')}") if
       bulk_params.unsupported_params.any? && !lenient_handling?
 
-    return unless authorize_fhir_request!(scope_checks_for(bulk_params.types))
+    return unless authorize_fhir_request!(scope_checks_for(bulk_params.types), require_system: true)
     return render_too_many_requests if concurrent_export_in_progress?
 
     @export = BulkExport.create!(
@@ -71,8 +71,8 @@ class BulkExportsController < ApplicationController
     return render_not_found_export unless file_record && file_record.bulk_export.completed?
     return unless authorize_fhir_request!([]) # authenticate first; scope depends on the file's resource type
     return render_not_found_export unless owns?(file_record.bulk_export)
-    return render_forbidden([file_record.resource_type, :read]) if
-      Fhir::Auth.enabled? && !@current_access_token.scope_set.allows?(file_record.resource_type, :read)
+    return render_forbidden([file_record.resource_type, :read], require_system: true) if
+      Fhir::Auth.enabled? && !@current_access_token.scope_set.system_allows?(file_record.resource_type, :read)
 
     send_data file_record.content,
               type: "application/fhir+ndjson",
@@ -141,8 +141,13 @@ class BulkExportsController < ApplicationController
     @current_access_token&.oauth_client_id
   end
 
+  # Ownership is by client, which on its own would let a patient-context token
+  # poll or download an export kicked off by a system token of the same client.
+  # Exports are system-scope artifacts spanning every compartment, so a
+  # patient-context token owns nothing here.
   def owns?(export)
     return true unless Fhir::Auth.enabled?
+    return false if @current_access_token&.patient_context?
 
     export.oauth_client_id == current_client_id
   end

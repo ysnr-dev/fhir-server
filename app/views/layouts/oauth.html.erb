@@ -1,0 +1,46 @@
+<%# The only HTML this server serves. Styles are inline because api_only
+    means there is no asset pipeline, and three small screens do not justify
+    turning one on. %>
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title><%= yield(:title).presence || "FHIR Server" %></title>
+    <%= csrf_meta_tags %>
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        padding: 1.5rem; background: Canvas; color: CanvasText;
+        font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+        line-height: 1.6;
+      }
+      main { width: 100%; max-width: 26rem; }
+      h1 { font-size: 1.25rem; margin: 0 0 1.25rem; }
+      p { margin: 0 0 1rem; }
+      .card { border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: 0.75rem; padding: 1.5rem; }
+      .muted { color: color-mix(in srgb, CanvasText 65%, transparent); font-size: 0.875rem; }
+      label { display: block; margin-bottom: 0.875rem; font-size: 0.875rem; font-weight: 600; }
+      input[type="email"], input[type="password"] {
+        display: block; width: 100%; margin-top: 0.375rem; padding: 0.5rem 0.625rem;
+        font: inherit; border: 1px solid color-mix(in srgb, CanvasText 35%, transparent);
+        border-radius: 0.375rem; background: Canvas; color: CanvasText;
+      }
+      .scopes { margin: 0 0 1.25rem; padding-left: 1.25rem; font-size: 0.9375rem; }
+      .scopes li { margin-bottom: 0.25rem; }
+      .actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+      button { flex: 1; padding: 0.625rem 1rem; font: inherit; font-weight: 600; border-radius: 0.375rem; cursor: pointer; border: 1px solid transparent; }
+      button[value="approve"] { background: #1f6feb; color: #fff; }
+      button[value="deny"] { background: transparent; color: CanvasText; border-color: color-mix(in srgb, CanvasText 35%, transparent); }
+      .error { margin: 0 0 1rem; padding: 0.625rem 0.75rem; border-radius: 0.375rem; background: color-mix(in srgb, #d1242f 15%, transparent); font-size: 0.875rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="card"><%= yield %></div>
+    </main>
+  </body>
+</html>

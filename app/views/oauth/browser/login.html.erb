@@ -1,0 +1,26 @@
+<% content_for :title, "ログイン" %>
+<h1>ログイン</h1>
+<p class="muted"><strong><%= @client.name %></strong> があなたの診療記録へのアクセスを求めています。続けるにはログインしてください。</p>
+
+<% if @error %>
+  <p class="error"><%= @error %></p>
+<% end %>
+
+<%= form_with url: oauth_login_path, method: :post, local: true do %>
+  <% authorize_fields.each do |name, value| %>
+    <%= hidden_field_tag name, value, id: nil %>
+  <% end %>
+
+  <label>
+    メールアドレス
+    <%= email_field_tag :email, params[:email], required: true, autocomplete: "username", autofocus: true %>
+  </label>
+  <label>
+    パスワード
+    <%= password_field_tag :password, nil, required: true, autocomplete: "current-password" %>
+  </label>
+
+  <div class="actions">
+    <button type="submit" value="approve">ログイン</button>
+  </div>
+<% end %>

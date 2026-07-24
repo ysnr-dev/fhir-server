@@ -6,6 +6,12 @@ Rails.application.routes.draw do
   get "/.well-known/smart-configuration", to: "smart_configurations#show"
   post "/oauth/token", to: "oauth_tokens#create"
   post "/oauth/revoke", to: "oauth_revocations#create"
+
+  # Interactive SMART standalone launch. The only HTML in this app; everything
+  # under it renders login/consent and returns the user to the client app.
+  get  "/oauth/authorize", to: "oauth/browser#authorize", as: :oauth_authorize
+  post "/oauth/login",     to: "oauth/browser#login",     as: :oauth_login
+  post "/oauth/consent",   to: "oauth/browser#consent",   as: :oauth_consent
   get "/_history", to: "histories#index"
   # Server-generated audit trail: read-only by design (no write routes).
   get "/AuditEvent", to: "audit_events#index"

@@ -3,7 +3,9 @@
 # trail itself are deliberately NOT re-audited -- the trail covers clinical
 # data access, and self-auditing would only add noise.
 class AuditEventsController < ApplicationController
-  before_action -> { authorize_fhir_request!([["AuditEvent", :read]]) }
+  # The trail records access across all patients and has no patient compartment
+  # of its own, so it is system-scope only.
+  before_action -> { authorize_fhir_request!([["AuditEvent", :read]], require_system: true) }
 
   DEFAULT_COUNT = 20
   MAX_COUNT = 100

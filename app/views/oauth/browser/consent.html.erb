@@ -1,0 +1,22 @@
+<% content_for :title, "アクセスの許可" %>
+<h1>アクセスの許可</h1>
+<p><strong><%= @client.name %></strong> が <strong><%= current_user.display_name %></strong> さんの診療記録に、以下の範囲でアクセスすることを求めています。</p>
+
+<ul class="scopes">
+  <% @scopes.each do |scope| %>
+    <li><%= scope_description(scope) %><br><span class="muted"><%= scope %></span></li>
+  <% end %>
+</ul>
+
+<p class="muted">許可すると、このアプリはあなた自身の記録のみを読み取れます。他の患者の記録や、記録の変更はできません。アクセスは1時間で失効します。</p>
+
+<%= form_with url: oauth_consent_path, method: :post, local: true do %>
+  <% authorize_fields.each do |name, value| %>
+    <%= hidden_field_tag name, value, id: nil %>
+  <% end %>
+
+  <div class="actions">
+    <button type="submit" name="decision" value="deny">拒否</button>
+    <button type="submit" name="decision" value="approve">許可</button>
+  </div>
+<% end %>

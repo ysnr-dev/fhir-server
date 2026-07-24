@@ -8,16 +8,21 @@ module Fhir
   # instances to include. It never mutates the Bundle; BundleBuilder renders
   # the entries.
   class IncludeResolver
-    def self.call(resource_type:, records:, search_params:)
-      new(resource_type: resource_type, records: records, search_params: search_params).call
+    def self.call(resource_type:, records:, search_params:, context: nil)
+      new(resource_type: resource_type, records: records, search_params: search_params, context: context).call
     end
 
-    def initialize(resource_type:, records:, search_params:)
+    # context: a Fhir::PatientContext. Includes are the widest opening in a
+    # search -- _revinclude in particular queries a type the caller never
+    # matched on, so an unrestricted reverse query would hand back every
+    # patient's resources hanging off a shared Practitioner or Organization.
+    def initialize(resource_type:, records:, search_params:, context: nil)
       @resource_type = resource_type
       # Materialize once: we scan the page multiple times (forward refs) and
       # BundleBuilder re-evaluates the relation separately for match entries.
       @records = records.to_a
       @search_params = search_params
+      @context = context
     end
 
     # Bounds the :iterate expansion; combined with the seen-set below this
@@ -38,7 +43,7 @@ module Fhir
 
     private
 
-    attr_reader :resource_type, :records, :search_params
+    attr_reader :resource_type, :records, :search_params, :context
 
     # :iterate directives re-apply to everything gathered so far (matches and
     # includes alike), repeating on each round's additions until nothing new
@@ -116,8 +121,10 @@ module Fhir
       ids_by_type.flat_map do |type, ids|
         entry = ResourceRegistry.entry_for(type)
         next [] unless entry
+        next [] if context && !context.readable_type?(type)
 
-        entry[:model].where(id: ids.uniq, deleted: false).to_a
+        scope = context&.base_scope_for(type) || entry[:model].where(deleted: false)
+        scope.where(id: ids.uniq).to_a
       end
     end
 
@@ -133,26 +140,35 @@ module Fhir
         target_types = definition[:targets] & by_type.keys
         next [] if target_types.empty?
 
-        entry = ResourceRegistry.entry_for(info[:source_type])
+        source_type = info[:source_type]
+        entry = ResourceRegistry.entry_for(source_type)
         next [] unless entry
+        next [] if context && !context.readable_type?(source_type)
 
         refs = target_types.flat_map { |type| by_type[type].map { |record| "#{type}/#{record.id}" } }
-        query_reverse(entry[:model], definition, refs).to_a
+        query_reverse(reverse_base_scope(source_type, entry), definition, refs).to_a
       end
     end
 
-    def query_reverse(model, definition, refs)
+    # The reverse query starts from the source type at large, so without the
+    # compartment restriction `?_revinclude=Observation:performer` on a shared
+    # Practitioner would return every patient's Observations.
+    def reverse_base_scope(source_type, entry)
+      context&.base_scope_for(source_type) || entry[:model].where(deleted: false)
+    end
+
+    def query_reverse(base_scope, definition, refs)
       if definition[:multiple]
         # Multi-valued reference lives only in `content`; match array membership
         # via jsonb containment (GIN-indexed). OR over each candidate reference.
         scopes = refs.map do |ref|
           containment = { definition[:jsonb_key] => [nest(definition[:ref_path], ref)] }
-          model.where(deleted: false).where("content @> ?", containment.to_json)
+          base_scope.where("content @> ?", containment.to_json)
         end
         scopes.reduce(:or)
       else
         # Single-valued reference is extracted to an indexed column.
-        model.where(deleted: false, definition[:column] => refs)
+        base_scope.where(definition[:column] => refs)
       end
     end
 
