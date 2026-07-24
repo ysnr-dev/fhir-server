@@ -92,7 +92,11 @@ class Oauth::BrowserController < ActionController::Base
     @scopes = params[:scope].to_s.split
     return redirect_with_error("invalid_scope", "scope is required") if @scopes.empty?
     return redirect_with_error("invalid_scope", "Only patient/*.read style scopes are supported") unless
-      @scopes.all? { |scope| Fhir::Scopes.valid_patient?(scope) }
+      @scopes.all? { |scope| Fhir::Scopes.valid_patient?(scope) || Fhir::Scopes.valid_context?(scope) }
+    # offline/online_access alone grants nothing to refresh -- there must be at
+    # least one resource scope for the refresh token to reproduce.
+    return redirect_with_error("invalid_scope", "offline_access/online_access require a patient/ scope") unless
+      @scopes.any? { |scope| Fhir::Scopes.valid_patient?(scope) }
     return redirect_with_error("invalid_scope", "Requested scope exceeds the client's registration") unless
       (@scopes - @client.allowed_scopes).empty?
 
@@ -136,12 +140,25 @@ class Oauth::BrowserController < ActionController::Base
     "Composition" => "診療文書"
   }.freeze
 
+  # The context scopes are not "閲覧" of anything -- they change how long the
+  # app keeps access, which is exactly what the patient needs to understand.
+  CONTEXT_SCOPE_LABELS = {
+    "offline_access" => "ログアウト後も再ログインなしでアクセスを継続する(長期間)",
+    "online_access" => "ログイン中のあいだアクセスを継続する"
+  }.freeze
+
   def scope_description(scope)
+    return CONTEXT_SCOPE_LABELS.fetch(scope) if CONTEXT_SCOPE_LABELS.key?(scope)
+
     type = scope[%r{\Apatient/([^.]+)\.}, 1]
     "#{SCOPE_LABELS.fetch(type, type)}の閲覧"
   end
 
-  helper_method :authorize_fields, :current_user, :scope_description
+  def refresh_requested?
+    Fhir::Scopes.refresh_requested?(@scopes)
+  end
+
+  helper_method :authorize_fields, :current_user, :scope_description, :refresh_requested?
 
   def redirect_to_client(**query)
     query = query.merge(state: @state).compact_blank

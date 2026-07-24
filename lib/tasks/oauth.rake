@@ -47,8 +47,9 @@ namespace :fhir do
     invalid_uris = redirect_uris.reject { |uri| URI.parse(uri).absolute? rescue false }
     abort "redirect_uri(s) must be absolute URIs: #{invalid_uris.join(', ')}" if invalid_uris.any?
 
-    invalid = scopes.reject { |scope| Fhir::Scopes.valid_patient?(scope) }
-    abort "Invalid scope(s): #{invalid.join(', ')} (expected e.g. patient/*.read, patient/Observation.read)" if invalid.any?
+    invalid = scopes.reject { |scope| Fhir::Scopes.valid_patient?(scope) || Fhir::Scopes.valid_context?(scope) }
+    abort "Invalid scope(s): #{invalid.join(', ')} " \
+          "(expected e.g. patient/*.read, patient/Observation.read, offline_access)" if invalid.any?
 
     client, secret = OauthClient.register(
       name: name, scopes: scopes.join(" "), redirect_uris: redirect_uris, client_type: client_type

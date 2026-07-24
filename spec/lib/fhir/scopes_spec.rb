@@ -19,11 +19,37 @@ RSpec.describe Fhir::Scopes do
       expect(described_class.valid?("patient/Observation.*")).to be(false)
     end
 
+    it "accepts the refresh-token context scopes" do
+      expect(described_class.valid?("offline_access")).to be(true)
+      expect(described_class.valid?("online_access")).to be(true)
+    end
+
     it "rejects unimplemented launch contexts and malformed scopes" do
       expect(described_class.valid?("user/*.read")).to be(false)
       expect(described_class.valid?("system/patient.read")).to be(false)
       expect(described_class.valid?("system/Patient.delete")).to be(false)
       expect(described_class.valid?("openid")).to be(false)
+    end
+  end
+
+  describe ".valid_context? / .refresh_requested?" do
+    it "recognises the context scopes and nothing else" do
+      expect(described_class.valid_context?("offline_access")).to be(true)
+      expect(described_class.valid_context?("online_access")).to be(true)
+      expect(described_class.valid_context?("patient/*.read")).to be(false)
+    end
+
+    it "detects a refresh request in a scope list" do
+      expect(described_class.refresh_requested?(%w[patient/*.read offline_access])).to be(true)
+      expect(described_class.refresh_requested?(%w[patient/*.read])).to be(false)
+    end
+  end
+
+  describe "#allows? with context scopes" do
+    it "grants no resource access through them" do
+      scopes = described_class.new(%w[offline_access online_access])
+      expect(scopes.allows?("Patient", :read)).to be(false)
+      expect(scopes.allows?("*", :read)).to be(false)
     end
   end
 

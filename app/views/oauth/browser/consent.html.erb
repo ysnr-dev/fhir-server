@@ -8,7 +8,11 @@
   <% end %>
 </ul>
 
-<p class="muted">許可すると、このアプリはあなた自身の記録のみを読み取れます。他の患者の記録や、記録の変更はできません。アクセスは1時間で失効します。</p>
+<% if refresh_requested? %>
+  <p class="muted">許可すると、このアプリはあなた自身の記録のみを読み取れます。他の患者の記録や、記録の変更はできません。アクセスは上記の期間、自動的に更新されます(いつでも取り消せます)。</p>
+<% else %>
+  <p class="muted">許可すると、このアプリはあなた自身の記録のみを読み取れます。他の患者の記録や、記録の変更はできません。アクセスは1時間で失効します。</p>
+<% end %>
 
 <%= form_with url: oauth_consent_path, method: :post, local: true do %>
   <% authorize_fields.each do |name, value| %>

@@ -195,6 +195,35 @@ curl -s -X POST http://localhost:3000/oauth/token \
 アサーションの要件（iss=sub=client_id、aud=トークンエンドポイント URL、exp は 5 分以内、jti 必須）を検証し、
 使用済み jti は exp まで記録してリプレイを防止します。
 
+### 認証（SMART standalone patient launch）
+
+患者向けアプリの対話型フロー（authorization_code + PKCE S256 必須）にも対応しています。
+ブラウザで `/oauth/authorize` → ログイン → 同意 → 認可コード → トークン交換の順に進み、
+発行されたトークンは本人の患者コンパートメント内の読み取りに限定されます
+（スコープは `patient/*.read` / `patient/Observation.read` 形式のみ）。
+
+```bash
+# クライアント登録（public = シークレットなし、PKCEのみ）
+bin/rails "fhir:register_launch_client[my-app,https://app.example/callback,patient/*.read offline_access,public]"
+
+# 患者アカウント登録（既存の Patient に紐付け）
+bin/rails "fhir:register_user[patient@example.com,{patient_id},山田太郎]"
+```
+
+**リフレッシュトークン**: スコープに `offline_access`（30日）または `online_access`（12時間）を
+含めて同意を得ると、トークンレスポンスに `refresh_token` が含まれます。
+`grant_type=refresh_token` で新しいアクセストークンを取得でき、リフレッシュトークンは
+使用のたびにローテーション（旧トークンは失効し新トークンに置き換え）されます。
+使用済みリフレッシュトークンの再提示は漏えいとみなし、同一グラント由来の全トークンを失効させます。
+
+```bash
+curl -s -X POST http://localhost:3000/oauth/token \
+  -d grant_type=refresh_token \
+  -d refresh_token={refresh_token} -d client_id={client_id}
+```
+
+`POST /oauth/revoke` にリフレッシュトークンを渡すとグラント全体（アクセストークン含む）が失効します。
+
 ### 対応リソース
 
 全 23 リソースが同一のエンドポイント群（後述）を持ちます。

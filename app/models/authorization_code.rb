@@ -14,6 +14,7 @@ class AuthorizationCode < ApplicationRecord
   belongs_to :oauth_client
   belongs_to :user
   has_many :access_tokens, dependent: :nullify
+  has_many :refresh_tokens, dependent: :destroy
 
   # Returns [record, raw_code].
   def self.issue(client:, user:, scopes:, redirect_uri:, code_challenge:, code_challenge_method: "S256")
@@ -64,9 +65,11 @@ class AuthorizationCode < ApplicationRecord
   end
 
   # A replayed code means it leaked, so anything it already produced is suspect
-  # (RFC 6749 section 4.1.2).
+  # (RFC 6749 section 4.1.2). The same treatment applies when a rotated-out
+  # refresh token is replayed -- the code anchors the whole grant either way.
   def revoke_issued_tokens!
     access_tokens.where(revoked_at: nil).update_all(revoked_at: Time.current)
+    refresh_tokens.where(revoked_at: nil).update_all(revoked_at: Time.current)
   end
 
   def scope_list

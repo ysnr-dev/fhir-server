@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_24_000004) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_24_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -632,6 +632,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_24_000004) do
     t.index ["performed_time"], name: "index_procedures_on_performed_time"
     t.index ["status"], name: "index_procedures_on_status"
     t.index ["subject_reference"], name: "index_procedures_on_subject_reference"
+  end
+
+  create_table "refresh_tokens", force: :cascade do |t|
+    t.string "token_digest", null: false
+    t.string "oauth_client_id", null: false
+    t.bigint "user_id", null: false
+    t.string "patient_id", null: false
+    t.string "scopes", null: false
+    t.bigint "authorization_code_id", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "used_at"
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["authorization_code_id"], name: "index_refresh_tokens_on_authorization_code_id"
+    t.index ["expires_at"], name: "index_refresh_tokens_on_expires_at"
+    t.index ["oauth_client_id"], name: "index_refresh_tokens_on_oauth_client_id"
+    t.index ["token_digest"], name: "index_refresh_tokens_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_refresh_tokens_on_user_id"
   end
 
   create_table "resource_identifiers", force: :cascade do |t|

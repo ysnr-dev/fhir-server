@@ -9,6 +9,11 @@ module Fhir
   #     that carries a patient launch context -- the context, not the scope, is
   #     what confines reads to one compartment (Fhir::PatientContext).
   #
+  #   offline_access  online_access
+  #     Context scopes (SMART App Launch): they ask for a refresh token and
+  #     grant no resource access themselves, so #parse ignores them and they
+  #     never satisfy #allows?. Only the interactive flow honours them.
+  #
   # user/ scopes belong to the interactive provider-facing flows, which this
   # server does not implement -- such scopes are ignored if present.
   #
@@ -21,9 +26,10 @@ module Fhir
     # Phase 1 grants no write through the interactive flow, so patient/X.write
     # and patient/X.* are not merely unhandled -- they are invalid.
     PATIENT_PATTERN = %r{\Apatient/(\*|[A-Z][A-Za-z]*)\.(read)\z}
+    CONTEXT_SCOPES = %w[offline_access online_access].freeze
 
     def self.valid?(scope)
-      valid_system?(scope) || valid_patient?(scope)
+      valid_system?(scope) || valid_patient?(scope) || valid_context?(scope)
     end
 
     def self.valid_system?(scope)
@@ -32,6 +38,15 @@ module Fhir
 
     def self.valid_patient?(scope)
       PATIENT_PATTERN.match?(scope)
+    end
+
+    def self.valid_context?(scope)
+      CONTEXT_SCOPES.include?(scope)
+    end
+
+    # Whether this scope list asks for a refresh token at all.
+    def self.refresh_requested?(scopes)
+      scopes.intersect?(CONTEXT_SCOPES)
     end
 
     def initialize(scopes)
