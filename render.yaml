@@ -18,6 +18,12 @@ services:
       # 付いた場合はこの値も実ホスト名に合わせて更新すること。
       - key: FHIR_ALLOWED_HOSTS
         value: ysnr-fhir-server.onrender.com
+      # 管理API(/admin/oauth_clients)の共有トークン。OAuthクライアントの一覧・
+      # 登録・削除ができるので、値はダッシュボードで設定する(32バイト以上でないと
+      # 起動時エラー。生成例: openssl rand -hex 32)。
+      # 未設定なら管理APIは常に 503 で閉じたままになり、他の機能には影響しない。
+      - key: FHIR_ADMIN_TOKEN
+        sync: false
       # 無料枠は RAM 512MB のため Puma ワーカーを 1 に抑える。
       - key: WEB_CONCURRENCY
         value: "1"
