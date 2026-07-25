@@ -2,6 +2,15 @@ Rails.application.routes.draw do
   # LB用ヘルスチェック(認証・監査・SSL/Host検査の対象外)
   get "/up", to: "health#show"
 
+  # 管理API: OAuthクライアントの登録・削除。FHIRのスコープではなく専用の共有
+  # トークン FHIR_ADMIN_TOKEN で認証する(未設定なら常に503 = fail closed)。
+  # ブラウザから直接叩く想定はない -- CORSは意図的に無効なので、管理UIを持つ
+  # 別アプリ(fhir-client)の backend がサーバー間で中継する。
+  namespace :admin do
+    resources :oauth_clients, only: %i[index create destroy]
+    get "scopes", to: "scopes#show"
+  end
+
   get "/metadata", to: "capability_statements#show"
   get "/.well-known/smart-configuration", to: "smart_configurations#show"
   get "/.well-known/jwks.json", to: "jwks#show"

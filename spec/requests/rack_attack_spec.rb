@@ -1,10 +1,13 @@
 require "rails_helper"
 
 RSpec.describe "Rate limiting (rack-attack)", type: :request do
+  # スロットルのカウンタキーは (現在時刻 / period) を含む。上限ぎりぎりまで撃つ
+  # テストは分境界を跨いだ瞬間にカウンタがリセットされて偶発的に落ちるので、
+  # 時刻を止めてから実行する。
   around do |example|
     Rack::Attack.enabled = true
     Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
-    example.run
+    freeze_time { example.run }
   ensure
     Rack::Attack.enabled = false
     Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
@@ -45,6 +48,45 @@ RSpec.describe "Rate limiting (rack-attack)", type: :request do
         get "/up"
         expect(response).to have_http_status(:ok)
       end
+    end
+  end
+
+  describe "admin API per-IP throttle" do
+    # 管理APIの401は auth-failure-ban に積まない(呼び出し元が単一IPの中継サーバー
+    # なので、積むと管理トークンの打ち間違いでFHIR API全体が遮断される)。
+    # 共有トークンへのブルートフォースを止めるのはこのスロットルだけ。
+    around do |example|
+      previous = ENV["FHIR_ADMIN_TOKEN"]
+      ENV["FHIR_ADMIN_TOKEN"] = "a" * 64
+      example.run
+    ensure
+      ENV["FHIR_ADMIN_TOKEN"] = previous
+    end
+
+    def wrong_token_request
+      get "/admin/oauth_clients", headers: { "X-FHIR-Admin-Token" => "wrong" }
+    end
+
+    it "returns 429 from the admin rule, not the FHIR api rule" do
+      Rack::Attack::RATE_ADMIN_IP.times do
+        wrong_token_request
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      wrong_token_request
+
+      expect(response).to have_http_status(:too_many_requests)
+      expect(request.env["rack.attack.matched"]).to eq("admin/ip")
+      expect(JSON.parse(response.body)["issue"].first["code"]).to eq("throttled")
+    end
+
+    it "does not ban the caller's IP after repeated 401s" do
+      (Fhir::AuthThrottle.max_retries + 1).times { wrong_token_request }
+
+      expect(Fhir::AuthThrottle.banned?("127.0.0.1")).to be(false)
+      # BANされていれば /metadata も 403 になる
+      get "/metadata"
+      expect(response).to have_http_status(:ok)
     end
   end
 

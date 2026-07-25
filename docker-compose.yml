@@ -32,6 +32,10 @@ services:
       # SMART Backend Services 認証の有効化トグル。既定は無効。
       # 有効化する場合: FHIR_AUTH_ENABLED=true docker compose up
       FHIR_AUTH_ENABLED: ${FHIR_AUTH_ENABLED:-false}
+      # 管理API(/admin/oauth_clients)の共有トークン。未設定なら管理APIは常に
+      # 503 で閉じる。fhir-client の管理画面から使う場合は同じ値を設定する。
+      # 例: FHIR_ADMIN_TOKEN=$(openssl rand -hex 32) docker compose up
+      FHIR_ADMIN_TOKEN: ${FHIR_ADMIN_TOKEN:-}
     ports:
       - "3000:3000"
     volumes:

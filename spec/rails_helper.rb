@@ -63,4 +63,8 @@ RSpec.configure do |config|
 
   config.include FactoryBot::Syntax::Methods
   config.include ActiveJob::TestHelper
+  # rack-attack のスロットルは (現在時刻 / period) をカウンタのキーに使うため、
+  # 上限ぎりぎりまで撃つテストは分境界を跨ぐと偶発的に失敗する。freeze_time で
+  # 止められるようにしておく。
+  config.include ActiveSupport::Testing::TimeHelpers
 end

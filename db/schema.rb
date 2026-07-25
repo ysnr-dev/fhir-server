@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_25_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_26_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -760,5 +760,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_25_000001) do
   add_foreign_key "authorization_codes", "oauth_clients"
   add_foreign_key "authorization_codes", "users"
   add_foreign_key "bulk_export_files", "bulk_exports", on_delete: :cascade
+  add_foreign_key "bulk_exports", "oauth_clients"
+  add_foreign_key "client_assertion_jtis", "oauth_clients"
+  add_foreign_key "refresh_tokens", "authorization_codes"
+  add_foreign_key "refresh_tokens", "oauth_clients"
   add_foreign_key "users", "patients"
 end

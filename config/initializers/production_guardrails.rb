@@ -9,6 +9,19 @@ if Rails.env.production?
     MSG
   end
 
+  # 管理API(/admin/oauth_clients)はOAuthクライアントの発行・削除ができる。
+  # 未設定は許容する(その場合APIは常に503で閉じている)が、設定するなら弱い
+  # トークンは許さない。定数を参照するとautoloadの順序に依存するのでリテラル。
+  admin_token = ENV["FHIR_ADMIN_TOKEN"].presence
+  if admin_token && admin_token.bytesize < 32
+    raise <<~MSG
+      FHIR_ADMIN_TOKEN is shorter than 32 bytes. The admin API can register and
+      delete OAuth clients, and it is protected by this single shared secret.
+      Generate one with `openssl rand -hex 32`, or unset the variable to keep
+      the admin API disabled.
+    MSG
+  end
+
   if ENV.fetch("FHIR_ALLOWED_HOSTS", "").split(",").map(&:strip).reject(&:empty?).empty?
     raise <<~MSG
       FHIR_ALLOWED_HOSTS is not set. An empty config.hosts disables Rails host

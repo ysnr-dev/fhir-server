@@ -242,6 +242,27 @@ RSpec.describe "OAuth refresh tokens", type: :request do
     end
   end
 
+  describe "when the owning client has been deleted" do
+    # かつて refresh_tokens には oauth_clients へのFKも has_many もなく、
+    # クライアント削除でトークンだけが「所有者 nil のまま有効」で生き残っていた。
+    # その状態で refresh すると authenticate_owning_client(nil) が
+    # nil.public_client? を呼び、invalid_grant ではなく 500 になっていた。
+    it "returns invalid_grant instead of 500" do
+      tokens = obtain_tokens
+      raw_refresh = tokens["refresh_token"]
+      client_id = client.id
+
+      expect { client.destroy! }.to change(RefreshToken, :count).by(-1)
+
+      post "/oauth/token", params: {
+        grant_type: "refresh_token", refresh_token: raw_refresh, client_id: client_id
+      }
+
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)["error"]).to eq("invalid_grant")
+    end
+  end
+
   describe "discovery" do
     it "advertises refresh_token support" do
       get "/.well-known/smart-configuration"

@@ -16,9 +16,21 @@
 class OauthClient < ApplicationRecord
   CLIENT_TYPES = %w[confidential public].freeze
 
+  # 宣言順が意味を持つ: dependent はこの順に処理される。access_tokens と
+  # refresh_tokens はどちらも authorization_codes を参照するため、
+  # authorization_codes を先に消すとFK違反になる -- 必ず最後に置くこと。
   has_many :access_tokens, dependent: :delete_all
+  has_many :refresh_tokens, dependent: :delete_all
+  has_many :client_assertion_jtis, dependent: :delete_all
+  # エクスポートの履歴自体は監査目的で残す(purge_bulk_exports が期限で回収する)。
+  has_many :bulk_exports, dependent: :nullify
   has_many :authorization_codes, dependent: :delete_all
 
+  # どちらもDBは null:false だが、presence 検証が無いと nil が
+  # ActiveRecord::NotNullViolation(=500)になる。管理APIから直接叩かれる
+  # ようになったので、検証エラー(422)として扱えるようにしておく。
+  validates :name, presence: true
+  validates :scopes, presence: true
   validates :client_type, inclusion: { in: CLIENT_TYPES }
   validate :scopes_are_valid_and_not_mixed
   validate :launch_clients_have_redirect_uris

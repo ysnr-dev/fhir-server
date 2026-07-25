@@ -236,6 +236,52 @@ curl -s -X POST http://localhost:3000/oauth/token \
 > 未設定だとプロセス起動ごとに一時鍵が生成され、複数インスタンスや再起動をまたいだ id_token の検証が失敗します
 > （`openid` を使わない構成では不要）。
 
+### 管理 API（OAuth クライアントの登録・削除）
+
+クライアントの払い出しは上記の rake タスクでも行えますが、UI や運用ツールから扱えるように
+HTTP の管理 API も用意しています。**環境変数 `FHIR_ADMIN_TOKEN` を設定したときだけ有効**で、
+未設定なら常に `503 admin_api_disabled` を返します（fail closed）。
+
+認証は FHIR のスコープではなく、この専用共有トークン 1 本です。`system/*.*` を持つクライアントが
+自分の権限を作り直せてしまうため、あえてスコープ体系から切り離しています。
+`FHIR_AUTH_ENABLED` の値には一切依存しません（認証 OFF の開発サーバーでも管理 API は閉じたまま）。
+
+```bash
+export ADMIN=$(openssl rand -hex 32)   # 32バイト未満は本番で起動エラーになる
+
+# 一覧（client_secret は絶対に返りません）
+curl -s http://localhost:3000/admin/oauth_clients -H "X-FHIR-Admin-Token: $ADMIN"
+
+# バックエンド連携クライアントの登録（client_secret はこのレスポンスにのみ現れます）
+curl -s -X POST http://localhost:3000/admin/oauth_clients \
+  -H "X-FHIR-Admin-Token: $ADMIN" -H "Content-Type: application/json" \
+  -d '{"name":"my-mcp-server","scopes":["system/Patient.read"]}'
+
+# 対話型 launch クライアントの登録（public = シークレットなし、PKCEのみ）
+curl -s -X POST http://localhost:3000/admin/oauth_clients \
+  -H "X-FHIR-Admin-Token: $ADMIN" -H "Content-Type: application/json" \
+  -d '{"name":"my-app","scopes":["patient/*.read","offline_access"],
+       "redirect_uris":["https://app.example/callback"],"client_type":"public"}'
+
+# 削除（発行済みトークン・認可コードも同時に消え、消した件数が返ります）
+curl -s -X DELETE http://localhost:3000/admin/oauth_clients/{client_id} \
+  -H "X-FHIR-Admin-Token: $ADMIN"
+
+# UI 用のスコープ選択肢（対応リソース型と日本語ラベル）
+curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
+```
+
+`Authorization: Bearer {token}` でも同じトークンを渡せます。エラーは FHIR の OperationOutcome ではなく
+プレーンな JSON（検証エラーは `{"errors":[...]}` + 422、単一コードは `{"error":...,"error_description":...}`）です。
+管理操作は `AuditEvent` に記録されます（`agent.who.display` が `admin-api`、
+共有トークンには身元がないため `client_id` は付きません）。
+
+> **注意**: ブラウザから直接叩く想定ではありません。このサーバーは CORS を意図的に無効にしているため、
+> 管理 UI を作る場合はサーバー間で中継してください（[fhir-client](../fhir-client) がその実装です）。
+> 管理 API の 401 は `auth-failure-ban`（IP 単位の一時 BAN）には積みません。呼び出し元が単一 IP の
+> 中継サーバーになるため、トークンの打ち間違いで FHIR API 全体が遮断されるのを避けています。
+> ブルートフォース対策は専用のレート制限 `FHIR_RATE_ADMIN_IP`（既定 30/分）が担います。
+
 ### 対応リソース
 
 全 23 リソースが同一のエンドポイント群（後述）を持ちます。

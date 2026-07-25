@@ -8,6 +8,9 @@ class Rack::Attack
   # 対話型launchのブラウザ3画面。ログインフォームを晒すため、APIとは別枠で
   # 制限する(Bearerを持たないのでapi/ipに巻き込むと人間の操作を阻害する)。
   BROWSER_OAUTH_PATHS = ["/oauth/authorize", "/oauth/login", "/oauth/consent"].freeze
+  # 管理API。/admin/oauth_clients/:id のようにパスが可変なので、他と違って
+  # 完全一致の定数では書けない(admin_path? を使う)。
+  ADMIN_PATH_PREFIX = "/admin/".freeze
 
   RATE_TOKEN_IP     = Integer(ENV.fetch("FHIR_RATE_TOKEN_IP", 10))      # /分
   RATE_TOKEN_CLIENT = Integer(ENV.fetch("FHIR_RATE_TOKEN_CLIENT", 30))  # /5分
@@ -15,6 +18,11 @@ class Rack::Attack
   RATE_API_IP       = Integer(ENV.fetch("FHIR_RATE_API_IP", 120))       # /分
   RATE_AUTHORIZE_IP = Integer(ENV.fetch("FHIR_RATE_AUTHORIZE_IP", 30))  # /分
   RATE_LOGIN_IP     = Integer(ENV.fetch("FHIR_RATE_LOGIN_IP", 10))      # /分
+  RATE_ADMIN_IP     = Integer(ENV.fetch("FHIR_RATE_ADMIN_IP", 30))      # /分
+
+  def self.admin_path?(req)
+    req.path.start_with?(ADMIN_PATH_PREFIX)
+  end
 
   self.cache.store = ActiveSupport::Cache::MemoryStore.new
 
@@ -62,8 +70,17 @@ class Rack::Attack
     req.ip if req.post? && req.path == "/oauth/login"
   end
 
+  # --- 管理API ---------------------------------------------------------------
+  # 管理APIの401は auth-failure-ban に積まない(呼び出し元は単一IPの中継サーバー
+  # なので、積むと管理トークンの打ち間違いでFHIR API全体が遮断される)。
+  # 共有トークンへのブルートフォースはこのスロットルだけが止める。
+  throttle("admin/ip", limit: RATE_ADMIN_IP, period: 1.minute) do |req|
+    req.ip if admin_path?(req)
+  end
+
   # --- FHIR API 全般 ---------------------------------------------------------
   throttle("api/token", limit: RATE_API_TOKEN, period: 1.minute) do |req|
+    next if admin_path?(req)
     next if OAUTH_PATHS.include?(req.path) || BROWSER_OAUTH_PATHS.include?(req.path) || req.path == "/up"
 
     auth = req.get_header("HTTP_AUTHORIZATION")
@@ -72,6 +89,7 @@ class Rack::Attack
   end
 
   throttle("api/ip", limit: RATE_API_IP, period: 1.minute) do |req|
+    next if admin_path?(req)
     next if OAUTH_PATHS.include?(req.path) || BROWSER_OAUTH_PATHS.include?(req.path) || req.path == "/up"
 
     auth = req.get_header("HTTP_AUTHORIZATION")

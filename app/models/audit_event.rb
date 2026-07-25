@@ -56,7 +56,15 @@ class AuditEvent < ApplicationRecord
   def entity_component
     entity = { "description" => "#{request_method} #{request_path}" }
     if resource_type.present? && resource_id.present?
-      entity["what"] = { "reference" => "#{resource_type}/#{resource_id}" }
+      # 管理API(/admin/oauth_clients)も監査に載るが、OauthClient は FHIR の
+      # リソース型ではない。"OauthClient/<uuid>" を reference として出すと
+      # 解決できない参照になるので、識別子として表現する。
+      entity["what"] =
+        if Fhir::ResourceRegistry.supported?(resource_type)
+          { "reference" => "#{resource_type}/#{resource_id}" }
+        else
+          { "identifier" => { "value" => resource_id }, "display" => resource_type }
+        end
     elsif resource_type.present?
       entity["what"] = { "display" => resource_type }
     end

@@ -118,46 +118,14 @@ class Oauth::BrowserController < ActionController::Base
   end
 
   # Consent has to be informed, and "patient/Observation.read" is not something
-  # a patient can be expected to read. Types not named here fall back to the
-  # bare type, which is still better than the raw scope string.
-  SCOPE_LABELS = {
-    "*" => "すべての診療記録",
-    "Patient" => "患者基本情報",
-    "Observation" => "検査・バイタルの記録",
-    "Condition" => "傷病名",
-    "MedicationRequest" => "処方",
-    "MedicationDispense" => "調剤",
-    "MedicationStatement" => "服薬状況",
-    "MedicationAdministration" => "投薬の実施記録",
-    "AllergyIntolerance" => "アレルギー情報",
-    "Immunization" => "予防接種歴",
-    "Procedure" => "処置・手術",
-    "Encounter" => "受診歴",
-    "DiagnosticReport" => "検査レポート",
-    "DocumentReference" => "文書",
-    "Coverage" => "保険情報",
-    "ServiceRequest" => "検査・処置の依頼",
-    "Specimen" => "検体",
-    "ImagingStudy" => "画像検査",
-    "Composition" => "診療文書"
-  }.freeze
-
-  # The context scopes are not "閲覧" of anything -- the refresh scopes change
-  # how long the app keeps access, the identity scopes tell the app who you are.
-  # Both are things the patient should understand plainly.
-  CONTEXT_SCOPE_LABELS = {
-    "offline_access" => "ログアウト後も再ログインなしでアクセスを継続する(長期間)",
-    "online_access" => "ログイン中のあいだアクセスを継続する",
-    "openid" => "あなたがログイン本人であることの確認",
-    "fhirUser" => "ログイン中の患者情報とのひも付け",
-    "profile" => "ログイン中の患者情報とのひも付け"
-  }.freeze
-
+  # a patient can be expected to read. The labels live in Fhir::ScopeLabels
+  # because the admin API's scope picker needs exactly the same wording; keeping
+  # two copies is how they drift apart.
   def scope_description(scope)
-    return CONTEXT_SCOPE_LABELS.fetch(scope) if CONTEXT_SCOPE_LABELS.key?(scope)
+    return Fhir::ScopeLabels.context(scope) if Fhir::ScopeLabels::CONTEXT.key?(scope)
 
     type = scope[%r{\Apatient/([^.]+)\.}, 1]
-    "#{SCOPE_LABELS.fetch(type, type)}の閲覧"
+    "#{Fhir::ScopeLabels.resource(type)}の閲覧"
   end
 
   def refresh_requested?
