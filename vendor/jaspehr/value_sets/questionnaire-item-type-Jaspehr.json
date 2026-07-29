@@ -1,0 +1,35 @@
+{
+  "url": "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/ValueSet/questionnaire-item-type-Jaspehr",
+  "compose": {
+    "include": [
+      {
+        "system": "http://hl7.org/fhir/item-type"
+      }
+    ],
+    "exclude": [
+      {
+        "system": "http://hl7.org/fhir/item-type",
+        "concept": [
+          {
+            "code": "boolean"
+          },
+          {
+            "code": "url"
+          },
+          {
+            "code": "open-choice"
+          },
+          {
+            "code": "attachment"
+          },
+          {
+            "code": "reference"
+          },
+          {
+            "code": "quantity"
+          }
+        ]
+      }
+    ]
+  }
+}

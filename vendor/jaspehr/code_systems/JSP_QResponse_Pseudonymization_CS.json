@@ -1,0 +1,23 @@
+{
+  "url": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Pseudonymization_CS",
+  "concept": [
+    {
+      "code": "masked"
+    },
+    {
+      "code": "hmac-sha256"
+    },
+    {
+      "code": "null"
+    },
+    {
+      "code": "date-shift"
+    },
+    {
+      "code": "rand-value"
+    },
+    {
+      "code": "aes-cbc128"
+    }
+  ]
+}

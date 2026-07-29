@@ -1,0 +1,8 @@
+{
+  "url": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_CS",
+  "concept": [
+    {
+      "code": "submission"
+    }
+  ]
+}

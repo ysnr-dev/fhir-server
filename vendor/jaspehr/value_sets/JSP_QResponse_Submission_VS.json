@@ -1,0 +1,10 @@
+{
+  "url": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_VS",
+  "compose": {
+    "include": [
+      {
+        "system": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_CS"
+      }
+    ]
+  }
+}

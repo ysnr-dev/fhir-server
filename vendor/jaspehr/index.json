@@ -1,0 +1,32 @@
+{
+  "structure_definitions": {
+    "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/StructureDefinition/jaspehr-questionnaire": "structure_definitions/jaspehr-questionnaire.json",
+    "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/StructureDefinition/jaspehr-questionnaireresponse": "structure_definitions/jaspehr-questionnaireresponse.json",
+    "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-endpoint": "structure_definitions/sdc-questionnaire-endpoint.json",
+    "http://jaspehr.jp/fhir/StructureDefinition/JSP_QResponse_Pseudonymization": "structure_definitions/JSP_QResponse_Pseudonymization.json",
+    "http://jaspehr.jp/fhir/StructureDefinition/JSP_QResponse_Submission": "structure_definitions/JSP_QResponse_Submission.json",
+    "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext": "structure_definitions/sdc-questionnaire-launchContext.json",
+    "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression": "structure_definitions/sdc-questionnaire-initialExpression.json",
+    "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression": "structure_definitions/sdc-questionnaire-calculatedExpression.json",
+    "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext": "structure_definitions/sdc-questionnaire-itemExtractionContext.json",
+    "http://jpfhir.jp/fhir/clins/Extension/StructureDefinition/JP_eCS_InstitutionNumber": "structure_definitions/JP_eCS_InstitutionNumber.json",
+    "http://jpfhir.jp/fhir/clins/Extension/StructureDefinition/JP_eCS_Department": "structure_definitions/JP_eCS_Department.json"
+  },
+  "value_sets": {
+    "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_VS": "value_sets/JSP_QResponse_Submission_VS.json",
+    "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/ValueSet/expression-language-Jaspehr": "value_sets/expression-language-Jaspehr.json",
+    "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/ValueSet/questionnaire-item-control-Jaspehr": "value_sets/questionnaire-item-control-Jaspehr.json",
+    "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/ValueSet/questionnaire-item-type-Jaspehr": "value_sets/questionnaire-item-type-Jaspehr.json",
+    "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Pseudonymization_VS": "value_sets/JSP_QResponse_Pseudonymization_VS.json",
+    "http://jaspehr.jp/fhir/StructureDefinition/JSP_QResponse_AnswerTypes_VS": "value_sets/JSP_QResponse_AnswerTypes_VS.json",
+    "http://jaspehr.jp/fhir/StructureDefinition/JSP_Resource_Types_VS": "value_sets/JSP_Resource_Types_VS.json"
+  },
+  "code_systems": {
+    "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_CS": "code_systems/JSP_QResponse_Submission_CS.json",
+    "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Pseudonymization_CS": "code_systems/JSP_QResponse_Pseudonymization_CS.json"
+  },
+  "_meta": {
+    "package_version": "1.0.0",
+    "source": "https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/package.tgz"
+  }
+}

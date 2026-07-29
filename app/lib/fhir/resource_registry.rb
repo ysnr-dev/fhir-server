@@ -172,6 +172,25 @@ module Fhir
         token_extraction: ExtractionDefinitions::Coverage::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage"
       },
+      # The two JASPEHR (the JApanese Standard Platform for EHRs) profiles --
+      # the only entries not on JP Core or a bare HL7 base profile. Their
+      # StructureDefinitions are vendored under vendor/jaspehr (rake jaspehr:vendor).
+      "Questionnaire" => {
+        model: Questionnaire,
+        validator: QuestionnaireValidator,
+        search_params: SearchDefinitions::Questionnaire::PARAMS,
+        extraction: ExtractionDefinitions::Questionnaire::FIELDS,
+        token_extraction: ExtractionDefinitions::Questionnaire::TOKENS,
+        profile: "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/StructureDefinition/jaspehr-questionnaire"
+      },
+      "QuestionnaireResponse" => {
+        model: QuestionnaireResponse,
+        validator: QuestionnaireResponseValidator,
+        search_params: SearchDefinitions::QuestionnaireResponse::PARAMS,
+        extraction: ExtractionDefinitions::QuestionnaireResponse::FIELDS,
+        token_extraction: ExtractionDefinitions::QuestionnaireResponse::TOKENS,
+        profile: "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/StructureDefinition/jaspehr-questionnaireresponse"
+      },
       "Composition" => {
         model: Composition,
         validator: CompositionValidator,

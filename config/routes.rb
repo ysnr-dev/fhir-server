@@ -47,6 +47,7 @@ Rails.application.routes.draw do
      ServiceRequest Practitioner Organization
      PractitionerRole Encounter Location
      Condition AllergyIntolerance Procedure Immunization Coverage
+     Questionnaire QuestionnaireResponse
      Composition DocumentReference Binary].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"

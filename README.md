@@ -1,8 +1,10 @@
-# FHIR Server (JP-Core v1.2.0 準拠)
+# FHIR Server (JP-Core v1.2.0 / JASPEHR v1.0.0 準拠)
 
 Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです。
-[JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) に準拠した
-23 リソース（`Patient` / `Observation` / `MedicationRequest` / `DocumentReference` など）の
+[JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) および
+問診票・診療テンプレートについては
+[JASPEHR 実装ガイド v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html)
+に準拠した 26 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
 複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
@@ -137,10 +139,40 @@ http://localhost:3000
 
 - リクエスト/レスポンスとも `Content-Type: application/fhir+json` を使用してください
   （サーバーはリクエストボディを raw JSON として解釈するため、`application/json` でも動作します）
-- 正常応答のリソースには `meta.versionId` / `meta.lastUpdated` が自動付与されます
+- 正常応答のリソースには `meta.versionId` / `meta.lastUpdated` / `meta.profile` が自動付与されます
+  （後述の「`meta` の扱い」も参照）
 - 正常応答には `ETag: W/"{versionId}"` ヘッダーが付与されます
 - 作成成功時は `Location: {baseUrl}/{ResourceType}/{id}/_history/{versionId}` ヘッダーが付与されます
 - すべてのエラー応答は `OperationOutcome` リソース（`application/fhir+json`）で返されます
+
+#### `meta` の扱い
+
+`meta` の子要素は「サーバー所有」と「クライアント所有」に分かれます。
+
+| 要素 | 扱い |
+|---|---|
+| `meta.versionId` / `meta.lastUpdated` | サーバーが採番。書き込み時のクライアント指定値は破棄 |
+| `meta.profile` | `Fhir::ResourceRegistry` から導出し、レンダリング時に付与。保存はしない（プロファイル URL の変更が過去バージョンにも即座に反映される） |
+| `meta.tag` | **クライアント所有。保存され、read / vread / 検索 / `_history` / Bundle / `$export` のいずれでもそのまま返ります** |
+| `meta.security` / `meta.source` | 破棄。アクセス制御に関わるラベルを書き込み側が設定できるべきではないため |
+
+`meta.tag` を保存するのは、FHIR で唯一クライアントが著作するコンテンツとしての meta 子要素であり、
+JASPEHR の提出指定（`JSP_QResponse_Submission`）・仮名化指定のようにリソースの一部として意味を持つためです。
+
+```bash
+curl -i -X POST http://localhost:3000/Questionnaire \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{ "resourceType": "Questionnaire", "meta": { "tag": [
+          { "system": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_CS", "code": "submission" }
+        ] }, "version": "1.0.0", "name": "ExampleQ", "title": "問診票", "status": "active",
+        "subjectType": ["Patient"], "item": [{ "linkId": "q1", "type": "string" }] }'
+```
+
+更新（PUT / PATCH）でも `meta.tag` は送られた内容で置き換わります。タグを残したい場合は更新ボディにも
+含めてください（送らなければ消えます）。
+
+> `_summary` / `_elements` を使った検索結果には、内容が部分的であることを示す `SUBSETTED` タグが
+> レンダリング時に付きます。このタグはサーバー生成のため、その結果をそのまま書き戻しても保存されません。
 
 | HTTPステータス | 意味 |
 |---|---|
@@ -284,7 +316,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 ### 対応リソース
 
-全 23 リソースが同一のエンドポイント群（後述）を持ちます。
+全 26 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
@@ -293,7 +325,8 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 | 検査・レポート | Observation / Specimen / ImagingStudy / DiagnosticReport / ServiceRequest |
 | 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization |
 | 保険 | Coverage |
-| 文書 | DocumentReference / Binary |
+| 問診 | Questionnaire / QuestionnaireResponse |
+| 文書 | Composition / DocumentReference / Binary |
 
 `Binary` は既定では JSON 表現で返しますが、`Accept: application/pdf` など非 FHIR タイプを指定した
 参照ではデコード済みの生コンテンツを元の `contentType` で返します。
@@ -344,12 +377,21 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
 
 1. **手書きバリデータ**（`app/services/*_validator.rb`）: 必須項目・値セット・日付書式・参照整合性など、
    リソースごとに要点をチェックします。常に有効で、違反は create/update/patch を 422 で拒否します。
-2. **JP Core プロファイル検証**（`app/lib/fhir/profile/`）: [JP Core IG v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html)
-   の StructureDefinition スナップショットを `vendor/jp_core/` に同梱し、それを解釈してカーディナリティ・
-   未知要素・プリミティブ型書式・`fixed[x]`/`pattern[x]`・スライシング（`identifier`/`extension` の
-   system/url 判別子）・vendor 内で解決できる required バインディングをチェックします。対象は
-   `Fhir::ResourceRegistry` のプロファイルが JP Core URL（`http://jpfhir.jp/fhir/core/...`）の 20 リソース
-   （`ImagingStudy` / `DocumentReference` / `Binary` は基底 HL7 プロファイルのため対象外）。
+   `Questionnaire` / `QuestionnaireResponse` については、下記のプロファイル検証エンジンが評価できない
+   JASPEHR の FHIRPath invariant（`jsp-1`〜`jsp-10` / `jsr-1` / 医療機関番号の書式）もここで実装しています。
+2. **プロファイル検証**（`app/lib/fhir/profile/`）: IG の StructureDefinition スナップショットを
+   `vendor/<ig>/` に同梱し、それを解釈してカーディナリティ・未知要素・プリミティブ型書式・
+   `fixed[x]`/`pattern[x]`・スライシング（`identifier`/`extension` の system/url 判別子）・
+   vendor 内で解決できる required バインディングをチェックします。同梱している IG は 2 つです。
+
+   | IG | 同梱先 | 対象リソース |
+   |---|---|---|
+   | [JP Core v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) | `vendor/jp_core/` | プロファイルが `http://jpfhir.jp/fhir/core/...` の 20 リソース |
+   | [JASPEHR v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html) | `vendor/jaspehr/` | `Questionnaire` / `QuestionnaireResponse` |
+
+   検証の対象になるかは「そのプロファイル URL が vendor 済みか」だけで決まります
+   （`ImagingStudy` / `Composition` / `DocumentReference` / `Binary` は基底 HL7 プロファイルのため対象外で、
+   手書きバリデータのみが働きます）。
    **非対象**: FHIRPath invariant、外部ターミノロジー（ICD-10 / LOINC 等のコード実在チェック）、
    `targetProfile` に基づく参照先リソースの型検証。
 
@@ -361,7 +403,7 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
 | `warn`（既定） | プロファイル違反も issue として報告 | ブロックしない。違反は `Rails.logger.info` に記録 |
 | `enforce` | プロファイル違反も issue として報告 | 手書きバリデータの違反と合わせて 422 で拒否 |
 
-既存データ・既存クライアントが JP Core のスライシング/カーディナリティまで厳密に満たしているとは限らないため、
+既存データ・既存クライアントが IG のスライシング/カーディナリティまで厳密に満たしているとは限らないため、
 既定は `warn`（可視化のみ）です。`enforce` に切り替える前に、`$validate` や
 `bundle exec rspec spec/lib/fhir/profile/payload_helpers_conformance_spec.rb` 相当のチェックで
 実データの適合状況を確認してください。
@@ -370,13 +412,34 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
 `profile` パラメータで、レジストリ既定以外のプロファイル URL を指定して検証できます。vendor されていない
 URL を指定すると `code: "not-supported"` の issue が返ります（HTTP 200、手書きバリデータの結果は含まれます）。
 
-**同梱データの再生成**: JP Core IG のバージョンが上がった場合や `Fhir::ResourceRegistry` にプロファイル
-URL を追加/変更した場合は、`bundle exec rake jp_core:vendor` で `vendor/jp_core/` を再生成してコミットして
-ください。バージョン更新は通常 `JP_CORE_PACKAGE_VERSION=1.3.0 bundle exec rake jp_core:vendor` のように
-バージョン番号を指定するだけで済みます（jpfhir.jp の `.../core/<version>/package.tgz` という URL 規則に
-従って自動的に組み立てます）。この規則に合わないパッケージ（プレリリース版・ローカルミラー等）を使う場合は
-`JP_CORE_PACKAGE_URL` で URL 自体を上書きできます（指定時はこちらが優先されます）。ランタイムは
-コミット済みの同梱データのみを読み、ネットワークアクセスは一切行いません。
+**同梱データの再生成**: IG のバージョンが上がった場合や `Fhir::ResourceRegistry` にプロファイル URL を
+追加/変更した場合は、該当する rake タスクで `vendor/` 以下を再生成してコミットしてください。
+ランタイムはコミット済みの同梱データのみを読み、ネットワークアクセスは一切行いません。
+
+```bash
+# JP Core: jpfhir.jp は .../core/<version>/package.tgz という URL 規則なのでバージョン指定だけで済む
+JP_CORE_PACKAGE_VERSION=1.3.0 bundle exec rake jp_core:vendor
+
+# JASPEHR: 配布パスに URL 規則が無いため URL 側が主。バージョンは _meta のラベルにのみ使われる
+JASPEHR_PACKAGE_URL=https://jaspehr.jp/wp-content/docs/full-ig_v1.1.0/site/package.tgz \
+  JASPEHR_PACKAGE_VERSION=1.1.0 bundle exec rake jaspehr:vendor
+```
+
+どちらも `*_PACKAGE_URL` を指定すればプレリリース版やローカルミラーを読み込めます（指定時はこちらが優先）。
+vendor する範囲は各 IG の性質に合わせています。JP Core は自身の canonical 名前空間
+（`http://jpfhir.jp/fhir/core/`）に一致するものだけを辿り、JASPEHR は依存する SDC 拡張・JP-CLINS eCS 拡張・
+自前の ValueSet/CodeSystem をすべてパッケージに同梱しているため「パッケージが定義している canonical か」で
+判定します。
+
+**JASPEHR 対応の既知の制限**:
+
+- `item.type` / `itemControl` / expression language の各 ValueSet は HL7 基底 CodeSystem を include して
+  一部を exclude する構成で、その基底 CodeSystem は同梱していません。展開できない値セットは
+  「不明」として検査をスキップするため、代わりに手書きバリデータ（`Fhir::Terminology`）が同じ制約を検査します。
+- `QuestionnaireResponse.contained` のスライスは判別子が `profile` 型で、本エンジンは `value` 型のみ
+  対応するため検査されません（安全側にスキップ）。
+- `meta.tag` による検索（`_tag`）は未対応です。値の保存・取得はできます（下記参照）。
+- SDC の `$populate` / `$extract` オペレーションは未実装です。
 
 ---
 
@@ -547,6 +610,117 @@ curl -i -X POST http://localhost:3000/Organization \
 **必須項目（JP-Core）**:
 - Practitioner: なし（`gender`/`birthDate` は値がある場合のみ書式検証）
 - Organization: `identifier` または `name` の少なくとも一方（org-1制約、両方欠落は422）
+
+---
+
+### Questionnaire / QuestionnaireResponse の例（JASPEHR）
+
+問診票・診療テンプレートは JASPEHR IG v1.0.0 のプロファイルに準拠します。
+
+**Questionnaire の作成**
+
+```bash
+curl -i -X POST http://localhost:3000/Questionnaire \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{
+    "resourceType": "Questionnaire",
+    "url": "http://example.org/Questionnaire/jaspehr-example",
+    "version": "1.0.0",
+    "name": "ExampleQ",
+    "title": "問診票サンプル",
+    "status": "active",
+    "subjectType": ["Patient"],
+    "date": "2026-07-29T10:00:00+09:00",
+    "item": [
+      {
+        "linkId": "group1",
+        "type": "group",
+        "text": "基本情報",
+        "item": [
+          { "linkId": "q1", "type": "string", "text": "主訴" },
+          { "linkId": "q2", "type": "integer", "text": "発症からの日数" }
+        ]
+      }
+    ]
+  }'
+```
+
+**必須項目（JASPEHR）**: `version` / `name` / `title` / `status` / `subjectType` / `item`（1件以上）と、
+各 item の `linkId` / `type`。
+
+**JASPEHR 固有の制約**（違反は 422。カッコ内は IG の invariant キー）:
+
+- `name` は半角英数字と一部記号のみ・**15文字以内**（jsp-5）。`item.linkId` も同じ文字種（jsp-4 / jsr-1）
+- `item.type` は `group` / `display` / `decimal` / `integer` / `date` / `dateTime` / `time` / `string` /
+  `text` / `choice` のみ（基底 R4 から `boolean` / `url` / `open-choice` / `attachment` / `reference` /
+  `quantity` を除外）
+- `enableWhen` / `repeats` を持てるのは `type = group` の item のみ（jsp-1 / jsp-3）。両方の同時指定は不可（jsp-8）
+- `type = choice` の item には `questionnaire-itemControl` 拡張が必須（jsp-6）。その子 item は全て
+  `enableWhen` を持ち（jsp-9）、`enableWhen.question` は親の `linkId` と一致すること（jsp-2）
+- `repeats = true` の item には `questionnaire-maxOccurs` 拡張が必須（jsp-10）
+- `initialExpression` と `calculatedExpression` の同時指定は不可（jsp-7）
+
+**QuestionnaireResponse の作成**
+
+`subject` は実在する `Patient/{id}` を参照する必要があります（他の型・不在は 422）。
+
+```bash
+curl -i -X POST http://localhost:3000/QuestionnaireResponse \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{
+    "resourceType": "QuestionnaireResponse",
+    "extension": [{
+      "url": "http://jpfhir.jp/fhir/clins/Extension/StructureDefinition/JP_eCS_InstitutionNumber",
+      "valueIdentifier": {
+        "system": "http://jpfhir.jp/fhir/core/IdSystem/insurance-medical-institution-no",
+        "value": "1311234567"
+      }
+    }],
+    "identifier": { "system": "http://example.org/questionnaire-response", "value": "1311234567^P0001^R0001" },
+    "questionnaire": "http://example.org/Questionnaire/jaspehr-example|1.0.0",
+    "status": "completed",
+    "subject": { "reference": "Patient/{patientId}" },
+    "authored": "2026-07-29T10:00:00+09:00",
+    "author": { "reference": "Practitioner/{practitionerId}" },
+    "item": [
+      { "linkId": "group1", "item": [
+        { "linkId": "q1", "answer": [{ "valueString": "腹痛" }] },
+        { "linkId": "q2", "answer": [{ "valueInteger": 3 }] }
+      ]}
+    ]
+  }'
+```
+
+**必須項目（JASPEHR）**: `identifier` / `questionnaire` / `status` / `subject` / `authored` / `author`（すべて 1..1）。
+
+- `identifier.value` は `保険医療機関番号 ^ 被保険者個人識別子 ^ 報告単位ID` の**キャレット区切り3要素**
+- `status` は 新規=`completed` / 更新=`amended` / 削除=`stopped`
+- `questionnaire` は Reference ではなく **canonical**（`{Questionnaire.url}|{version}` 形式の絶対 URL）。
+  参照先がこのサーバーに存在するかは検証しません（外部 IG の canonical を指しうるため）
+- `author` は `Practitioner/{id}` または contained 参照（`#practitioner`）。存在確認はしません
+- JP eCS の医療機関番号拡張を付ける場合、値は 2桁都道府県 + 1桁点数表区分(1〜3) + 7桁医療機関コードの
+  計10桁であること
+
+**検索**
+
+```bash
+# url / questionnaire（canonical）は完全一致。前方一致では引けません
+curl -G -s http://localhost:3000/Questionnaire \
+  --data-urlencode "url=http://example.org/Questionnaire/jaspehr-example"
+
+curl -s "http://localhost:3000/Questionnaire?status=active&subject-type=Patient&version=1.0.0"
+
+curl -G -s http://localhost:3000/QuestionnaireResponse \
+  --data-urlencode "questionnaire=http://example.org/Questionnaire/jaspehr-example|1.0.0"
+
+# 患者・作成者・記入日時で絞り込み（QuestionnaireResponse は患者コンパートメントに入るため
+# Patient/$everything や patient/*.read スコープの対象にもなります）
+curl -s "http://localhost:3000/QuestionnaireResponse?patient={patientId}&status=completed"
+curl -s "http://localhost:3000/QuestionnaireResponse?author={practitionerId}&authored=ge2026-07-01"
+```
+
+> `Questionnaire` 自体は患者情報を含まない定義系リソースのため、対話型 launch の患者スコープでも
+> 全件参照できます（`Medication` / `Location` と同じ扱い）。
 
 ---
 

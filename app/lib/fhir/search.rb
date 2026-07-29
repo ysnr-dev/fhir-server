@@ -327,8 +327,23 @@ module Fhir
       when :reference then reference_fragment(scope, definition, clause)
       when :identifier then identifier_fragment(scope, clause)
       when :token_or_text then token_or_text_fragment(scope, definition, clause)
+      when :uri then uri_fragment(scope, definition[:column], clause)
       else raise ArgumentError, "Unknown search param type: #{definition[:type]}"
       end
+    end
+
+    # --- :uri ----------------------------------------------------------------
+
+    # FHIR `uri` search is exact string comparison by default (Questionnaire.url,
+    # QuestionnaireResponse.questionnaire). Unlike :token the value is never
+    # split on "|" -- a canonical carries its version that way
+    # ("http://example.org/Questionnaire/q|1.0.0"), and that whole string is
+    # what's stored. The :above / :below modifiers are not implemented, so a
+    # modified clause is rejected by #supported_modifier? before reaching here.
+    def uri_fragment(scope, column, clause)
+      return scope if clause.values.empty?
+
+      scope.where(column => clause.values)
     end
 
     # --- :string -----------------------------------------------------------

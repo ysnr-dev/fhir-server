@@ -1,0 +1,17 @@
+{
+  "url": "http://jaspehr.jp/fhir/StructureDefinition/JSP_Resource_Types_VS",
+  "compose": {
+    "include": [
+      {
+        "system": "http://hl7.org/fhir/resource-types",
+        "filter": [
+          {
+            "property": "code",
+            "op": "in",
+            "value": "Questionnaire, Patient, MedicationRequest, Condition, Observation, Encounter"
+          }
+        ]
+      }
+    ]
+  }
+}

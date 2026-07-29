@@ -1,0 +1,10 @@
+{
+  "url": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Pseudonymization_VS",
+  "compose": {
+    "include": [
+      {
+        "system": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Pseudonymization_CS"
+      }
+    ]
+  }
+}

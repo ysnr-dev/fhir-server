@@ -36,10 +36,39 @@ RSpec.describe Fhir::Repository do
       expect(versions.first.resource_type).to eq("Patient")
     end
 
-    it "strips any client-supplied id and meta" do
-      patient = described_class.create("Patient", payload("id" => "client-supplied", "meta" => { "versionId" => "99" }))
+    it "strips any client-supplied id and server-owned meta" do
+      patient = described_class.create(
+        "Patient",
+        payload("id" => "client-supplied",
+                "meta" => { "versionId" => "99", "lastUpdated" => "2000-01-01T00:00:00Z",
+                            "profile" => ["http://example.org/bogus"], "source" => "urn:x",
+                            "security" => [{ "code" => "R" }] })
+      )
 
       expect(patient.id).not_to eq("client-supplied")
+      expect(patient.content).not_to have_key("meta")
+    end
+
+    it "persists client-supplied meta.tag" do
+      tag = { "system" => "http://example.org/tags", "code" => "submitted" }
+
+      patient = described_class.create("Patient", payload("meta" => { "tag" => [tag], "versionId" => "99" }))
+
+      expect(patient.content["meta"]).to eq({ "tag" => [tag] })
+    end
+
+    it "drops the server-generated SUBSETTED tag so a round-tripped _elements result stays clean" do
+      subsetted = Fhir::ResourceShaper::SUBSETTED_TAG
+      keeper = { "system" => "http://example.org/tags", "code" => "submitted" }
+
+      patient = described_class.create("Patient", payload("meta" => { "tag" => [keeper, subsetted] }))
+
+      expect(patient.content["meta"]["tag"]).to eq([keeper])
+    end
+
+    it "omits meta entirely when the only tag was SUBSETTED" do
+      patient = described_class.create("Patient", payload("meta" => { "tag" => [Fhir::ResourceShaper::SUBSETTED_TAG] }))
+
       expect(patient.content).not_to have_key("meta")
     end
   end
@@ -252,6 +281,24 @@ RSpec.describe Fhir::Repository do
           "status" => "active",
           "beneficiary" => { "reference" => "Patient/#{patient_id}" },
           "payor" => [{ "reference" => "Organization/#{organization_id}" }] }
+      when "Questionnaire"
+        { "resourceType" => "Questionnaire",
+          "identifier" => [{ "system" => "http://example.org/questionnaire", "value" => "smoke-q" }],
+          "url" => "http://example.org/Questionnaire/smoke",
+          "version" => "1.0.0",
+          "name" => "SmokeQ",
+          "title" => "Smoke Questionnaire",
+          "status" => "active",
+          "subjectType" => ["Patient"],
+          "item" => [{ "linkId" => "q1", "type" => "string" }] }
+      when "QuestionnaireResponse"
+        { "resourceType" => "QuestionnaireResponse",
+          "identifier" => { "system" => "http://example.org/questionnaire-response", "value" => "1311234567^P1^R1" },
+          "questionnaire" => "http://example.org/Questionnaire/smoke|1.0.0",
+          "status" => "completed",
+          "subject" => { "reference" => "Patient/#{patient_id}" },
+          "authored" => "2026-07-29T10:00:00+09:00",
+          "author" => { "reference" => "Practitioner/#{patient_id}" } }
       when "Composition"
         { "resourceType" => "Composition",
           "identifier" => { "system" => "http://example.org/composition", "value" => "smoke-comp" },

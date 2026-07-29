@@ -252,6 +252,40 @@ RSpec.describe Fhir::Search do
     end
   end
 
+  describe "uri search" do
+    before do
+      create("Questionnaire", { "url" => "http://example.org/Questionnaire/first", "status" => "active" })
+      create("Questionnaire", { "url" => "http://example.org/Questionnaire/first-extended", "status" => "active" })
+    end
+
+    it "matches the whole URI, not a prefix" do
+      expect(search("Questionnaire", { "url" => "http://example.org/Questionnaire/first" }).total).to eq(1)
+      expect(search("Questionnaire", { "url" => "http://example.org/Questionnaire" }).total).to eq(0)
+    end
+
+    it "ORs comma-joined values" do
+      result = search("Questionnaire",
+                      { "url" => "http://example.org/Questionnaire/first,http://example.org/Questionnaire/first-extended" })
+
+      expect(result.total).to eq(2)
+    end
+
+    it "does not split a canonical's |version suffix the way a token would" do
+      create("QuestionnaireResponse", { "questionnaire" => "http://example.org/Questionnaire/first|1.0.0" })
+
+      expect(search("QuestionnaireResponse", { "questionnaire" => "http://example.org/Questionnaire/first|1.0.0" }).total)
+        .to eq(1)
+      expect(search("QuestionnaireResponse", { "questionnaire" => "1.0.0" }).total).to eq(0)
+    end
+
+    it "supports :missing" do
+      create("Questionnaire", { "status" => "draft" })
+
+      expect(search("Questionnaire", { "url:missing" => "true" }).total).to eq(1)
+      expect(search("Questionnaire", { "url:missing" => "false" }).total).to eq(2)
+    end
+  end
+
   describe "date interval precision" do
     before do
       create("Patient", { "identifier" => [{ "value" => "prec-1" }], "birthDate" => "2024-06-15" })

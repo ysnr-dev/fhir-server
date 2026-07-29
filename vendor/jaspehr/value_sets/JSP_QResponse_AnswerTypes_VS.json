@@ -1,0 +1,62 @@
+{
+  "url": "http://jaspehr.jp/fhir/StructureDefinition/JSP_QResponse_AnswerTypes_VS",
+  "compose": {
+    "include": [
+      {
+        "system": "http://hl7.org/fhir/ValueSet/questionnaire-answers"
+      }
+    ],
+    "exclude": [
+      {
+        "system": "http://hl7.org/fhir/ValueSet/questionnaire-answers",
+        "filter": [
+          {
+            "property": "code",
+            "op": "=",
+            "value": "boolean"
+          }
+        ]
+      },
+      {
+        "system": "http://hl7.org/fhir/ValueSet/questionnaire-answers",
+        "filter": [
+          {
+            "property": "code",
+            "op": "=",
+            "value": "uri"
+          }
+        ]
+      },
+      {
+        "system": "http://hl7.org/fhir/ValueSet/questionnaire-answers",
+        "filter": [
+          {
+            "property": "code",
+            "op": "=",
+            "value": "attachment"
+          }
+        ]
+      },
+      {
+        "system": "http://hl7.org/fhir/ValueSet/questionnaire-answers",
+        "filter": [
+          {
+            "property": "code",
+            "op": "=",
+            "value": "reference"
+          }
+        ]
+      },
+      {
+        "system": "http://hl7.org/fhir/ValueSet/questionnaire-answers",
+        "filter": [
+          {
+            "property": "code",
+            "op": "=",
+            "value": "quantity"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -2,10 +2,16 @@ require "set"
 
 module Fhir
   module Profile
-    # Lazily loads and memoizes the vendored JP Core StructureDefinitions,
-    # ValueSets, and CodeSystems written by `rake jp_core:vendor` into
-    # vendor/jp_core/ (see lib/tasks/jp_core.rake). The app never fetches
-    # anything over the network at runtime -- only these committed files.
+    # Lazily loads and memoizes the vendored StructureDefinitions, ValueSets,
+    # and CodeSystems written by the `<ig>:vendor` rake tasks into vendor/<ig>/
+    # (see lib/tasks/support/ig_vendor.rb). The app never fetches anything over
+    # the network at runtime -- only these committed files.
+    #
+    # One vendor root per Implementation Guide. Their indexes are merged into a
+    # single canonical-URL lookup: canonicals are globally unique, so an IG is
+    # just a shard of one address space and callers never name a root. Whether a
+    # profile is validated at all is decided by .known_profile?, i.e. by whether
+    # some IG here vendored it.
     #
     # A single Mutex guards all cache reads/writes because Puma runs multiple
     # threads per worker; the mutex is not reentrant, so every public method
@@ -13,7 +19,10 @@ module Fhir
     # below never take it again, even when they recurse (e.g. an expansion
     # that references a nested ValueSet).
     module DefinitionStore
-      VENDOR_ROOT = Rails.root.join("vendor", "jp_core")
+      VENDOR_ROOTS = [
+        Rails.root.join("vendor", "jp_core"),
+        Rails.root.join("vendor", "jaspehr")
+      ].freeze
 
       module_function
 
@@ -66,16 +75,23 @@ module Fhir
       end
       private_class_method :index
 
+      # Merges every vendor root's index into one map per kind, resolving each
+      # entry's root-relative path to an absolute one so lookups no longer care
+      # which IG a canonical came from.
       def load_index
-        path = VENDOR_ROOT.join("index.json")
-        return { structure_definitions: {}, value_sets: {}, code_systems: {} } unless File.exist?(path)
+        merged = { structure_definitions: {}, value_sets: {}, code_systems: {} }
 
-        raw = JSON.parse(File.read(path))
-        {
-          structure_definitions: raw.fetch("structure_definitions", {}),
-          value_sets: raw.fetch("value_sets", {}),
-          code_systems: raw.fetch("code_systems", {})
-        }
+        VENDOR_ROOTS.each do |root|
+          path = root.join("index.json")
+          next unless File.exist?(path)
+
+          raw = JSON.parse(File.read(path))
+          merged.each_key do |kind|
+            raw.fetch(kind.to_s, {}).each { |url, relative| merged[kind][url] = root.join(relative) }
+          end
+        end
+
+        merged
       end
       private_class_method :load_index
 
@@ -87,8 +103,8 @@ module Fhir
       def fetch_definition(kind, url)
         return cache[kind][url] if cache[kind].key?(url)
 
-        relative_path = index[kind][url]
-        cache[kind][url] = relative_path ? JSON.parse(File.read(VENDOR_ROOT.join(relative_path))) : nil
+        path = index[kind][url]
+        cache[kind][url] = path ? JSON.parse(File.read(path)) : nil
       end
       private_class_method :fetch_definition
 
@@ -110,6 +126,17 @@ module Fhir
 
           codes.merge(entry_codes)
         end
+
+        # `exclude` narrows the result, so an unresolvable exclude would leave
+        # the expansion too WIDE -- codes the ValueSet forbids would be accepted.
+        # Bail out to nil for the same reason an unresolvable include does.
+        Array(definition.dig("compose", "exclude")).each do |exclude_entry|
+          entry_codes = expand_include(exclude_entry)
+          return nil unless entry_codes
+
+          codes.subtract(entry_codes)
+        end
+
         codes
       end
       private_class_method :compute_expansion
