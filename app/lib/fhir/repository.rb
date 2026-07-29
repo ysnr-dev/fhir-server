@@ -169,13 +169,50 @@ module Fhir
 
     attr_reader :resource_type, :model
 
-    # Strips client-supplied id/meta (server-assigned) and enforces resourceType.
+    # meta children the client owns and that therefore round-trip through a
+    # write. Everything else in meta is server-assigned or registry-derived
+    # (versionId, lastUpdated, profile) and is re-applied at render time by
+    # Fhir::Meta, so persisting it would only let a stale copy drift.
+    #
+    # `tag` is here because it is the only meta child FHIR gives to the client
+    # as authored content rather than as infrastructure -- JASPEHR, for one,
+    # carries its submission (提出指定) and pseudonymization (仮名化指定) codes
+    # on Questionnaire.meta.tag, and dropping them would silently discard part
+    # of the resource. `security` deliberately stays out: labels that gate
+    # access must not be settable by the writer.
+    CLIENT_OWNED_META_KEYS = %w[tag].freeze
+
+    # Strips client-supplied id and server-owned meta, and enforces resourceType.
     def sanitize_resource(payload, id:)
       resource = payload.deep_dup
-      resource.delete("meta")
+      apply_meta_policy(resource)
       resource["resourceType"] = resource_type
       resource["id"] = id
       resource
+    end
+
+    def apply_meta_policy(resource)
+      meta = resource["meta"]
+      kept = meta.is_a?(Hash) ? meta.slice(*CLIENT_OWNED_META_KEYS).reject { |_k, v| v.blank? } : {}
+      kept["tag"] = reject_subsetted(kept["tag"]) if kept.key?("tag")
+      kept.reject! { |_k, v| v.blank? }
+
+      if kept.empty?
+        resource.delete("meta")
+      else
+        resource["meta"] = kept
+      end
+    end
+
+    # SUBSETTED is stamped by Fhir::ResourceShaper on _summary/_elements results
+    # to mark them incomplete. A client that round-trips such a result would
+    # otherwise persist the marker onto a resource that is no longer partial.
+    def reject_subsetted(tags)
+      Array.wrap(tags).reject do |tag|
+        tag.is_a?(Hash) &&
+          tag["system"] == ResourceShaper::SUBSETTED_TAG["system"] &&
+          tag["code"] == ResourceShaper::SUBSETTED_TAG["code"]
+      end
     end
   end
 end

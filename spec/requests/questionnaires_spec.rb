@@ -113,6 +113,63 @@ RSpec.describe "Questionnaire", type: :request do
     end
   end
 
+  describe "meta.tag" do
+    # JASPEHR carries its 提出指定 on Questionnaire.meta.tag, so the tag has to
+    # survive the write even though the rest of meta is server-assigned.
+    let(:submission_tag) do
+      { "system" => "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_CS", "code" => "submission" }
+    end
+
+    it "round-trips through create, read, and update" do
+      post "/Questionnaire", params: valid_questionnaire_payload("meta" => { "tag" => [submission_tag] }), as: :json
+      id = JSON.parse(response.body)["id"]
+      expect(JSON.parse(response.body)["meta"]["tag"]).to eq([submission_tag])
+
+      get "/Questionnaire/#{id}"
+      body = JSON.parse(response.body)
+      expect(body["meta"]["tag"]).to eq([submission_tag])
+      # The server-owned members are still server-owned.
+      expect(body["meta"]["versionId"]).to eq("1")
+      expect(body["meta"]["profile"])
+        .to eq(["http://www.hosp.ncgm.go.jp/JASPEHR/fhir/StructureDefinition/jaspehr-questionnaire"])
+
+      put "/Questionnaire/#{id}", params: valid_questionnaire_payload, as: :json
+      expect(JSON.parse(response.body)["meta"]).not_to have_key("tag")
+    end
+
+    it "is conformant with the JASPEHR profile" do
+      post "/Questionnaire/$validate",
+           params: valid_questionnaire_payload("meta" => { "tag" => [submission_tag] }), as: :json
+
+      issues = JSON.parse(response.body)["issue"]
+      expect(issues.map { |i| i["diagnostics"] }.join).not_to include("meta.tag")
+    end
+
+    it "reports a tag outside the JASPEHR submission ValueSet" do
+      payload = valid_questionnaire_payload(
+        "meta" => { "tag" => [submission_tag.merge("code" => "not-a-submission-code")] }
+      )
+
+      post "/Questionnaire/$validate", params: payload, as: :json
+
+      expect(JSON.parse(response.body)["issue"].map { |i| i["diagnostics"] }.join).to include("meta.tag")
+    end
+
+    it "does not persist the SUBSETTED tag a _elements search added" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      id = JSON.parse(response.body)["id"]
+
+      get "/Questionnaire?_elements=url,status"
+      shaped = JSON.parse(response.body)["entry"].first["resource"]
+      expect(shaped["meta"]["tag"]).to include(Fhir::ResourceShaper::SUBSETTED_TAG)
+
+      put "/Questionnaire/#{id}", params: valid_questionnaire_payload("meta" => shaped["meta"]), as: :json
+
+      get "/Questionnaire/#{id}"
+      expect(JSON.parse(response.body)["meta"]).not_to have_key("tag")
+    end
+  end
+
   it "advertises url as a uri search parameter in the CapabilityStatement" do
     get "/metadata"
 

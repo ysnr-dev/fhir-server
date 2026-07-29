@@ -139,10 +139,40 @@ http://localhost:3000
 
 - リクエスト/レスポンスとも `Content-Type: application/fhir+json` を使用してください
   （サーバーはリクエストボディを raw JSON として解釈するため、`application/json` でも動作します）
-- 正常応答のリソースには `meta.versionId` / `meta.lastUpdated` が自動付与されます
+- 正常応答のリソースには `meta.versionId` / `meta.lastUpdated` / `meta.profile` が自動付与されます
+  （後述の「`meta` の扱い」も参照）
 - 正常応答には `ETag: W/"{versionId}"` ヘッダーが付与されます
 - 作成成功時は `Location: {baseUrl}/{ResourceType}/{id}/_history/{versionId}` ヘッダーが付与されます
 - すべてのエラー応答は `OperationOutcome` リソース（`application/fhir+json`）で返されます
+
+#### `meta` の扱い
+
+`meta` の子要素は「サーバー所有」と「クライアント所有」に分かれます。
+
+| 要素 | 扱い |
+|---|---|
+| `meta.versionId` / `meta.lastUpdated` | サーバーが採番。書き込み時のクライアント指定値は破棄 |
+| `meta.profile` | `Fhir::ResourceRegistry` から導出し、レンダリング時に付与。保存はしない（プロファイル URL の変更が過去バージョンにも即座に反映される） |
+| `meta.tag` | **クライアント所有。保存され、read / vread / 検索 / `_history` / Bundle / `$export` のいずれでもそのまま返ります** |
+| `meta.security` / `meta.source` | 破棄。アクセス制御に関わるラベルを書き込み側が設定できるべきではないため |
+
+`meta.tag` を保存するのは、FHIR で唯一クライアントが著作するコンテンツとしての meta 子要素であり、
+JASPEHR の提出指定（`JSP_QResponse_Submission`）・仮名化指定のようにリソースの一部として意味を持つためです。
+
+```bash
+curl -i -X POST http://localhost:3000/Questionnaire \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{ "resourceType": "Questionnaire", "meta": { "tag": [
+          { "system": "http://jaspehr.jp/fhir/CodeSystem/JSP_QResponse_Submission_CS", "code": "submission" }
+        ] }, "version": "1.0.0", "name": "ExampleQ", "title": "問診票", "status": "active",
+        "subjectType": ["Patient"], "item": [{ "linkId": "q1", "type": "string" }] }'
+```
+
+更新（PUT / PATCH）でも `meta.tag` は送られた内容で置き換わります。タグを残したい場合は更新ボディにも
+含めてください（送らなければ消えます）。
+
+> `_summary` / `_elements` を使った検索結果には、内容が部分的であることを示す `SUBSETTED` タグが
+> レンダリング時に付きます。このタグはサーバー生成のため、その結果をそのまま書き戻しても保存されません。
 
 | HTTPステータス | 意味 |
 |---|---|
@@ -406,11 +436,9 @@ vendor する範囲は各 IG の性質に合わせています。JP Core は自�
 - `item.type` / `itemControl` / expression language の各 ValueSet は HL7 基底 CodeSystem を include して
   一部を exclude する構成で、その基底 CodeSystem は同梱していません。展開できない値セットは
   「不明」として検査をスキップするため、代わりに手書きバリデータ（`Fhir::Terminology`）が同じ制約を検査します。
-- `Questionnaire.meta.tag` に置く JASPEHR の提出指定（`JSP_QResponse_Submission`）・仮名化指定は
-  **永続化されません**。本サーバーは書き込み時にクライアント指定の `meta` を破棄し、`meta.versionId` /
-  `meta.lastUpdated` / `meta.profile` のみをレンダリング時に付与する設計のためです。
 - `QuestionnaireResponse.contained` のスライスは判別子が `profile` 型で、本エンジンは `value` 型のみ
   対応するため検査されません（安全側にスキップ）。
+- `meta.tag` による検索（`_tag`）は未対応です。値の保存・取得はできます（下記参照）。
 - SDC の `$populate` / `$extract` オペレーションは未実装です。
 
 ---
