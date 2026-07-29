@@ -29,6 +29,8 @@ module Fhir
       "ServiceRequest" => "検査・処置の依頼",
       "Specimen" => "検体",
       "ImagingStudy" => "画像検査",
+      "Questionnaire" => "問診票・診療テンプレート",
+      "QuestionnaireResponse" => "問診・テンプレートの回答",
       "Composition" => "診療文書",
       "Practitioner" => "医療従事者",
       "PractitionerRole" => "医療従事者の役割",

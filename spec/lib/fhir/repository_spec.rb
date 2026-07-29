@@ -252,6 +252,24 @@ RSpec.describe Fhir::Repository do
           "status" => "active",
           "beneficiary" => { "reference" => "Patient/#{patient_id}" },
           "payor" => [{ "reference" => "Organization/#{organization_id}" }] }
+      when "Questionnaire"
+        { "resourceType" => "Questionnaire",
+          "identifier" => [{ "system" => "http://example.org/questionnaire", "value" => "smoke-q" }],
+          "url" => "http://example.org/Questionnaire/smoke",
+          "version" => "1.0.0",
+          "name" => "SmokeQ",
+          "title" => "Smoke Questionnaire",
+          "status" => "active",
+          "subjectType" => ["Patient"],
+          "item" => [{ "linkId" => "q1", "type" => "string" }] }
+      when "QuestionnaireResponse"
+        { "resourceType" => "QuestionnaireResponse",
+          "identifier" => { "system" => "http://example.org/questionnaire-response", "value" => "1311234567^P1^R1" },
+          "questionnaire" => "http://example.org/Questionnaire/smoke|1.0.0",
+          "status" => "completed",
+          "subject" => { "reference" => "Patient/#{patient_id}" },
+          "authored" => "2026-07-29T10:00:00+09:00",
+          "author" => { "reference" => "Practitioner/#{patient_id}" } }
       when "Composition"
         { "resourceType" => "Composition",
           "identifier" => { "system" => "http://example.org/composition", "value" => "smoke-comp" },

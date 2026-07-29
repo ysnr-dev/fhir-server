@@ -77,6 +77,31 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/fm-status (required) -- Coverage.status
     FINANCIAL_RESOURCE_STATUS = %w[active cancelled draft entered-in-error].freeze
 
+    # http://hl7.org/fhir/ValueSet/publication-status (required) -- Questionnaire.status
+    QUESTIONNAIRE_STATUS = %w[draft active retired unknown].freeze
+    # http://hl7.org/fhir/ValueSet/questionnaire-answers-status (required)
+    QUESTIONNAIRE_RESPONSE_STATUS = %w[in-progress completed amended entered-in-error stopped].freeze
+
+    # --- JASPEHR (the JApanese Standard Platform for EHRs) IG v1.0.0 ---------
+
+    # .../ValueSet/questionnaire-item-type-Jaspehr (required) -- the base
+    # http://hl7.org/fhir/item-type codes minus boolean / url / open-choice /
+    # attachment / reference / quantity. Enumerated here rather than expanded
+    # from the vendored ValueSet because the base CodeSystem it includes ships
+    # with hl7.fhir.r4.core, which this server does not vendor.
+    QUESTIONNAIRE_ITEM_TYPE_JASPEHR =
+      %w[group display decimal integer date dateTime time string text choice].freeze
+
+    # jsp-4 / jsp-5 / jsr-1: half-width alphanumerics plus a fixed symbol set.
+    JASPEHR_TOKEN_PATTERN = %r{\A[A-Za-z0-9\-.!\#%/:;?@_~]{1,255}\z}
+    # jsp-5 additionally caps Questionnaire.name.
+    JASPEHR_NAME_MAX_LENGTH = 15
+    # valid-value-institutionNumberExtension: 2-digit prefecture + 1-digit fee
+    # schedule class (1|2|3) + 7-digit institution code.
+    JASPEHR_INSTITUTION_NUMBER_PATTERN = /\A[0-4][0-9][1-3][0-9]{7}\z/
+    # QuestionnaireResponse.identifier: 保険医療機関番号 ^ 患者ID ^ 報告単位ID.
+    JASPEHR_QR_IDENTIFIER_PARTS = 3
+
     # --- Identifier systems / OIDs (JP Core) --------------------------------
 
     # JP Core Patient medical record number (院内カルテ番号) identifier system.

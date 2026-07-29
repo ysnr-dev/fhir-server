@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_26_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_29_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -633,6 +633,62 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_26_000001) do
     t.index ["performed_time"], name: "index_procedures_on_performed_time"
     t.index ["status"], name: "index_procedures_on_status"
     t.index ["subject_reference"], name: "index_procedures_on_subject_reference"
+  end
+
+  create_table "questionnaire_responses", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "questionnaire_canonical"
+    t.string "status"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.string "author_reference"
+    t.string "source_reference"
+    t.datetime "authored"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_reference"], name: "index_questionnaire_responses_on_author_reference"
+    t.index ["authored"], name: "index_questionnaire_responses_on_authored"
+    t.index ["content"], name: "index_questionnaire_responses_on_content", using: :gin
+    t.index ["deleted"], name: "index_questionnaire_responses_on_deleted"
+    t.index ["encounter_reference"], name: "index_questionnaire_responses_on_encounter_reference"
+    t.index ["last_updated"], name: "index_questionnaire_responses_on_last_updated"
+    t.index ["questionnaire_canonical"], name: "index_questionnaire_responses_on_questionnaire_canonical"
+    t.index ["source_reference"], name: "index_questionnaire_responses_on_source_reference"
+    t.index ["status"], name: "index_questionnaire_responses_on_status"
+    t.index ["subject_reference"], name: "index_questionnaire_responses_on_subject_reference"
+  end
+
+  create_table "questionnaires", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "url"
+    t.string "version"
+    t.string "name"
+    t.string "title"
+    t.string "status"
+    t.string "subject_type"
+    t.string "publisher"
+    t.string "code_value"
+    t.datetime "questionnaire_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code_value"], name: "index_questionnaires_on_code_value"
+    t.index ["content"], name: "index_questionnaires_on_content", using: :gin
+    t.index ["deleted"], name: "index_questionnaires_on_deleted"
+    t.index ["last_updated"], name: "index_questionnaires_on_last_updated"
+    t.index ["name"], name: "index_questionnaires_on_name"
+    t.index ["publisher"], name: "index_questionnaires_on_publisher"
+    t.index ["questionnaire_date"], name: "index_questionnaires_on_questionnaire_date"
+    t.index ["status"], name: "index_questionnaires_on_status"
+    t.index ["subject_type"], name: "index_questionnaires_on_subject_type"
+    t.index ["title"], name: "index_questionnaires_on_title"
+    t.index ["url"], name: "index_questionnaires_on_url"
+    t.index ["version"], name: "index_questionnaires_on_version"
   end
 
   create_table "refresh_tokens", force: :cascade do |t|

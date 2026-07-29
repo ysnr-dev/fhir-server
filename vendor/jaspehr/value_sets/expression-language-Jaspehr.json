@@ -1,0 +1,23 @@
+{
+  "url": "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/ValueSet/expression-language-Jaspehr",
+  "compose": {
+    "include": [
+      {
+        "system": "http://hl7.org/fhir/expression-language"
+      }
+    ],
+    "exclude": [
+      {
+        "system": "http://hl7.org/fhir/expression-language",
+        "concept": [
+          {
+            "code": "text/cql"
+          },
+          {
+            "code": "application/x-fhir-query"
+          }
+        ]
+      }
+    ]
+  }
+}

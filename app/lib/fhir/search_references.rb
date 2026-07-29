@@ -125,6 +125,21 @@ module Fhir
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
         "author" => { multiple: true, jsonb_key: "author", ref_path: %w[reference],
                        targets: %w[Practitioner PractitionerRole Organization Device Patient RelatedPerson] }
+      },
+      # Questionnaire has no Reference elements, so it has no entry here.
+      # QuestionnaireResponse.questionnaire is likewise absent: it is a canonical
+      # URL, not a { "reference": "Type/id" } object, so it cannot be traversed.
+      "QuestionnaireResponse" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        "author" => { path: %w[author reference], targets: %w[Practitioner], column: "author_reference" },
+        "source" => { path: %w[source reference], column: "source_reference",
+                       targets: %w[Patient Practitioner PractitionerRole RelatedPerson] },
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference],
+                         targets: %w[CarePlan ServiceRequest] },
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference],
+                        targets: %w[Observation Procedure] }
       }
     }.freeze
 

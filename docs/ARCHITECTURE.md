@@ -1,12 +1,12 @@
 # アーキテクチャ外観（4リポジトリ）
 
-JP-Core 準拠の FHIR R4 サーバーを中心に、Web クライアントと MCP サーバー（TypeScript / Go）が
+JP-Core（問診票は JASPEHR）準拠の FHIR R4 サーバーを中心に、Web クライアントと MCP サーバー（TypeScript / Go）が
 同じ FHIR REST + SMART Backend Services の接点だけで結びつく構成です。
 4 リポジトリの間にコード依存はなく、接点はすべて **HTTP と Bearer トークン**です。
 
 | リポジトリ | 役割 | 主なスタック |
 |---|---|---|
-| `fhir-server` | FHIR R4 サーバー本体（JP-Core IG v1.2.0 準拠） | Ruby 3.4 / Rails 8（API 専用）/ PostgreSQL 18 |
+| `fhir-server` | FHIR R4 サーバー本体（JP-Core IG v1.2.0 / JASPEHR IG v1.0.0 準拠） | Ruby 3.4 / Rails 8（API 専用）/ PostgreSQL 18 |
 | `fhir-client` | Web UI ＋ プロキシ backend（処方オーダー基盤） | Rails 7（API 専用）/ Vite + React + TypeScript |
 | `fhir-mcp-server` | MCP サーバー（stdio ＋ リモート HTTP） | Node.js 20+ / TypeScript / MCP TypeScript SDK |
 | `fhir-mcp-agent` | MCP サーバーの Go 移植（stdio 専用） | Go 1.26+ / 公式 MCP Go SDK |
@@ -41,8 +41,8 @@ flowchart TB
 
     IDP["外部 IdP（Auth0）"]
 
-    subgraph serverRepo["fhir-server — Rails 8 / JP-Core v1.2.0"]
-        REST["FHIR REST<br/>23 リソース / 検索 / _history / Bundle / $validate"]
+    subgraph serverRepo["fhir-server — Rails 8 / JP-Core v1.2.0 + JASPEHR v1.0.0"]
+        REST["FHIR REST<br/>26 リソース / 検索 / _history / Bundle / $validate"]
         AUTH["SMART 認可サーバー<br/>token / authorize / introspect / revoke / JWKS"]
         BULK["Bulk Data<br/>$export（system / patient）"]
         ADMINAPI["管理 API<br/>/admin/oauth_clients・/admin/scopes"]
@@ -85,7 +85,7 @@ flowchart TB
 
 | 領域 | 内容 |
 |---|---|
-| FHIR REST | 23 リソース（`Patient` / `Observation` / `MedicationRequest` / `DocumentReference` ほか）の CRUD、チェーン検索・`_has`・`_include`、`_history` / vread、条件付き操作、JSON Patch、`$validate`、`Patient/$everything`、Bundle（transaction / batch） |
+| FHIR REST | 26 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` ほか）の CRUD、チェーン検索・`_has`・`_include`、`_history` / vread、条件付き操作、JSON Patch、`$validate`、`Patient/$everything`、Bundle（transaction / batch） |
 | 認証・認可 | SMART Backend Services（`client_credentials` / client assertion JWT）、SMART v2 スコープ、OpenID Connect（`id_token` / `fhirUser`）、standalone launch、Token Introspection（RFC 7662）、revoke、JWKS、`.well-known/smart-configuration` |
 | Bulk Data | Bulk Data Access IG v2.0.0。`/$export`・`/Patient/$export` と非同期ジョブ、status / download / cancel |
 | 運用・管理 | `/metadata`（CapabilityStatement）、`/up`（ヘルスチェック）、`AuditEvent`（サーバー生成・読み取り専用）、管理 API `/admin/oauth_clients`・`/admin/scopes` |
@@ -93,7 +93,7 @@ flowchart TB
 内部構造の要点:
 
 - `app/lib/fhir/` に検索定義・プロファイル検証・スコープ・用語集を集約
-- ルーティングは 23 リソースへ同一のルートセットを生成し、`FhirResourcesController` に集約
+- ルーティングは 26 リソースへ同一のルートセットを生成し、`FhirResourcesController` に集約
 - 管理 API は FHIR のスコープではなく専用の共有トークン（`FHIR_ADMIN_TOKEN`）で認証し、
   未設定なら常に 503（fail closed）。CORS は意図的に無効
 

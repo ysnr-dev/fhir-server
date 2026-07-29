@@ -1,0 +1,65 @@
+{
+  "url": "http://www.hosp.ncgm.go.jp/JASPEHR/fhir/ValueSet/questionnaire-item-control-Jaspehr",
+  "compose": {
+    "include": [
+      {
+        "system": "http://hl7.org/fhir/questionnaire-item-control"
+      }
+    ],
+    "exclude": [
+      {
+        "system": "http://hl7.org/fhir/questionnaire-item-control",
+        "concept": [
+          {
+            "code": "table"
+          },
+          {
+            "code": "htable"
+          },
+          {
+            "code": "gtable"
+          },
+          {
+            "code": "atable"
+          },
+          {
+            "code": "header"
+          },
+          {
+            "code": "footer"
+          },
+          {
+            "code": "prompt"
+          },
+          {
+            "code": "unit"
+          },
+          {
+            "code": "lower"
+          },
+          {
+            "code": "upper"
+          },
+          {
+            "code": "flyover"
+          },
+          {
+            "code": "help"
+          },
+          {
+            "code": "autocomplete"
+          },
+          {
+            "code": "lookup"
+          },
+          {
+            "code": "slider"
+          },
+          {
+            "code": "spinner"
+          }
+        ]
+      }
+    ]
+  }
+}
