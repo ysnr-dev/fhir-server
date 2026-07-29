@@ -2,7 +2,7 @@ require "set"
 
 module Fhir
   module Profile
-    # Walks a resource payload against a JP Core StructureDefinition snapshot
+    # Walks a resource payload against a vendored StructureDefinition snapshot
     # (via ElementTree) and reports conformance issues in the same
     # { code:, diagnostics:, expression: } shape the hand-written per-resource
     # validators use, so Fhir::OperationOutcome.build needs no changes.
@@ -11,7 +11,7 @@ module Fhir
     # unknown elements, primitive format, fixed[x]/pattern[x], required
     # bindings resolvable from vendored ValueSets/CodeSystems, slicing with
     # `value` discriminators on system/url, and one level of recursion into
-    # vendored JP Core datatype/extension profiles referenced via
+    # vendored datatype/extension profiles referenced via
     # `type[].profile`. FHIRPath invariants and Reference target resolution
     # are out of scope (existing hand validators cover reference existence).
     #
@@ -55,7 +55,7 @@ module Fhir
         if type_code && Primitives.known?(type_code)
           result = Primitives.valid?(type_code, value)
           if result == false
-            add_error(code: "value", diagnostics: "#{expression} is not a valid #{type_code} (JP Core: #{@profile_url})",
+            add_error(code: "value", diagnostics: "#{expression} is not a valid #{type_code} (profile: #{@profile_url})",
                       expression: expression)
           end
         else
@@ -77,7 +77,7 @@ module Fhir
 
       def walk_complex(node, value, expression)
         unless value.is_a?(Hash)
-          add_error(code: "structure", diagnostics: "#{expression} must be an object (JP Core: #{@profile_url})",
+          add_error(code: "structure", diagnostics: "#{expression} must be an object (profile: #{@profile_url})",
                     expression: expression)
           return
         end
@@ -99,7 +99,7 @@ module Fhir
           next if allowed.include?(key)
 
           add_error(code: "structure",
-                    diagnostics: "Unknown element '#{key}' is not part of #{node.path} (JP Core: #{@profile_url})",
+                    diagnostics: "Unknown element '#{key}' is not part of #{node.path} (profile: #{@profile_url})",
                     expression: "#{expression}.#{key}")
         end
       end
@@ -134,7 +134,7 @@ module Fhir
           add_error(
             code: "structure",
             diagnostics: "#{expression_base}.#{key} must #{is_array ? '' : 'not '}be represented as a JSON array " \
-                         "(JP Core: #{@profile_url})",
+                         "(profile: #{@profile_url})",
             expression: "#{expression_base}.#{key}"
           )
           return
@@ -177,7 +177,7 @@ module Fhir
         if count < min
           add_error(
             code: "required",
-            diagnostics: "#{expression_base}.#{key} is required (JP Core: #{child.min}..#{child.max || '*'})",
+            diagnostics: "#{expression_base}.#{key} is required (profile: #{child.min}..#{child.max || '*'})",
             expression: "#{expression_base}.#{key}"
           )
         end
@@ -189,7 +189,7 @@ module Fhir
 
         add_error(
           code: "structure",
-          diagnostics: "#{expression_base}.#{key} allows at most #{child.max} occurrence(s) (JP Core)",
+          diagnostics: "#{expression_base}.#{key} allows at most #{child.max} occurrence(s) (profile constraint)",
           expression: "#{expression_base}.#{key}"
         )
       end
@@ -210,7 +210,7 @@ module Fhir
             if child.slicing["rules"] == "closed"
               add_error(
                 code: "structure",
-                diagnostics: "#{expr} does not match any defined slice of #{child.path} (closed slicing, JP Core)",
+                diagnostics: "#{expr} does not match any defined slice of #{child.path} (closed slicing)",
                 expression: expr
               )
             end
@@ -261,7 +261,7 @@ module Fhir
             add_error(
               code: "required",
               diagnostics: "#{expression_base}.#{key}:#{slice.slice_name} requires at least " \
-                           "#{slice.min} occurrence(s) (JP Core)",
+                           "#{slice.min} occurrence(s) (profile constraint)",
               expression: "#{expression_base}.#{key}"
             )
           end
@@ -274,7 +274,7 @@ module Fhir
           add_error(
             code: "structure",
             diagnostics: "#{expression_base}.#{key}:#{slice.slice_name} allows at most " \
-                         "#{slice.max} occurrence(s) (JP Core)",
+                         "#{slice.max} occurrence(s) (profile constraint)",
             expression: "#{expression_base}.#{key}"
           )
         end
@@ -287,7 +287,7 @@ module Fhir
           unless PatternMatcher.fixed_match?(node.fixed[:value], value)
             add_error(
               code: "value",
-              diagnostics: "#{expression} must be fixed to #{node.fixed[:value].inspect} (JP Core: #{@profile_url})",
+              diagnostics: "#{expression} must be fixed to #{node.fixed[:value].inspect} (profile: #{@profile_url})",
               expression: expression
             )
           end
@@ -295,7 +295,7 @@ module Fhir
           unless PatternMatcher.pattern_match?(node.pattern[:value], value)
             add_error(
               code: "value",
-              diagnostics: "#{expression} does not match the required pattern (JP Core: #{@profile_url})",
+              diagnostics: "#{expression} does not match the required pattern (profile: #{@profile_url})",
               expression: expression
             )
           end
@@ -316,7 +316,7 @@ module Fhir
         add_error(
           code: "value",
           diagnostics: "#{expression}: code(s) #{codes.join(', ')} not in required binding " \
-                       "#{binding['valueSet']} (JP Core)",
+                       "#{binding['valueSet']} (profile constraint)",
           expression: expression
         )
       end
@@ -340,13 +340,16 @@ module Fhir
         end
       end
 
-      # --- nested JP Core datatype / extension profiles ------------------------
+      # --- nested datatype / extension profiles --------------------------------
 
+      # Any vendored profile is recursed into; anything else (HL7 base types,
+      # canonicals from IG dependencies we don't ship) falls out below when
+      # DefinitionStore has no definition for it.
       def recurse_into_profile(node, value, expression)
         return unless node.types.size == 1
 
         profile_url = node.types.first["profile"]&.first&.split("|")&.first
-        return unless Fhir::Profile.jp_core_profile?(profile_url)
+        return if profile_url.blank?
         return if @visited_profiles.include?(profile_url)
 
         definition = DefinitionStore.structure_definition(profile_url)

@@ -24,9 +24,13 @@ RSpec.describe Fhir::Profile::DefinitionStore do
   end
 
   describe ".known_profile?" do
-    it "is true for every JP Core profile the resource registry declares" do
+    # Every registry profile that names an Implementation Guide (i.e. isn't a
+    # bare HL7 base profile) must actually be vendored -- otherwise the entry
+    # silently loses profile validation. Written against the base-HL7 namespace
+    # rather than .known_profile? itself so the assertion can't go tautological.
+    it "is true for every IG profile the resource registry declares" do
       Fhir::ResourceRegistry::ENTRIES.each_value do |entry|
-        next unless Fhir::Profile.jp_core_profile?(entry[:profile])
+        next if entry[:profile].start_with?("http://hl7.org/fhir/StructureDefinition/")
 
         expect(described_class.known_profile?(entry[:profile])).to be(true), "expected #{entry[:profile]} to be vendored"
       end

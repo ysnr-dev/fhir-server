@@ -355,12 +355,13 @@ module Fhir
       Result.new(status: :unprocessable_content, outcome: Fhir::OperationOutcome.build(issues))
     end
 
-    # Only registry entries with a JP Core profile have a vendored definition
-    # to check the payload against (ImagingStudy/DocumentReference/Binary use
-    # base HL7 profiles and keep relying on their hand validator alone).
+    # Only registry entries whose profile was vendored by one of the IGs in
+    # Fhir::Profile::DefinitionStore have a definition to check the payload
+    # against (ImagingStudy/DocumentReference/Binary/Composition use base HL7
+    # profiles and keep relying on their hand validator alone).
     def profile_issues(payload)
       return [] if Fhir::Profile.off?
-      return [] unless Fhir::Profile.jp_core_profile?(entry[:profile])
+      return [] unless Fhir::Profile::DefinitionStore.known_profile?(entry[:profile])
 
       Fhir::Profile::Validator.call(payload, profile_url: entry[:profile]).errors
     end
@@ -378,7 +379,7 @@ module Fhir
     # definition (registry profiles and their transitive datatype/extension
     # closure -- see DefinitionStore); unresolvable is reported as
     # unsupported rather than silently ignored. No `profile` param: falls
-    # back to the registry's own profile, only when it's a JP Core one.
+    # back to the registry's own profile, only when it too is vendored.
     def resolve_validate_profile(profile)
       return [nil, false] if Fhir::Profile.off?
 
@@ -389,7 +390,7 @@ module Fhir
       end
 
       registry_profile = entry[:profile]
-      return [registry_profile, false] if Fhir::Profile.jp_core_profile?(registry_profile)
+      return [registry_profile, false] if Fhir::Profile::DefinitionStore.known_profile?(registry_profile)
 
       [nil, false]
     end

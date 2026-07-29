@@ -59,13 +59,18 @@ class ResourceValidator
 
   # --- reusable checks ----------------------------------------------------
 
+  # The IG whose cardinalities #require_field cites, named in the diagnostics so
+  # a client can tell which spec rejected the payload. Overridden by validators
+  # written against a different IG (see QuestionnaireValidator).
+  PROFILE_LABEL = "JP Core".freeze
+
   # Requires a top-level field to be present. `false` counts as present (for
   # boolean elements). Returns true when present so callers can guard further
-  # checks. `cardinality:` appends a JP Core note, e.g. "(JP Core: 1..*)".
+  # checks. `cardinality:` appends a note, e.g. "(JP Core: 1..*)".
   def require_field(field, value: payload[field], expression: "#{resource_type}.#{field}", cardinality: nil)
     return true if value == false || value.present?
 
-    note = cardinality ? " (JP Core: #{cardinality})" : ""
+    note = cardinality ? " (#{self.class::PROFILE_LABEL}: #{cardinality})" : ""
     add_error(code: "required", diagnostics: "#{resource_type}.#{field} is required#{note}", expression: expression)
     false
   end
