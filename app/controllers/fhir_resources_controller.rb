@@ -223,11 +223,10 @@ class FhirResourcesController < ApplicationController
     @record = record if record && (access_context.nil? || access_context.allows_record?(resource_type, record))
   end
 
+  # The raw ETag is passed through: Fhir::ETag unwraps it where the version is
+  # compared, so this and Bundle.entry.request.ifMatch behave identically.
   def if_match_version
-    header = request.headers["If-Match"]
-    return nil if header.blank?
-
-    header.gsub(%r{^W/}, "").delete('"')
+    request.headers["If-Match"].presence
   end
 
   # Absent or wildcard Accept defaults to the FHIR JSON representation.

@@ -91,6 +91,17 @@ RSpec.describe "Organizations", type: :request do
 
       expect(response).to have_http_status(:precondition_failed)
     end
+
+    # A precondition we cannot parse must fail the request rather than pass
+    # unchecked: the client believes it is guarding against a lost update.
+    it "returns 412 when If-Match carries no version" do
+      post "/Organization", params: valid_organization_payload, as: :json
+      id = JSON.parse(response.body)["id"]
+
+      put "/Organization/#{id}", params: valid_organization_payload, headers: { "If-Match" => 'W/"abc"' }, as: :json
+
+      expect(response).to have_http_status(:precondition_failed)
+    end
   end
 
   describe "DELETE /Organization/:id" do

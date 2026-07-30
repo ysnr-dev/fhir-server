@@ -9,6 +9,11 @@ class BundleProcessor
   # A conditional reference: "Type?criteria" (vs the literal "Type/id").
   CONDITIONAL_REFERENCE_PATTERN = %r{\A([A-Za-z]+)\?(.+)\z}.freeze
 
+  # Element keys whose value can point at another entry of the same bundle:
+  # Reference.reference and Attachment.url (e.g. an image referenced by the
+  # questionnaire-itemMedia extension).
+  REFERENCING_KEYS = %w[reference url].freeze
+
   # Raised while resolving a conditional reference that doesn't select exactly
   # one resource; caught per-entry and converted to a failing entry result.
   class UnresolvableConditionalReference < StandardError
@@ -263,11 +268,22 @@ class BundleProcessor
     map
   end
 
+  # Rewrites same-bundle fullUrl placeholders to literal "Type/id".
+  #
+  # Both Reference.reference and Attachment.url can point at another entry:
+  # Attachment.url is how an image entry is referenced by e.g. the
+  # questionnaire-itemMedia extension. Only values present in reference_map
+  # (the bundle's own fullUrls) are touched, so ordinary absolute URLs --
+  # including extension urls, which share the "url" key -- are left alone.
   def resolve_references(node, reference_map)
     case node
     when Hash
       node.each_with_object({}) do |(k, v), acc|
-        acc[k] = (k == "reference" && v.is_a?(String) && reference_map.key?(v)) ? reference_map[v] : resolve_references(v, reference_map)
+        acc[k] = if REFERENCING_KEYS.include?(k) && v.is_a?(String) && reference_map.key?(v)
+                   reference_map[v]
+                 else
+                   resolve_references(v, reference_map)
+                 end
       end
     when Array
       node.map { |item| resolve_references(item, reference_map) }
@@ -367,7 +383,7 @@ class BundleProcessor
   def references?(resource, literal)
     case resource
     when Hash
-      resource.any? { |k, v| (k == "reference" && v == literal) || references?(v, literal) }
+      resource.any? { |k, v| (REFERENCING_KEYS.include?(k) && v == literal) || references?(v, literal) }
     when Array
       resource.any? { |item| references?(item, literal) }
     else

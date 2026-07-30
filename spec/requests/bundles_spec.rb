@@ -137,6 +137,112 @@ RSpec.describe "Bundles", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(0)
     end
 
+    # An Attachment.url can point at another entry the same way a
+    # Reference.reference does -- how an image is attached to a Questionnaire
+    # item via the questionnaire-itemMedia extension.
+    it "resolves a urn:uuid in Attachment.url to the created Binary" do
+      item_media_url = "http://hl7.org/fhir/StructureDefinition/questionnaire-itemMedia"
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          {
+            "fullUrl" => "urn:uuid:schema-image",
+            "resource" => valid_binary_payload(contentType: "image/png", data: Base64.strict_encode64("fakepng")),
+            "request" => { "method" => "POST", "url" => "Binary" }
+          },
+          {
+            "resource" => valid_questionnaire_payload(
+              item: [
+                {
+                  "linkId" => "q1",
+                  "type" => "string",
+                  "text" => "所見",
+                  "extension" => [
+                    {
+                      "url" => item_media_url,
+                      "valueAttachment" => { "contentType" => "image/png", "url" => "urn:uuid:schema-image" }
+                    }
+                  ]
+                }
+              ]
+            ),
+            "request" => { "method" => "POST", "url" => "Questionnaire" }
+          }
+        ]
+      }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      binary_id = body["entry"][0]["resource"]["id"]
+      questionnaire = body["entry"][1]["resource"]
+
+      attachment = questionnaire["item"][0]["extension"].first
+      expect(attachment["url"]).to eq(item_media_url), "the extension's own url must not be rewritten"
+      expect(attachment["valueAttachment"]["url"]).to eq("Binary/#{binary_id}")
+
+      # Persisted correctly, independent of the response body.
+      get "/Questionnaire/#{questionnaire['id']}"
+      persisted = JSON.parse(response.body)["item"][0]["extension"].first["valueAttachment"]
+      expect(persisted["url"]).to eq("Binary/#{binary_id}")
+    end
+
+    # ifMatch carries an ETag ("W/\"1\""), the same shape as the If-Match
+    # header; a matching one must let the entry through.
+    it "applies a PUT entry whose ifMatch ETag matches the current version" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      questionnaire = JSON.parse(response.body)
+      expect(questionnaire["meta"]["versionId"]).to eq("1")
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          {
+            "resource" => questionnaire.merge("title" => "更新後"),
+            "request" => { "method" => "PUT", "url" => "Questionnaire/#{questionnaire['id']}", "ifMatch" => 'W/"1"' }
+          }
+        ]
+      }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["entry"][0]["response"]["status"]).to start_with("200")
+
+      get "/Questionnaire/#{questionnaire['id']}"
+      expect(JSON.parse(response.body)["title"]).to eq("更新後")
+    end
+
+    it "rolls back a created Binary when a PUT entry's ifMatch is stale" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      questionnaire = JSON.parse(response.body)
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          {
+            "fullUrl" => "urn:uuid:orphan-candidate",
+            "resource" => valid_binary_payload(contentType: "image/png", data: Base64.strict_encode64("fakepng")),
+            "request" => { "method" => "POST", "url" => "Binary" }
+          },
+          {
+            "resource" => questionnaire.merge("title" => "更新後"),
+            "request" => { "method" => "PUT", "url" => "Questionnaire/#{questionnaire['id']}", "ifMatch" => 'W/"99"' }
+          }
+        ]
+      }, as: :json
+
+      expect(response).to have_http_status(:precondition_failed)
+      body = JSON.parse(response.body)
+      expect(body["issue"].first["expression"].first).to eq("Bundle.entry[1]")
+
+      # The image must not survive as an orphan, and the update must not apply.
+      get "/Questionnaire/#{questionnaire['id']}"
+      expect(JSON.parse(response.body)["title"]).to eq(questionnaire["title"])
+      expect(Binary.count).to eq(0)
+    end
+
     it "returns 422 for an unsupported Bundle.type" do
       post "/", params: { "resourceType" => "Bundle", "type" => "document", "entry" => [] }, as: :json
 

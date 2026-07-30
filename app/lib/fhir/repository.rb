@@ -103,9 +103,8 @@ module Fhir
 
     def update(record, payload, if_match_version: nil)
       record.with_lock do
-        if if_match_version.present? && if_match_version.to_i != record.version_id
-          raise VersionConflict, record.version_id
-        end
+        expected = Fhir::ETag.version_id(if_match_version)
+        raise VersionConflict, record.version_id if expected && expected != record.version_id
 
         now = Time.current
         new_version_id = record.version_id + 1
