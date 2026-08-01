@@ -27,6 +27,29 @@ class QuestionnaireValidator < ResourceValidator
     require_field("subjectType", cardinality: "1..1")
     validate_datetime("date")
     validate_items
+    validate_canonical_uniqueness
+  end
+
+  # url は任意だが、あるなら (url, version) はテンプレートの canonical として一意で
+  # なければならない -- 重複すると QuestionnaireResponse.questionnaire がどちらを指す
+  # か判別できない。DB の partial unique index と対の事前チェックで、同時書き込みの
+  # レースは Fhir::Operation 側の RecordNotUnique rescue が拾う。update 時は
+  # Fhir::Operation が payload に対象 id をマージするため自分自身は除外される。
+  def validate_canonical_uniqueness
+    url = payload["url"]
+    return if url.blank?
+
+    scope = ::Questionnaire.where(deleted: false, url: url, version: payload["version"])
+    scope = scope.where.not(id: payload["id"]) if payload["id"].present?
+    existing_id = scope.pick(:id)
+    return unless existing_id
+
+    add_error(
+      code: "duplicate",
+      diagnostics: "A Questionnaire with url '#{url}' and version '#{payload['version']}' " \
+                   "already exists (Questionnaire/#{existing_id})",
+      expression: "Questionnaire.url"
+    )
   end
 
   # jsp-5: charset plus a 15-character cap.

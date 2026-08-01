@@ -40,6 +40,65 @@ RSpec.describe "Questionnaire", type: :request do
     end
   end
 
+  # (url, version) はテンプレートの canonical。重複すると
+  # QuestionnaireResponse.questionnaire がどちらを指すか判別できないため一意。
+  describe "canonical (url, version) uniqueness" do
+    it "rejects a second questionnaire with the same url and version" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      expect(response).to have_http_status(:created)
+
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      outcome = JSON.parse(response.body)
+      expect(outcome["issue"].first["code"]).to eq("duplicate")
+    end
+
+    it "allows the same url with a different version" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      post "/Questionnaire", params: valid_questionnaire_payload("version" => "2.0.0"), as: :json
+
+      expect(response).to have_http_status(:created)
+    end
+
+    it "allows a questionnaire without url (url is optional)" do
+      2.times do
+        post "/Questionnaire", params: valid_questionnaire_payload.except("url"), as: :json
+        expect(response).to have_http_status(:created)
+      end
+    end
+
+    it "keeps allowing an update that leaves the canonical unchanged" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      id = JSON.parse(response.body)["id"]
+
+      put "/Questionnaire/#{id}", params: valid_questionnaire_payload("title" => "改題"), as: :json
+
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "rejects an update that collides with another questionnaire's canonical" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      post "/Questionnaire", params: valid_questionnaire_payload("version" => "2.0.0"), as: :json
+      id = JSON.parse(response.body)["id"]
+
+      put "/Questionnaire/#{id}", params: valid_questionnaire_payload, as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(JSON.parse(response.body)["issue"].first["code"]).to eq("duplicate")
+    end
+
+    it "allows recreating the canonical after the original is deleted" do
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+      id = JSON.parse(response.body)["id"]
+      delete "/Questionnaire/#{id}"
+
+      post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+
+      expect(response).to have_http_status(:created)
+    end
+  end
+
   describe "read / update / delete lifecycle" do
     it "supports the full instance lifecycle" do
       post "/Questionnaire", params: valid_questionnaire_payload, as: :json

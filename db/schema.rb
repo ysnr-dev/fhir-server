@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_29_000002) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_01_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -677,6 +677,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_29_000002) do
     t.datetime "questionnaire_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "url, COALESCE(version, ''::character varying)", name: "index_questionnaires_on_canonical_unique", unique: true, where: "((deleted = false) AND (url IS NOT NULL))"
     t.index ["code_value"], name: "index_questionnaires_on_code_value"
     t.index ["content"], name: "index_questionnaires_on_content", using: :gin
     t.index ["deleted"], name: "index_questionnaires_on_deleted"

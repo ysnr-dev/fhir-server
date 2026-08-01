@@ -87,6 +87,10 @@ module Fhir
         version_id: record.version_id,
         resource_id: record.id
       )
+    rescue ActiveRecord::RecordNotUnique
+      # Validator-level uniqueness checks (e.g. Questionnaire canonical) race with
+      # concurrent writes; the DB constraint is the last line of defense.
+      record_not_unique_result
     end
 
     def read(id)
@@ -110,12 +114,17 @@ module Fhir
       return not_found_result(id) unless record
       return resource_type_mismatch_result(payload) unless resource_type_matches?(payload)
 
-      validation = entry[:validator].call(payload)
+      # The payload of a PUT may omit "id"; validators that compare against other
+      # records (e.g. Questionnaire canonical uniqueness) need the target id to
+      # exclude the resource itself, and the repository stores this id anyway.
+      validation = entry[:validator].call(payload.merge("id" => record.id))
       blocked = blocking_validation_result(validation, payload)
       return blocked if blocked
 
       begin
         updated = repository.update(record, payload, if_match_version: if_match)
+      rescue ActiveRecord::RecordNotUnique
+        return record_not_unique_result
       rescue StandardError => e
         raise unless e.respond_to?(:current_version_id)
 
@@ -323,6 +332,18 @@ module Fhir
         status: :gone,
         outcome: Fhir::OperationOutcome.single(
           severity: "error", code: "deleted", diagnostics: "#{resource_type}/#{id} has been deleted"
+        )
+      )
+    end
+
+    def record_not_unique_result
+      Result.new(
+        status: :unprocessable_content,
+        outcome: Fhir::OperationOutcome.single(
+          severity: "error",
+          code: "duplicate",
+          diagnostics: "The #{resource_type} violates a uniqueness constraint " \
+                       "(a concurrent write may have created a duplicate)"
         )
       )
     end
