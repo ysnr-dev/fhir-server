@@ -127,9 +127,14 @@ module Fhir
                        targets: %w[Practitioner PractitionerRole Organization Device Patient RelatedPerson] }
       },
       # Questionnaire has no Reference elements, so it has no entry here.
-      # QuestionnaireResponse.questionnaire is likewise absent: it is a canonical
-      # URL, not a { "reference": "Type/id" } object, so it cannot be traversed.
+      # QuestionnaireResponse.questionnaire is a canonical URL ("url" or
+      # "url|version"), not a { "reference": "Type/id" } object, so it cannot be
+      # traversed like the others; the canonical: definition below resolves it by
+      # matching Questionnaire url (+ version) instead. Forward _include only --
+      # _revinclude has no meaningful reverse form and is ignored.
       "QuestionnaireResponse" => {
+        "questionnaire" => { canonical: true, path: %w[questionnaire], target: "Questionnaire",
+                              url_column: :url, version_column: :version },
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
@@ -169,7 +174,9 @@ module Fhir
       end
 
       # An optional third segment constrains the target type; reject if not allowed.
-      return nil if target_type.present? && !definition[:targets].include?(target_type)
+      # Canonical definitions have a single :target instead of :targets.
+      allowed_targets = definition[:canonical] ? [definition[:target]] : definition[:targets]
+      return nil if target_type.present? && !allowed_targets.include?(target_type)
 
       {
         source_type: source_type,

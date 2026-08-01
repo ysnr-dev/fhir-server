@@ -56,4 +56,9 @@ RSpec.describe Fhir::CapabilityStatement do
   it "advertises every param the search engine actually supports (incl. Practitioner birthdate)" do
     expect(search_param_names("Practitioner")).to include("birthdate")
   end
+
+  it "advertises the canonical questionnaire include as forward-only" do
+    expect(resource("QuestionnaireResponse")["searchInclude"]).to include("QuestionnaireResponse:questionnaire")
+    expect(resource("Questionnaire")["searchRevInclude"]).not_to include("QuestionnaireResponse:questionnaire")
+  end
 end

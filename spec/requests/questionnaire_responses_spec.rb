@@ -159,6 +159,73 @@ RSpec.describe "QuestionnaireResponse", type: :request do
       types = JSON.parse(response.body)["entry"].map { |e| e.dig("resource", "resourceType") }
       expect(types).to contain_exactly("QuestionnaireResponse", "Patient")
     end
+
+    # questionnaire は canonical("url|version" 文字列)。Reference の traverse では
+    # なく Questionnaire の url(+version) 検索で解決される専用の _include。
+    describe "_include=QuestionnaireResponse:questionnaire (canonical)" do
+      def included_entries
+        JSON.parse(response.body)["entry"].to_a.select { |e| e.dig("search", "mode") == "include" }
+      end
+
+      it "includes exactly the version the canonical pins" do
+        post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+        pinned_id = JSON.parse(response.body)["id"]
+        post "/Questionnaire", params: valid_questionnaire_payload("version" => "2.0.0"), as: :json
+
+        patient_id = create_patient
+        post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+
+        get "/QuestionnaireResponse?_include=QuestionnaireResponse:questionnaire"
+
+        expect(included_entries.map { |e| e.dig("resource", "id") }).to eq([pinned_id])
+        expect(included_entries.first.dig("resource", "resourceType")).to eq("Questionnaire")
+      end
+
+      it "includes every version for a bare (version-less) canonical" do
+        post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+        post "/Questionnaire", params: valid_questionnaire_payload("version" => "2.0.0"), as: :json
+
+        patient_id = create_patient
+        post "/QuestionnaireResponse",
+             params: valid_questionnaire_response_payload(
+               subject_id: patient_id, "questionnaire" => "http://example.org/Questionnaire/jaspehr-example"
+             ), as: :json
+
+        get "/QuestionnaireResponse?_include=QuestionnaireResponse:questionnaire"
+
+        versions = included_entries.map { |e| e.dig("resource", "version") }
+        expect(versions).to contain_exactly("1.0.0", "2.0.0")
+      end
+
+      it "adds nothing when the canonical matches no Questionnaire" do
+        patient_id = create_patient
+        post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+
+        get "/QuestionnaireResponse?_include=QuestionnaireResponse:questionnaire"
+
+        expect(response).to have_http_status(:ok)
+        expect(included_entries).to be_empty
+      end
+
+      it "accepts the typed token form" do
+        post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+        patient_id = create_patient
+        post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+
+        get "/QuestionnaireResponse?_include=QuestionnaireResponse:questionnaire:Questionnaire"
+
+        expect(included_entries.size).to eq(1)
+      end
+
+      it "silently ignores the meaningless reverse form" do
+        post "/Questionnaire", params: valid_questionnaire_payload, as: :json
+
+        get "/Questionnaire?_revinclude=QuestionnaireResponse:questionnaire"
+
+        expect(response).to have_http_status(:ok)
+        expect(included_entries).to be_empty
+      end
+    end
   end
 
   it "joins the patient compartment ($everything)" do

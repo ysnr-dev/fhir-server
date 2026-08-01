@@ -86,9 +86,35 @@ module Fhir
         next [] if sources.blank?
 
         definition = info[:definition]
+        next canonical_includes(sources, definition) if definition[:canonical]
+
         refs = collect_forward_refs(sources, definition)
         fetch_by_references(refs, definition[:targets], info[:target_type])
       end
+    end
+
+    # Canonical references ("url" or "url|version" strings, e.g.
+    # QuestionnaireResponse.questionnaire) are resolved by matching the target
+    # type's url (+ version) columns rather than by Type/id reference. A bare
+    # url includes every version of that canonical.
+    def canonical_includes(sources, definition)
+      canonicals = sources.filter_map { |record| (record.content || {}).dig(*definition[:path]).presence }.uniq
+      return [] if canonicals.empty?
+
+      type = definition[:target]
+      entry = ResourceRegistry.entry_for(type)
+      return [] unless entry
+      return [] if context && !context.readable_type?(type)
+
+      base = context&.base_scope_for(type) || entry[:model].where(deleted: false)
+      versioned, bare = canonicals.partition { |canonical| canonical.include?("|") }
+
+      scopes = versioned.map do |canonical|
+        url, version = canonical.split("|", 2)
+        base.where(definition[:url_column] => url, definition[:version_column] => version)
+      end
+      scopes << base.where(definition[:url_column] => bare) if bare.any?
+      scopes.flat_map(&:to_a).uniq(&:id)
     end
 
     def collect_forward_refs(sources, definition)
@@ -137,6 +163,10 @@ module Fhir
         next [] unless info
 
         definition = info[:definition]
+        # Canonical params (QuestionnaireResponse:questionnaire) have no reverse
+        # form; ignore them like any other unsupported token.
+        next [] if definition[:canonical]
+
         target_types = definition[:targets] & by_type.keys
         next [] if target_types.empty?
 

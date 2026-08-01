@@ -81,6 +81,29 @@ RSpec.describe "patient scope, _include and _revinclude", type: :request do
     end
   end
 
+  # The canonical include reaches for Questionnaire (a public, non-compartment
+  # type), so it must still honor the token's type scopes.
+  describe "canonical _include (QuestionnaireResponse:questionnaire)" do
+    let!(:questionnaire) { create_resource("/Questionnaire", valid_questionnaire_payload) }
+    let!(:my_response) { create_resource("/QuestionnaireResponse", valid_questionnaire_response_payload(subject_id: mine)) }
+
+    it "resolves when the token's scopes cover Questionnaire" do
+      get "/QuestionnaireResponse?_include=QuestionnaireResponse:questionnaire", headers: bearer_header(token)
+
+      expect(response).to have_http_status(:ok)
+      expect(included_ids).to eq([questionnaire])
+    end
+
+    it "omits it when Questionnaire is outside the granted scopes" do
+      narrow = issue_patient_token(patient_id: mine, scopes: "patient/QuestionnaireResponse.read")
+
+      get "/QuestionnaireResponse?_include=QuestionnaireResponse:questionnaire", headers: bearer_header(narrow)
+
+      expect(response).to have_http_status(:ok)
+      expect(included_ids).to be_empty
+    end
+  end
+
   describe "_has" do
     # The inner query of a _has runs against a type the caller never named. If
     # it were unrestricted, the presence or absence of a Practitioner in the
