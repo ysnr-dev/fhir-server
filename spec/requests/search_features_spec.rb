@@ -78,6 +78,68 @@ RSpec.describe "Search features (chaining, _has, _summary/_elements, _total)", t
     end
   end
 
+  # fhir-client の populate 系フックが「_count=1 + _sort + _include/_revinclude で
+  # 最新1件とその関連リソースを1リクエストで取る」形に依存するため、ソート・
+  # ページング後の match に対してのみ include が解決されることを固定する。
+  describe "_sort combined with _include / _revinclude and _count" do
+    it "includes only the resources referenced by the sorted, paged matches (_include)" do
+      patient_id = create_patient
+      older_obs = create_observation(patient_id)
+      newer_obs = create_observation(patient_id)
+
+      post "/DiagnosticReport",
+           params: valid_diagnostic_report_payload(
+             subject_id: patient_id,
+             "effectiveDateTime" => "2026-07-01T10:00:00+09:00",
+             "result" => [{ "reference" => "Observation/#{older_obs}" }]
+           ), as: :json
+      post "/DiagnosticReport",
+           params: valid_diagnostic_report_payload(
+             subject_id: patient_id,
+             "effectiveDateTime" => "2026-07-20T10:00:00+09:00",
+             "result" => [{ "reference" => "Observation/#{newer_obs}" }]
+           ), as: :json
+      newest_report = JSON.parse(response.body)["id"]
+
+      get "/DiagnosticReport?patient=#{patient_id}&_sort=-date&_count=1&_include=DiagnosticReport:result"
+
+      bundle = JSON.parse(response.body)
+      modes = bundle["entry"].group_by { |e| e.dig("search", "mode") }
+      expect(modes["match"].map { |e| e.dig("resource", "id") }).to eq([newest_report])
+      expect(modes["include"].map { |e| e.dig("resource", "id") }).to eq([newer_obs])
+    end
+
+    it "revincludes only the resources referencing the sorted, paged matches (_revinclude)" do
+      patient_id = create_patient
+
+      post "/ServiceRequest",
+           params: valid_service_request_payload(subject_id: patient_id, "authoredOn" => "2026-07-01T10:00:00+09:00"),
+           as: :json
+      older_sr = JSON.parse(response.body)["id"]
+      post "/ServiceRequest",
+           params: valid_service_request_payload(subject_id: patient_id, "authoredOn" => "2026-07-20T10:00:00+09:00"),
+           as: :json
+      newer_sr = JSON.parse(response.body)["id"]
+
+      post "/MedicationRequest",
+           params: valid_medication_request_payload(subject_id: patient_id,
+                                                    basedOn: [{ "reference" => "ServiceRequest/#{older_sr}" }]),
+           as: :json
+      post "/MedicationRequest",
+           params: valid_medication_request_payload(subject_id: patient_id,
+                                                    basedOn: [{ "reference" => "ServiceRequest/#{newer_sr}" }]),
+           as: :json
+      newer_mr = JSON.parse(response.body)["id"]
+
+      get "/ServiceRequest?patient=#{patient_id}&_sort=-authoredon&_count=1&_revinclude=MedicationRequest:based-on"
+
+      bundle = JSON.parse(response.body)
+      modes = bundle["entry"].group_by { |e| e.dig("search", "mode") }
+      expect(modes["match"].map { |e| e.dig("resource", "id") }).to eq([newer_sr])
+      expect(modes["include"].map { |e| e.dig("resource", "id") }).to eq([newer_mr])
+    end
+  end
+
   describe "_summary=count" do
     it "returns total and links but no entry element" do
       2.times { create_patient }

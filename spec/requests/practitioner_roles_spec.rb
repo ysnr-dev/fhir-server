@@ -61,5 +61,34 @@ RSpec.describe "PractitionerRoles", type: :request do
       expect(bundle["type"]).to eq("searchset")
       expect(bundle["total"]).to be >= 1
     end
+
+    # fhir-client の医療従事者選択モーダルが「職種・所属で絞りつつ氏名(カナ含む)を
+    # チェーン検索でサーバー側に寄せ、_include で Practitioner 本体も受け取る」
+    # クエリ形に依存するため、この組み合わせを固定する。
+    it "chains practitioner.name:contains (kana included) and includes the practitioner" do
+      post "/Practitioner", params: valid_practitioner_payload, as: :json
+      suzuki_id = JSON.parse(response.body)["id"]
+      post "/Practitioner",
+           params: valid_practitioner_payload("name" => [{ "use" => "official", "family" => "田中", "given" => ["花子"] }]),
+           as: :json
+      tanaka_id = JSON.parse(response.body)["id"]
+
+      post "/PractitionerRole",
+           params: valid_practitioner_role_payload(practitioner: { "reference" => "Practitioner/#{suzuki_id}" }),
+           as: :json
+      suzuki_role_id = JSON.parse(response.body)["id"]
+      post "/PractitionerRole",
+           params: valid_practitioner_role_payload(practitioner: { "reference" => "Practitioner/#{tanaka_id}" }),
+           as: :json
+
+      get "/PractitionerRole?role=doctor" \
+          "&practitioner.name:contains=#{Rack::Utils.escape('ズキ')}" \
+          "&_include=PractitionerRole:practitioner"
+
+      bundle = JSON.parse(response.body)
+      modes = bundle["entry"].group_by { |e| e.dig("search", "mode") }
+      expect(modes["match"].map { |e| e.dig("resource", "id") }).to eq([suzuki_role_id])
+      expect(modes["include"].map { |e| e.dig("resource", "id") }).to eq([suzuki_id])
+    end
   end
 end
