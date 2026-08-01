@@ -13,6 +13,13 @@ module Fhir
       TOKENS = {
         "gender" => { path: "gender", kind: :code }
       }.freeze
+
+      # JP Core は医籍登録番号を qualification[].identifier に置く。identifier 検索の
+      # 索引(resource_identifiers)へトップレベル identifier と併せて取り込むための
+      # 追加パス宣言(FhirResourceRecord#sync_identifiers! が参照する)。
+      EXTRA_IDENTIFIERS = [
+        { array_key: "qualification", identifier_key: "identifier" }
+      ].freeze
     end
   end
 end

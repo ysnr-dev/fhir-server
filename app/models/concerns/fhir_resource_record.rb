@@ -24,6 +24,13 @@ module FhirResourceRecord
     def token_extraction_fields
       Fhir::ResourceRegistry.entry_for(polymorphic_name).fetch(:token_extraction)
     end
+
+    # Additional identifier locations beyond the top-level `identifier` element
+    # (see Fhir::ExtractionDefinitions::Practitioner::EXTRA_IDENTIFIERS). Most
+    # resources have none.
+    def extra_identifier_paths
+      Fhir::ResourceRegistry.entry_for(polymorphic_name)[:extra_identifiers] || []
+    end
   end
 
   # Populates the search-optimized columns from the FHIR `content` payload, driven by
@@ -38,13 +45,17 @@ module FhirResourceRecord
     end
   end
 
-  # Rebuilds the resource_identifiers rows from content["identifier"]. Array.wrap
+  # Rebuilds the resource_identifiers rows from content["identifier"] plus any
+  # declared extra locations (e.g. Practitioner qualification identifiers). Array.wrap
   # (not Array()) so a 0..1 single-Identifier element (e.g. Composition.identifier)
   # is wrapped as one row rather than being splatted into [key, value] pairs.
+  # Deduped by (system, value) so the same identifier written in two locations
+  # (a transitional client habit) still yields a single searchable row.
   def sync_identifiers!
     resource_identifiers.destroy_all
 
-    Array.wrap(content["identifier"]).each do |identifier|
+    identifiers = Array.wrap(content["identifier"]) + extra_identifiers
+    identifiers.uniq { |i| [i["system"], i["value"]] }.each do |identifier|
       next if identifier["value"].blank?
 
       resource_identifiers.create!(
@@ -52,6 +63,17 @@ module FhirResourceRecord
         value: identifier["value"]
       )
     end
+  end
+
+  # Identifier hashes gathered from the declared extra locations: for each spec,
+  # every element of content[array_key] contributes its identifier_key entries
+  # (an Identifier or array of Identifiers).
+  def extra_identifiers
+    self.class.extra_identifier_paths.flat_map do |spec|
+      Array.wrap(content[spec[:array_key]]).flat_map do |element|
+        element.is_a?(Hash) ? Array.wrap(element[spec[:identifier_key]]) : []
+      end
+    end.select { |i| i.is_a?(Hash) }
   end
 
   # Rebuilds the resource_tokens rows (one per coding, all codings) from content,

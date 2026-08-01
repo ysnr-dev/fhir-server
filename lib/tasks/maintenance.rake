@@ -49,4 +49,26 @@ namespace :fhir do
     end
     puts "done: reindexed tokens for #{total} record(s) across #{Fhir::ResourceRegistry.types.size} types"
   end
+
+  desc "resource_identifiers を content から再構築する(extra_identifiers の宣言追加時に一度実行)"
+  task reindex_identifiers: :environment do
+    # resource_identifiers は書き込み時にしか埋まらないため、識別子の追加取り込み
+    # 箇所(例: Practitioner.qualification[].identifier)を宣言した後、既存リソースは
+    # 再同期するまで新しい場所の identifier で検索できない。extra_identifiers を持つ
+    # 型だけ走査すれば十分(RESOURCE_TYPE で単一型に限定も可)。
+    types = ENV["RESOURCE_TYPE"].presence&.split(",") ||
+            Fhir::ResourceRegistry.types.select { |t| Fhir::ResourceRegistry.entry_for(t)[:extra_identifiers].present? }
+    total = 0
+    types.each do |type|
+      model = Fhir::ResourceRegistry.entry_for(type).fetch(:model)
+      count = 0
+      model.find_each do |record|
+        record.sync_identifiers!
+        count += 1
+      end
+      total += count
+      puts "reindexed #{count} #{type} record(s)"
+    end
+    puts "done: reindexed identifiers for #{total} record(s) across #{types.size} type(s)"
+  end
 end

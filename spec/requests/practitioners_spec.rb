@@ -143,5 +143,43 @@ RSpec.describe "Practitioners", type: :request do
 
       expect(JSON.parse(response.body)["total"]).to eq(0)
     end
+
+    # JP Core は医籍登録番号を qualification[].identifier に置くため、トップレベル
+    # identifier に書かなくても identifier 検索で見つかること(索引の追加取り込み)。
+    it "finds a practitioner by a qualification identifier alone" do
+      system = "http://jpfhir.jp/fhir/core/mhlw/IdSystem/medicalRegistrationNumber"
+      post "/Practitioner", params: {
+        "resourceType" => "Practitioner",
+        "name" => [{ "use" => "official", "family" => "鈴木", "given" => ["一郎"] }],
+        "qualification" => [
+          { "identifier" => [{ "system" => system, "value" => "271234567" }] }
+        ]
+      }, as: :json
+      id = JSON.parse(response.body)["id"]
+
+      get "/Practitioner", params: { identifier: "#{system}|271234567" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first.dig("resource", "id")).to eq(id)
+    end
+
+    it "returns a single match when the same identifier is written in both locations" do
+      system = "http://jpfhir.jp/fhir/core/mhlw/IdSystem/medicalRegistrationNumber"
+      post "/Practitioner", params: {
+        "resourceType" => "Practitioner",
+        "identifier" => [{ "system" => system, "value" => "279876543" }],
+        "qualification" => [
+          { "identifier" => [{ "system" => system, "value" => "279876543" }] }
+        ]
+      }, as: :json
+      id = JSON.parse(response.body)["id"]
+
+      get "/Practitioner", params: { identifier: "279876543" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first.dig("resource", "id")).to eq(id)
+    end
   end
 end

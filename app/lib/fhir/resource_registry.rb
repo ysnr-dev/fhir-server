@@ -98,6 +98,7 @@ module Fhir
         search_params: SearchDefinitions::Practitioner::PARAMS,
         extraction: ExtractionDefinitions::Practitioner::FIELDS,
         token_extraction: ExtractionDefinitions::Practitioner::TOKENS,
+        extra_identifiers: ExtractionDefinitions::Practitioner::EXTRA_IDENTIFIERS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Practitioner"
       },
       "Organization" => {
