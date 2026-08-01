@@ -138,4 +138,22 @@ RSpec.describe QuestionnaireResponseValidator do
   it "rejects a non-ISO8601 authored" do
     expect(described_class.call(base_payload("authored" => "not-a-date"))).not_to be_valid
   end
+
+  # FHIR dateTime accepts partial precision; the exhaustive cases live here since
+  # every validator shares ResourceValidator#validate_datetime.
+  describe "partial-precision authored (shared validate_datetime behavior)" do
+    it "accepts date-only, year-month, and year values" do
+      %w[2026-08-01 2026-08 2026].each do |value|
+        expect(described_class.call(base_payload("authored" => value))).to be_valid
+      end
+    end
+
+    it "rejects partial values that are not real calendar dates" do
+      %w[2026-02-30 2026-13].each do |value|
+        result = described_class.call(base_payload("authored" => value))
+        expect(result).not_to be_valid
+        expect(result.issues.map { |i| i[:diagnostics] }.join).to include("not a real calendar date")
+      end
+    end
+  end
 end

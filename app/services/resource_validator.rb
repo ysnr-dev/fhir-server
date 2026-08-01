@@ -118,15 +118,31 @@ class ResourceValidator
     )
   end
 
-  # Validates a FHIR `dateTime` element. No-op when absent.
+  # Validates a FHIR `dateTime` element. No-op when absent. FHIR dateTime allows
+  # partial precision (YYYY, YYYY-MM, YYYY-MM-DD) in addition to a full ISO8601
+  # timestamp, so partial values are checked as real calendar dates rather than
+  # being rejected by Time.iso8601 (which accepts none of them).
   def validate_datetime(field, value: payload[field], expression: "#{resource_type}.#{field}")
     return if value.nil?
+
+    if value.is_a?(String) && DATE_FORMATS.any? { |fmt| value.match?(fmt) }
+      begin
+        Date.iso8601(pad_partial_date(value))
+      rescue ArgumentError
+        add_error(
+          code: "value",
+          diagnostics: "Invalid #{resource_type}.#{field} '#{value}': not a real calendar date",
+          expression: expression
+        )
+      end
+      return
+    end
 
     Time.iso8601(value)
   rescue ArgumentError, TypeError
     add_error(
       code: "value",
-      diagnostics: "#{resource_type}.#{field} must be a valid ISO8601 dateTime",
+      diagnostics: "#{resource_type}.#{field} must be a valid FHIR dateTime (YYYY, YYYY-MM, YYYY-MM-DD, or full ISO8601)",
       expression: expression
     )
   end

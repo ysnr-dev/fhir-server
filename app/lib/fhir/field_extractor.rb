@@ -44,13 +44,17 @@ module Fhir
       end
     end
 
-    # FHIR `dateTime`: ISO8601 with timezone. Returns a Time, or nil when blank/invalid.
+    # FHIR `dateTime`: full ISO8601, or a partial date (YYYY, YYYY-MM, YYYY-MM-DD)
+    # stored as UTC midnight of its first day -- search expands date-precision query
+    # values to [Date, Date+1) intervals compared in UTC (see Search#parse_date_interval),
+    # so this makes stored partial values line up exactly with those searches.
+    # Returns a Time, or nil when blank/invalid.
     def datetime(value)
       return nil if value.blank?
 
       Time.iso8601(value)
     rescue ArgumentError, TypeError
-      nil
+      value.is_a?(String) ? partial_date(value)&.to_time(:utc) : nil
     end
 
     # --- codings ------------------------------------------------------------

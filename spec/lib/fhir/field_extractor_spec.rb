@@ -56,9 +56,16 @@ RSpec.describe Fhir::FieldExtractor do
       expect(described_class.datetime("2026-07-19T09:00:00+09:00")).to eq(Time.iso8601("2026-07-19T09:00:00+09:00"))
     end
 
+    it "stores a partial dateTime as UTC midnight of its first day" do
+      expect(described_class.datetime("2026-08-01")).to eq(Time.utc(2026, 8, 1))
+      expect(described_class.datetime("2026-08")).to eq(Time.utc(2026, 8, 1))
+      expect(described_class.datetime("2026")).to eq(Time.utc(2026, 1, 1))
+    end
+
     it "returns nil for blank or invalid" do
       expect(described_class.datetime(nil)).to be_nil
       expect(described_class.datetime("garbage")).to be_nil
+      expect(described_class.datetime(123)).to be_nil
     end
   end
 

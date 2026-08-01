@@ -106,6 +106,19 @@ RSpec.describe "QuestionnaireResponse", type: :request do
       expect(total).to eq(2)
     end
 
+    it "accepts a date-only authored and finds it by that exact date" do
+      patient_id = create_patient
+      post "/QuestionnaireResponse",
+           params: valid_questionnaire_response_payload(subject_id: patient_id, "authored" => "2026-08-01"), as: :json
+      expect(response).to have_http_status(:created)
+
+      get "/QuestionnaireResponse?authored=2026-08-01"
+      expect(total).to eq(1)
+
+      get "/QuestionnaireResponse?authored=2026-08-02"
+      expect(total).to eq(0)
+    end
+
     it "matches the questionnaire canonical exactly, version included" do
       patient_id = create_patient
       post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
