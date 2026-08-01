@@ -43,8 +43,9 @@ RSpec.describe Fhir::Profile::DefinitionStore do
 
   describe ".value_set and .code_system" do
     it "returns nil when the package didn't include the referenced ValueSet/CodeSystem" do
-      # JP Core v1.2.0's own required bindings all point at base HL7 ValueSets
-      # that aren't part of this IG package -- see lib/tasks/jp_core.rake.
+      # Most JP Core required bindings name ValueSets that live in the separate
+      # terminology package rather than this one, so the store has to tolerate a
+      # dangling binding -- see lib/tasks/jp_core.rake.
       expect(described_class.value_set("http://jpfhir.jp/fhir/core/ValueSet/does-not-exist")).to be_nil
       expect(described_class.code_system("http://jpfhir.jp/fhir/core/CodeSystem/does-not-exist")).to be_nil
     end
@@ -53,6 +54,16 @@ RSpec.describe Fhir::Profile::DefinitionStore do
   describe ".expansion" do
     it "returns nil for a ValueSet that isn't vendored" do
       expect(described_class.expansion("http://hl7.org/fhir/ValueSet/administrative-gender")).to be_nil
+    end
+
+    # JP_DICOMModality_VS (bound by ImagingStudy.modality) is the one JP Core
+    # ValueSet the package does ship, and the only JP Core required binding this
+    # engine can actually check. It expands without its CodeSystem because the
+    # single compose.include carries inline concepts.
+    it "expands the vendored JP Core DICOM modality ValueSet" do
+      expansion = described_class.expansion("http://jpfhir.jp/fhir/core/ValueSet/JP_DICOMModality_VS")
+
+      expect(expansion).to include("CT")
     end
   end
 end

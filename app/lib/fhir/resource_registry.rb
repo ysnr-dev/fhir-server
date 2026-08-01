@@ -74,7 +74,13 @@ module Fhir
         search_params: SearchDefinitions::ImagingStudy::PARAMS,
         extraction: ExtractionDefinitions::ImagingStudy::FIELDS,
         token_extraction: ExtractionDefinitions::ImagingStudy::TOKENS,
-        profile: "http://hl7.org/fhir/StructureDefinition/ImagingStudy"
+        # JP Core splits ImagingStudy into Radiology and Endoscopy profiles, but
+        # an entry carries a single profile (Fhir::Meta stamps it on every
+        # instance, including past versions rendered via _history/vread). The
+        # two are equally strict for this engine -- same 1..1 status/subject,
+        # same JP_DICOMModality_VS binding -- so Radiology is registered as the
+        # general-purpose one; Endoscopy only narrows reference target types.
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_ImagingStudy_Radiology"
       },
       "DiagnosticReport" => {
         model: DiagnosticReport,
@@ -206,7 +212,7 @@ module Fhir
         search_params: SearchDefinitions::DocumentReference::PARAMS,
         extraction: ExtractionDefinitions::DocumentReference::FIELDS,
         token_extraction: ExtractionDefinitions::DocumentReference::TOKENS,
-        profile: "http://hl7.org/fhir/StructureDefinition/DocumentReference"
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_DocumentReference"
       },
       "Binary" => {
         model: Binary,
@@ -214,7 +220,34 @@ module Fhir
         search_params: SearchDefinitions::Binary::PARAMS,
         extraction: ExtractionDefinitions::Binary::FIELDS,
         token_extraction: ExtractionDefinitions::Binary::TOKENS,
-        profile: "http://hl7.org/fhir/StructureDefinition/Binary"
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Binary"
+      },
+      "Device" => {
+        model: Device,
+        validator: DeviceValidator,
+        search_params: SearchDefinitions::Device::PARAMS,
+        extraction: ExtractionDefinitions::Device::FIELDS,
+        token_extraction: ExtractionDefinitions::Device::TOKENS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Device"
+      },
+      "RelatedPerson" => {
+        model: RelatedPerson,
+        validator: RelatedPersonValidator,
+        search_params: SearchDefinitions::RelatedPerson::PARAMS,
+        extraction: ExtractionDefinitions::RelatedPerson::FIELDS,
+        token_extraction: ExtractionDefinitions::RelatedPerson::TOKENS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_RelatedPerson"
+      },
+      # JP Core defines no Group profile, so this is the one registered type left
+      # on a bare HL7 base definition and validated by its hand validator alone.
+      # It exists to give Group/$export a cohort to resolve.
+      "Group" => {
+        model: Group,
+        validator: GroupValidator,
+        search_params: SearchDefinitions::Group::PARAMS,
+        extraction: ExtractionDefinitions::Group::FIELDS,
+        token_extraction: ExtractionDefinitions::Group::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Group"
       }
     }.freeze
 

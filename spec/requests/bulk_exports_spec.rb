@@ -184,6 +184,120 @@ RSpec.describe "Bulk Data $export", type: :request do
     end
   end
 
+  describe "Group/$export" do
+    def create_group(member_ids:, **overrides)
+      post "/Group", params: valid_group_payload(member_ids: member_ids, **overrides), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    it "exports only the cohort's members and their compartment resources" do
+      member_id = create_patient
+      outsider_id = create_patient
+      post "/Observation", params: valid_observation_payload(subject_id: member_id), as: :json
+      post "/Observation", params: valid_observation_payload(subject_id: outsider_id), as: :json
+      group_id = create_group(member_ids: [member_id])
+
+      manifest = run_export!(path: "/Group/#{group_id}/$export")
+
+      patient_output = manifest["output"].find { |o| o["type"] == "Patient" }
+      get patient_output["url"]
+      expect(response.body.split("\n").map { |line| JSON.parse(line)["id"] }).to eq([member_id])
+
+      observation_output = manifest["output"].find { |o| o["type"] == "Observation" }
+      get observation_output["url"]
+      subjects = response.body.split("\n").map { |line| JSON.parse(line).dig("subject", "reference") }
+      expect(subjects).to eq(["Patient/#{member_id}"])
+    end
+
+    # The Group has no patient compartment, so it is not part of its own export
+    # -- just as Patient/$export never emits Medication.
+    it "does not emit the Group resource itself" do
+      member_id = create_patient
+      group_id = create_group(member_ids: [member_id])
+
+      manifest = run_export!(path: "/Group/#{group_id}/$export")
+
+      expect(manifest["output"].map { |o| o["type"] }).not_to include("Group")
+    end
+
+    it "excludes members flagged inactive" do
+      active_id = create_patient
+      inactive_id = create_patient
+      post "/Group", params: valid_group_payload(member_ids: [active_id]).merge(
+        "member" => [
+          { "entity" => { "reference" => "Patient/#{active_id}" } },
+          { "entity" => { "reference" => "Patient/#{inactive_id}" }, "inactive" => true }
+        ]
+      ), as: :json
+      group_id = JSON.parse(response.body)["id"]
+
+      manifest = run_export!(path: "/Group/#{group_id}/$export")
+
+      patient_output = manifest["output"].find { |o| o["type"] == "Patient" }
+      get patient_output["url"]
+      expect(response.body.split("\n").map { |line| JSON.parse(line)["id"] }).to eq([active_id])
+    end
+
+    it "ignores non-Patient members" do
+      member_id = create_patient
+      post "/Group", params: valid_group_payload(member_ids: [member_id]).merge(
+        "member" => [
+          { "entity" => { "reference" => "Patient/#{member_id}" } },
+          { "entity" => { "reference" => "Practitioner/never-created" } }
+        ]
+      ), as: :json
+      group_id = JSON.parse(response.body)["id"]
+
+      manifest = run_export!(path: "/Group/#{group_id}/$export")
+
+      expect(manifest["output"].map { |o| o["type"] }).to eq(["Patient"])
+    end
+
+    # An empty cohort matched no data, which the IG treats as a completed
+    # export with no output rather than an error.
+    it "completes with an empty output for a cohort with no members" do
+      create_patient
+      group_id = create_group(member_ids: [])
+
+      manifest = run_export!(path: "/Group/#{group_id}/$export")
+
+      expect(manifest["output"]).to eq([])
+    end
+
+    it "honors _type" do
+      member_id = create_patient
+      post "/Observation", params: valid_observation_payload(subject_id: member_id), as: :json
+      group_id = create_group(member_ids: [member_id])
+
+      manifest = run_export!(path: "/Group/#{group_id}/$export", params: { "_type" => "Observation" })
+
+      # Patient is always included, like Patient/$export.
+      expect(manifest["output"].map { |o| o["type"] }).to contain_exactly("Patient", "Observation")
+    end
+
+    it "returns 404 for an unknown group" do
+      get "/Group/does-not-exist/$export", headers: ASYNC
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns 410 for a deleted group" do
+      group_id = create_group(member_ids: [create_patient])
+      delete "/Group/#{group_id}"
+
+      get "/Group/#{group_id}/$export", headers: ASYNC
+
+      expect(response).to have_http_status(:gone)
+    end
+
+    it "advertises group-export in the CapabilityStatement" do
+      get "/metadata"
+
+      resource = JSON.parse(response.body)["rest"].first["resource"].find { |r| r["type"] == "Group" }
+      expect(resource["operation"].map { |o| o["name"] }).to include("group-export")
+    end
+  end
+
   describe "authorization" do
     around { |example| with_fhir_auth { example.run } }
 
@@ -221,6 +335,25 @@ RSpec.describe "Bulk Data $export", type: :request do
       token = issue_access_token(scopes: "system/Observation.read")
 
       get "/Patient/$export", params: { "_type" => "Observation" }, headers: ASYNC.merge(bearer_header(token))
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    # A group export reads the Group to resolve its roster, so Group.read is
+    # required on top of the exported types.
+    it "requires Group read scope for a Group/$export" do
+      token = issue_access_token(scopes: "system/Patient.read system/Observation.read")
+
+      get "/Group/any-id/$export", params: { "_type" => "Observation" }, headers: ASYNC.merge(bearer_header(token))
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it "rejects a Group/$export from a patient-context token" do
+      patient_id = create_patient(headers: bearer_header(issue_access_token(scopes: "system/*.*")))
+      token = issue_patient_token(patient_id: patient_id, scopes: "patient/*.read")
+
+      get "/Group/any-id/$export", headers: ASYNC.merge(bearer_header(token))
 
       expect(response).to have_http_status(:forbidden)
     end

@@ -318,6 +318,35 @@ RSpec.describe Fhir::Repository do
         { "resourceType" => "Binary",
           "contentType" => "text/plain",
           "data" => Base64.strict_encode64("smoke") }
+      when "Device"
+        { "resourceType" => "Device",
+          "identifier" => [{ "system" => "http://example.org/device", "value" => "smoke-dev" }],
+          "status" => "active",
+          "type" => { "coding" => [{ "system" => "http://snomed.info/sct", "code" => "706172005" }] },
+          "manufacturer" => "Smoke Medical",
+          "modelNumber" => "SM-100",
+          "deviceName" => [{ "name" => "Smoke Monitor", "type" => "user-friendly-name" }],
+          "patient" => { "reference" => "Patient/#{patient_id}" },
+          "owner" => { "reference" => "Organization/#{organization_id}" } }
+      when "RelatedPerson"
+        { "resourceType" => "RelatedPerson",
+          "identifier" => [{ "system" => "http://example.org/related-person", "value" => "smoke-rp" }],
+          "active" => true,
+          "patient" => { "reference" => "Patient/#{patient_id}" },
+          "relationship" => [{ "coding" => [
+            { "system" => "http://terminology.hl7.org/CodeSystem/v3-RoleCode", "code" => "MTH" }
+          ] }],
+          "name" => [{ "use" => "official", "family" => "山田", "given" => ["花子"] }],
+          "gender" => "female",
+          "birthDate" => "1970-04-01" }
+      when "Group"
+        { "resourceType" => "Group",
+          "identifier" => [{ "system" => "http://example.org/group", "value" => "smoke-grp" }],
+          "type" => "person",
+          "actual" => true,
+          "name" => "Smoke Cohort",
+          "managingEntity" => { "reference" => "Organization/#{organization_id}" },
+          "member" => [{ "entity" => { "reference" => "Patient/#{patient_id}" } }] }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end

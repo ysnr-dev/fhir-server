@@ -1,0 +1,577 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/StructureDefinition/JP_RelatedPerson",
+  "type": "RelatedPerson",
+  "snapshot": {
+    "element": [
+      {
+        "id": "RelatedPerson",
+        "path": "RelatedPerson",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson",
+          "min": 0,
+          "max": "*"
+        }
+      },
+      {
+        "id": "RelatedPerson.id",
+        "path": "RelatedPerson.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta",
+        "path": "RelatedPerson.meta",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.meta",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Meta"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta.id",
+        "path": "RelatedPerson.meta.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta.extension",
+        "path": "RelatedPerson.meta.extension",
+        "slicing": {
+          "discriminator": [
+            {
+              "type": "value",
+              "path": "url"
+            }
+          ],
+          "description": "拡張子は常にURLで切り片にされます。",
+          "rules": "open"
+        },
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta.versionId",
+        "path": "RelatedPerson.meta.versionId",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Meta.versionId",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "id"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta.lastUpdated",
+        "path": "RelatedPerson.meta.lastUpdated",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Meta.lastUpdated",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "instant"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta.source",
+        "path": "RelatedPerson.meta.source",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Meta.source",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta.profile",
+        "path": "RelatedPerson.meta.profile",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Meta.profile",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "canonical"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.meta.security",
+        "path": "RelatedPerson.meta.security",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Meta.security",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ],
+        "binding": {
+          "strength": "extensible",
+          "valueSet": "http://hl7.org/fhir/ValueSet/security-labels|4.0.1"
+        }
+      },
+      {
+        "id": "RelatedPerson.meta.tag",
+        "path": "RelatedPerson.meta.tag",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Meta.tag",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.implicitRules",
+        "path": "RelatedPerson.implicitRules",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.implicitRules",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "uri"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.language",
+        "path": "RelatedPerson.language",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Resource.language",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "RelatedPerson.text",
+        "path": "RelatedPerson.text",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "DomainResource.text",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Narrative"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.contained",
+        "path": "RelatedPerson.contained",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.contained",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Resource"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.extension",
+        "path": "RelatedPerson.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.modifierExtension",
+        "path": "RelatedPerson.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "DomainResource.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.identifier",
+        "path": "RelatedPerson.identifier",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson.identifier",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Identifier"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.active",
+        "path": "RelatedPerson.active",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "RelatedPerson.active",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.patient",
+        "path": "RelatedPerson.patient",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "RelatedPerson.patient",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Reference"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.relationship",
+        "path": "RelatedPerson.relationship",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson.relationship",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/relatedperson-relationshiptype|4.0.1"
+        }
+      },
+      {
+        "id": "RelatedPerson.name",
+        "path": "RelatedPerson.name",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson.name",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "HumanName"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.telecom",
+        "path": "RelatedPerson.telecom",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson.telecom",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "ContactPoint"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.gender",
+        "path": "RelatedPerson.gender",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "RelatedPerson.gender",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "code"
+          }
+        ],
+        "binding": {
+          "strength": "required",
+          "valueSet": "http://hl7.org/fhir/ValueSet/administrative-gender|4.0.1"
+        }
+      },
+      {
+        "id": "RelatedPerson.birthDate",
+        "path": "RelatedPerson.birthDate",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "RelatedPerson.birthDate",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "date"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.address",
+        "path": "RelatedPerson.address",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson.address",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Address"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.photo",
+        "path": "RelatedPerson.photo",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson.photo",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Attachment"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.period",
+        "path": "RelatedPerson.period",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "RelatedPerson.period",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "Period"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.communication",
+        "path": "RelatedPerson.communication",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "RelatedPerson.communication",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "BackboneElement"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.communication.id",
+        "path": "RelatedPerson.communication.id",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "Element.id",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "http://hl7.org/fhirpath/System.String"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.communication.extension",
+        "path": "RelatedPerson.communication.extension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "Element.extension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.communication.modifierExtension",
+        "path": "RelatedPerson.communication.modifierExtension",
+        "min": 0,
+        "max": "*",
+        "base": {
+          "path": "BackboneElement.modifierExtension",
+          "min": 0,
+          "max": "*"
+        },
+        "type": [
+          {
+            "code": "Extension"
+          }
+        ]
+      },
+      {
+        "id": "RelatedPerson.communication.language",
+        "path": "RelatedPerson.communication.language",
+        "min": 1,
+        "max": "1",
+        "base": {
+          "path": "RelatedPerson.communication.language",
+          "min": 1,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "CodeableConcept"
+          }
+        ],
+        "binding": {
+          "strength": "preferred",
+          "valueSet": "http://hl7.org/fhir/ValueSet/languages|4.0.1"
+        }
+      },
+      {
+        "id": "RelatedPerson.communication.preferred",
+        "path": "RelatedPerson.communication.preferred",
+        "min": 0,
+        "max": "1",
+        "base": {
+          "path": "RelatedPerson.communication.preferred",
+          "min": 0,
+          "max": "1"
+        },
+        "type": [
+          {
+            "code": "boolean"
+          }
+        ]
+      }
+    ]
+  }
+}

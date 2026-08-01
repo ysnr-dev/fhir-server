@@ -34,6 +34,9 @@ Rails.application.routes.draw do
   # falling through to "GET /Patient/:id" with :id == "$export".
   match "/$export",         to: "bulk_exports#kickoff", via: %i[get post], defaults: { kind: "system" }
   match "/Patient/$export", to: "bulk_exports#kickoff", via: %i[get post], defaults: { kind: "patient" }
+  # The cohort id is :group_id rather than :id so it can never be confused with
+  # the export/file id that status / cancel / download read out of params[:id].
+  match "/Group/:group_id/$export", to: "bulk_exports#kickoff", via: %i[get post], defaults: { kind: "group" }
   get    "/$export/status/:id", to: "bulk_exports#status"
   delete "/$export/status/:id", to: "bulk_exports#cancel"
   get    "/$export/files/:id",  to: "bulk_exports#download"
@@ -48,7 +51,8 @@ Rails.application.routes.draw do
      PractitionerRole Encounter Location
      Condition AllergyIntolerance Procedure Immunization Coverage
      Questionnaire QuestionnaireResponse
-     Composition DocumentReference Binary].each do |type|
+     Composition DocumentReference Binary
+     Device RelatedPerson Group].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
       post   "/#{type}",                   to: "fhir_resources#create"

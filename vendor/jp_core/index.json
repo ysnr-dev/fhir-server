@@ -8,6 +8,7 @@
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationStatement": "structure_definitions/JP_MedicationStatement.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Observation_Common": "structure_definitions/JP_Observation_Common.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Specimen_Common": "structure_definitions/JP_Specimen_Common.json",
+    "http://jpfhir.jp/fhir/core/StructureDefinition/JP_ImagingStudy_Radiology": "structure_definitions/JP_ImagingStudy_Radiology.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_DiagnosticReport_Common": "structure_definitions/JP_DiagnosticReport_Common.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_ServiceRequest_Common": "structure_definitions/JP_ServiceRequest_Common.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Practitioner": "structure_definitions/JP_Practitioner.json",
@@ -20,6 +21,10 @@
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Procedure": "structure_definitions/JP_Procedure.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Immunization": "structure_definitions/JP_Immunization.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage": "structure_definitions/JP_Coverage.json",
+    "http://jpfhir.jp/fhir/core/StructureDefinition/JP_DocumentReference": "structure_definitions/JP_DocumentReference.json",
+    "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Binary": "structure_definitions/JP_Binary.json",
+    "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Device": "structure_definitions/JP_Device.json",
+    "http://jpfhir.jp/fhir/core/StructureDefinition/JP_RelatedPerson": "structure_definitions/JP_RelatedPerson.json",
     "http://jpfhir.jp/fhir/core/Extension/StructureDefinition/JP_Patient_Race": "structure_definitions/JP_Patient_Race.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_HumanName": "structure_definitions/JP_HumanName.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationDosage": "structure_definitions/JP_MedicationDosage.json",
@@ -51,7 +56,9 @@
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRatio_DosePerDay": "structure_definitions/JP_MedicationRatio_DosePerDay.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_MedicationRange_UnitOfTime": "structure_definitions/JP_MedicationRange_UnitOfTime.json"
   },
-  "value_sets": {},
+  "value_sets": {
+    "http://jpfhir.jp/fhir/core/ValueSet/JP_DICOMModality_VS": "value_sets/JP_DICOMModality_VS.json"
+  },
   "code_systems": {},
   "_meta": {
     "package_version": "1.2.0",

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_01_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_02_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -224,6 +224,36 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_01_000001) do
     t.index ["type_code"], name: "index_coverages_on_type_code"
   end
 
+  create_table "devices", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "type_code"
+    t.string "patient_reference"
+    t.string "owner_reference"
+    t.string "location_reference"
+    t.string "manufacturer"
+    t.string "model_number"
+    t.string "device_name_text"
+    t.string "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_devices_on_content", using: :gin
+    t.index ["deleted"], name: "index_devices_on_deleted"
+    t.index ["device_name_text"], name: "index_devices_on_device_name_text"
+    t.index ["last_updated"], name: "index_devices_on_last_updated"
+    t.index ["location_reference"], name: "index_devices_on_location_reference"
+    t.index ["manufacturer"], name: "index_devices_on_manufacturer"
+    t.index ["model_number"], name: "index_devices_on_model_number"
+    t.index ["owner_reference"], name: "index_devices_on_owner_reference"
+    t.index ["patient_reference"], name: "index_devices_on_patient_reference"
+    t.index ["status"], name: "index_devices_on_status"
+    t.index ["type_code"], name: "index_devices_on_type_code"
+    t.index ["url"], name: "index_devices_on_url"
+  end
+
   create_table "diagnostic_reports", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
     t.jsonb "content", null: false
@@ -294,6 +324,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_01_000001) do
     t.index ["service_provider_reference"], name: "index_encounters_on_service_provider_reference"
     t.index ["status"], name: "index_encounters_on_status"
     t.index ["subject_reference"], name: "index_encounters_on_subject_reference"
+  end
+
+  create_table "groups", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "group_type"
+    t.boolean "actual"
+    t.string "code_value"
+    t.string "managing_entity_reference"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actual"], name: "index_groups_on_actual"
+    t.index ["code_value"], name: "index_groups_on_code_value"
+    t.index ["content"], name: "index_groups_on_content", using: :gin
+    t.index ["deleted"], name: "index_groups_on_deleted"
+    t.index ["group_type"], name: "index_groups_on_group_type"
+    t.index ["last_updated"], name: "index_groups_on_last_updated"
+    t.index ["managing_entity_reference"], name: "index_groups_on_managing_entity_reference"
   end
 
   create_table "imaging_studies", id: :string, force: :cascade do |t|
@@ -709,6 +759,30 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_01_000001) do
     t.index ["oauth_client_id"], name: "index_refresh_tokens_on_oauth_client_id"
     t.index ["token_digest"], name: "index_refresh_tokens_on_token_digest", unique: true
     t.index ["user_id"], name: "index_refresh_tokens_on_user_id"
+  end
+
+  create_table "related_people", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.boolean "active"
+    t.string "patient_reference"
+    t.string "relationship_code"
+    t.string "name_text"
+    t.string "gender"
+    t.date "birth_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_related_people_on_active"
+    t.index ["birth_date"], name: "index_related_people_on_birth_date"
+    t.index ["content"], name: "index_related_people_on_content", using: :gin
+    t.index ["deleted"], name: "index_related_people_on_deleted"
+    t.index ["gender"], name: "index_related_people_on_gender"
+    t.index ["last_updated"], name: "index_related_people_on_last_updated"
+    t.index ["name_text"], name: "index_related_people_on_name_text"
+    t.index ["patient_reference"], name: "index_related_people_on_patient_reference"
+    t.index ["relationship_code"], name: "index_related_people_on_relationship_code"
   end
 
   create_table "resource_identifiers", force: :cascade do |t|

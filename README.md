@@ -4,7 +4,7 @@ Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです�
 [JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) および
 問診票・診療テンプレートについては
 [JASPEHR 実装ガイド v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html)
-に準拠した 26 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
+に準拠した 29 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
 複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
@@ -316,7 +316,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 ### 対応リソース
 
-全 26 リソースが同一のエンドポイント群（後述）を持ちます。
+全 29 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
@@ -327,6 +327,8 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 | 保険 | Coverage |
 | 問診 | Questionnaire / QuestionnaireResponse |
 | 文書 | Composition / DocumentReference / Binary |
+| 関係者・機器 | RelatedPerson / Device |
+| 集合 | Group |
 
 `Binary` は既定では JSON 表現で返しますが、`Accept: application/pdf` など非 FHIR タイプを指定した
 参照ではデコード済みの生コンテンツを元の `contentType` で返します。
@@ -386,12 +388,15 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
 
    | IG | 同梱先 | 対象リソース |
    |---|---|---|
-   | [JP Core v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) | `vendor/jp_core/` | プロファイルが `http://jpfhir.jp/fhir/core/...` の 20 リソース |
+   | [JP Core v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) | `vendor/jp_core/` | プロファイルが `http://jpfhir.jp/fhir/core/...` の 25 リソース |
    | [JASPEHR v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html) | `vendor/jaspehr/` | `Questionnaire` / `QuestionnaireResponse` |
 
    検証の対象になるかは「そのプロファイル URL が vendor 済みか」だけで決まります
-   （`ImagingStudy` / `Composition` / `DocumentReference` / `Binary` は基底 HL7 プロファイルのため対象外で、
+   （`Composition` / `Group` は JP Core に該当プロファイルが無く基底 HL7 プロファイルのため対象外で、
    手書きバリデータのみが働きます）。
+   `ImagingStudy` は JP Core が Radiology / Endoscopy の 2 プロファイルに分けていますが、レジストリの
+   `profile:` は 1 リソース 1 プロファイルなので、汎用側の `JP_ImagingStudy_Radiology` を採用しています
+   （2 つは検証の厳密さは同一で、Endoscopy は参照先の型をより狭めるだけです）。
    **非対象**: FHIRPath invariant、外部ターミノロジー（ICD-10 / LOINC 等のコード実在チェック）、
    `targetProfile` に基づく参照先リソースの型検証。
 
@@ -784,8 +789,17 @@ curl -i -X POST http://localhost:3000/ -H 'Content-Type: application/fhir+json' 
 ### Bulk Data $export（一括エクスポート）の例
 
 [Bulk Data Access IG v2.0.0](http://hl7.org/fhir/uv/bulkdata/) に準拠した非同期エクスポート。
-システム全体（`/$export`）または全患者コンパートメント（`/Patient/$export`。Group リソース未実装のため
-`Group/$export` は非対応）を NDJSON で取得できます。`Prefer: respond-async` ヘッダーが必須です。
+システム全体（`/$export`）、全患者コンパートメント（`/Patient/$export`）、または特定コホートの
+患者コンパートメント（`/Group/{id}/$export`）を NDJSON で取得できます。
+`Prefer: respond-async` ヘッダーが必須です。
+
+`Group/$export` は `Group.member[].entity` のうち `Patient/{id}` を指すものだけを解決対象とします。
+`inactive: true` が付いたメンバーと、グループ作成後に削除された患者は除外されます
+（`member.period` は評価しません。Bulk Data IG に時点メンバーシップの定義が無いためです）。
+Patient 以外のメンバー（Practitioner / Device など）は無視されます。メンバーが 1 人も解決できない
+コホートはエラーではなく、`"output": []` の完了マニフェストを返します。
+`Group` リソース自体は患者コンパートメントを持たないため出力には含まれません。
+認可は対象リソース型の読み取りスコープに加えて、名簿を解決するための `Group.read` が必要です。
 
 ```bash
 # 1. キックオフ -> 202 + Content-Location（ステータスURL）
@@ -803,9 +817,13 @@ curl -s http://localhost:3000/\$export/files/{fileId}
 
 # キャンセル（実行中のみ）
 curl -si -X DELETE http://localhost:3000/\$export/status/{id}
+
+# コホート単位（以降のポーリング・ダウンロードは上と同じ）
+curl -si -H "Prefer: respond-async" http://localhost:3000/Group/{groupId}/\$export
 ```
 
-対応パラメータ: `_type`（カンマ区切り、Patient/$export では未指定でも Patient は常に含まれる）、
+対応パラメータ: `_type`（カンマ区切り、`Patient/$export` と `Group/{id}/$export` では未指定でも
+Patient は常に含まれる）、
 `_since`（ISO 8601、増分エクスポート用）、`_outputFormat`（NDJSON系のみ）。それ以外のパラメータは
 デフォルトで 400 エラーになるが、`Prefer: respond-async, handling=lenient` を付けると無視される。
 

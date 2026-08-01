@@ -107,14 +107,21 @@ module Fhir
       }
     end
 
-    # $validate is available on every type; $everything only on Patient.
+    # $validate is available on every type; $everything only on Patient, and the
+    # two compartment-level Bulk Data exports on Patient and Group. The IG names
+    # all three export operations "export" and distinguishes them by
+    # OperationDefinition; this file names them for their level instead, so the
+    # three entries stay distinguishable within one CapabilityStatement.
     def operations(resource_type)
       list = [
         { "name" => "validate", "definition" => "http://hl7.org/fhir/OperationDefinition/Resource-validate" }
       ]
-      if resource_type == "Patient"
+      case resource_type
+      when "Patient"
         list << { "name" => "everything", "definition" => "http://hl7.org/fhir/OperationDefinition/Patient-everything" }
         list << { "name" => "patient-export", "definition" => "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/patient-export" }
+      when "Group"
+        list << { "name" => "group-export", "definition" => "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/group-export" }
       end
       list
     end

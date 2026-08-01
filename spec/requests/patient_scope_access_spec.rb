@@ -217,6 +217,31 @@ RSpec.describe "patient scope access", type: :request do
         expect(response).to have_http_status(:ok)
       end
     end
+
+    # Group.member is 0..*, so Group has no compartment either. It fails closed
+    # for the same reason as Binary: its member roster would disclose which
+    # other patients are in the cohort, and a cohort name is a clinical fact.
+    describe "Group" do
+      let!(:group) { create_resource("/Group", valid_group_payload(member_ids: [mine])) }
+
+      it "is not readable by id" do
+        get "/Group/#{group}", headers: bearer_header(token)
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "is not returned by search even when the patient is a member" do
+        get "/Group", headers: bearer_header(token)
+
+        expect(JSON.parse(response.body)["total"]).to eq(0)
+      end
+
+      it "stays readable with a system token" do
+        get "/Group/#{group}", headers: bearer_header(system_token)
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
   end
 
   describe "writes" do

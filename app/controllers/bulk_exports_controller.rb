@@ -1,12 +1,13 @@
 # FHIR Bulk Data Export (Bulk Data Access IG v2.0.0): kick off an async NDJSON
-# export at the system level (/$export) or across every patient compartment
-# (/Patient/$export -- Group/$export is not supported, no Group resource
-# exists yet), then poll/download/cancel the resulting job.
+# export at the system level (/$export), across every patient compartment
+# (/Patient/$export), or across the compartments of one cohort's Patient
+# members (/Group/:id/$export), then poll/download/cancel the resulting job.
 class BulkExportsController < ApplicationController
   include FhirAuditing # first, so halted (401/403) requests are audited too
 
-  # POST /$export or /Patient/$export -- 202 Accepted, Content-Location points
-  # at the status endpoint. Requires `Prefer: respond-async` per the IG.
+  # POST /$export, /Patient/$export or /Group/:id/$export -- 202 Accepted,
+  # Content-Location points at the status endpoint. Requires `Prefer:
+  # respond-async` per the IG.
   def kickoff
     unless respond_async?
       return render_bad_request('This operation requires the header "Prefer: respond-async"')
@@ -19,11 +20,13 @@ class BulkExportsController < ApplicationController
       bulk_params.unsupported_params.any? && !lenient_handling?
 
     return unless authorize_fhir_request!(scope_checks_for(bulk_params.types), require_system: true)
+    return unless group_kickoff_resolvable? # renders 404/410 for an unknown or deleted Group
     return render_too_many_requests if concurrent_export_in_progress?
 
     @export = BulkExport.create!(
       id: SecureRandom.uuid,
       kind: params[:kind],
+      group_id: params[:group_id],
       status: "in_progress",
       types: bulk_params.types,
       since: bulk_params.since,
@@ -121,14 +124,41 @@ class BulkExportsController < ApplicationController
 
   # No _type means "everything this client can read", which requires a
   # wildcard grant -- mirrors GET /_history's system-wide read check. A
-  # patient-level export always includes the Patient resources themselves
-  # (like Patient/:id/$everything's subject), so that scope is required too.
+  # compartment-level export always includes the Patient resources themselves
+  # (like Patient/:id/$everything's subject), so that scope is required too,
+  # and a group export additionally reads the Group to resolve its roster.
   def scope_checks_for(types)
     return [["*", :read]] if types.nil?
 
     checks = types.map { |type| [type, :read] }
-    checks << ["Patient", :read] if params[:kind] == "patient" && !types.include?("Patient")
+    checks << ["Patient", :read] if compartment_kickoff? && !types.include?("Patient")
+    checks << ["Group", :read] if params[:kind] == "group" && !types.include?("Group")
     checks
+  end
+
+  def compartment_kickoff?
+    %w[patient group].include?(params[:kind])
+  end
+
+  # Existence is checked only after authorization, so an unauthenticated caller
+  # cannot use the response status to probe which Group ids exist. A logically
+  # deleted Group is 410, matching a deleted resource read.
+  def group_kickoff_resolvable?
+    return true unless params[:kind] == "group"
+
+    group = Group.find_by(id: params[:group_id])
+    if group.nil?
+      render_operation_outcome_single(status: :not_found, severity: "error", code: "not-found",
+                                      diagnostics: "Group/#{params[:group_id]} not found")
+      return false
+    end
+    if group.deleted?
+      render_operation_outcome_single(status: :gone, severity: "error", code: "deleted",
+                                      diagnostics: "Group/#{params[:group_id]} has been deleted")
+      return false
+    end
+
+    true
   end
 
   def concurrent_export_in_progress?
@@ -206,7 +236,10 @@ class BulkExportsController < ApplicationController
   end
 
   def audit_resource_type
-    return "Patient" if action_name == "kickoff" && params[:kind] == "patient"
+    if action_name == "kickoff"
+      return "Patient" if params[:kind] == "patient"
+      return "Group" if params[:kind] == "group"
+    end
     return file_record&.resource_type if action_name == "download"
 
     nil

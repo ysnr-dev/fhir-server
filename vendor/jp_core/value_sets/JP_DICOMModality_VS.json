@@ -1,0 +1,174 @@
+{
+  "url": "http://jpfhir.jp/fhir/core/ValueSet/JP_DICOMModality_VS",
+  "compose": {
+    "include": [
+      {
+        "system": "http://dicom.nema.org/resources/ontology/DCM",
+        "concept": [
+          {
+            "code": "AR"
+          },
+          {
+            "code": "AU"
+          },
+          {
+            "code": "BDUS"
+          },
+          {
+            "code": "BI"
+          },
+          {
+            "code": "BMD"
+          },
+          {
+            "code": "CR"
+          },
+          {
+            "code": "CT"
+          },
+          {
+            "code": "DG"
+          },
+          {
+            "code": "DX"
+          },
+          {
+            "code": "ECG"
+          },
+          {
+            "code": "EPS"
+          },
+          {
+            "code": "ES"
+          },
+          {
+            "code": "GM"
+          },
+          {
+            "code": "HC"
+          },
+          {
+            "code": "HD"
+          },
+          {
+            "code": "IO"
+          },
+          {
+            "code": "IVOCT"
+          },
+          {
+            "code": "IVUS"
+          },
+          {
+            "code": "KER"
+          },
+          {
+            "code": "KO"
+          },
+          {
+            "code": "LEN"
+          },
+          {
+            "code": "LS"
+          },
+          {
+            "code": "MG"
+          },
+          {
+            "code": "MR"
+          },
+          {
+            "code": "NM"
+          },
+          {
+            "code": "OAM"
+          },
+          {
+            "code": "OCT"
+          },
+          {
+            "code": "OP"
+          },
+          {
+            "code": "OPM"
+          },
+          {
+            "code": "OPT"
+          },
+          {
+            "code": "OPV"
+          },
+          {
+            "code": "OSS"
+          },
+          {
+            "code": "OT"
+          },
+          {
+            "code": "PR"
+          },
+          {
+            "code": "PT"
+          },
+          {
+            "code": "PX"
+          },
+          {
+            "code": "REG"
+          },
+          {
+            "code": "RF"
+          },
+          {
+            "code": "RG"
+          },
+          {
+            "code": "RTDOSE"
+          },
+          {
+            "code": "RTIMAGE"
+          },
+          {
+            "code": "RTPLAN"
+          },
+          {
+            "code": "RTRECORD"
+          },
+          {
+            "code": "RTSTRUCT"
+          },
+          {
+            "code": "SEG"
+          },
+          {
+            "code": "SM"
+          },
+          {
+            "code": "SMR"
+          },
+          {
+            "code": "SR"
+          },
+          {
+            "code": "SRF"
+          },
+          {
+            "code": "TG"
+          },
+          {
+            "code": "US"
+          },
+          {
+            "code": "VA"
+          },
+          {
+            "code": "XA"
+          },
+          {
+            "code": "XC"
+          }
+        ]
+      }
+    ]
+  }
+}

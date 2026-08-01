@@ -113,6 +113,13 @@ module Fhir
       end.compact.join(" ")
     end
 
+    # Every `name` across a 0..* backbone array that carries one (Device.deviceName),
+    # space-joined -- the non-HumanName counterpart of all_name_representations.
+    def name_list_text(elements)
+      Array(elements).filter_map { |element| element["name"] if element.is_a?(Hash) }
+                     .join(" ").presence
+    end
+
     def official_name(names)
       return nil if names.blank?
 

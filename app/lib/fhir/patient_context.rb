@@ -24,6 +24,12 @@ module Fhir
     # Questionnaire belongs here for the opposite reason: it is a blank form
     # (definitional, no Reference elements at all), and a patient cannot read
     # their own QuestionnaireResponse without the questions it answers.
+    #
+    # Group is absent for the same reason as Binary. Its member[] array is a
+    # roster of Patient references, so handing one to a patient-context token
+    # would disclose which other patients are in the cohort -- and a cohort's
+    # name is itself a clinical fact. Its only consumer here is Group/$export,
+    # which requires a system scope anyway.
     PUBLIC_TYPES = %w[Medication Practitioner Organization Location PractitionerRole Questionnaire].freeze
 
     attr_reader :patient_id

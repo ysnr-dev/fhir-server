@@ -44,7 +44,12 @@ RSpec.describe "IG profile payload helper conformance", type: :request do
       "MedicationStatement" => valid_medication_statement_payload(subject_id: patient_id),
       "Coverage" => valid_coverage_payload(beneficiary_id: patient_id, payor_id: organization_id),
       "Questionnaire" => valid_questionnaire_payload,
-      "QuestionnaireResponse" => valid_questionnaire_response_payload(subject_id: patient_id)
+      "QuestionnaireResponse" => valid_questionnaire_response_payload(subject_id: patient_id),
+      "Device" => valid_device_payload(patient_id: patient_id, owner_id: organization_id),
+      "RelatedPerson" => valid_related_person_payload(patient_id: patient_id),
+      "ImagingStudy" => valid_imaging_study_payload(subject_id: patient_id),
+      "DocumentReference" => valid_document_reference_payload(subject_id: patient_id),
+      "Binary" => valid_binary_payload
     }
   end
 

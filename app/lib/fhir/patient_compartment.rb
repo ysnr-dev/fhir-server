@@ -28,13 +28,20 @@ module Fhir
     # Same, addressed by logical id. Access control (Fhir::PatientContext) works
     # from the id on the token and never needs to load the Patient row.
     def scope_for_patient_id(type, patient_id)
+      scope_for_patient_ids(type, [patient_id])
+    end
+
+    # Scope of `type`'s (non-deleted) records belonging to ANY of these patients'
+    # compartments -- Group/$export exports a whole cohort in one pass rather
+    # than one compartment at a time. An empty id list matches nothing.
+    def scope_for_patient_ids(type, patient_ids)
       entry = ResourceRegistry.entry_for(type)
       columns = reference_columns_for(type)
-      return entry[:model].none if columns.empty?
+      return entry[:model].none if columns.empty? || patient_ids.empty?
 
-      reference = "Patient/#{patient_id}"
+      references = patient_ids.map { |patient_id| "Patient/#{patient_id}" }
       entry[:model].where(deleted: false)
-                   .where(columns.map { |column| "#{column} = ?" }.join(" OR "), *([reference] * columns.size))
+                   .where(columns.map { |column| "#{column} IN (?)" }.join(" OR "), *([references] * columns.size))
     end
 
     # Whether an already-loaded record sits in `patient_id`'s compartment.

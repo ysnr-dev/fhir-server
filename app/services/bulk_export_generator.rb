@@ -34,6 +34,7 @@ class BulkExportGenerator
   # Patient-level export: the Patient resources themselves (always included,
   # like Patient/:id/$everything's subject) plus every requested type scoped
   # to any patient's compartment.
+  # Group-level export: the same shape, narrowed to the group's Patient members.
   def types_for
     if export.kind == "system"
       export.types || Fhir::ResourceRegistry.types
@@ -45,14 +46,38 @@ class BulkExportGenerator
 
   def scope_for(type)
     base =
-      if export.kind == "patient" && type != "Patient"
-        Fhir::PatientCompartment.scope_for_any_patient(type)
-      else
-        Fhir::ResourceRegistry.entry_for(type).fetch(:model).where(deleted: false)
+      case export.kind
+      when "group" then group_scope(type)
+      when "patient" then type == "Patient" ? all_of(type) : Fhir::PatientCompartment.scope_for_any_patient(type)
+      else all_of(type)
       end
 
     base = base.where("last_updated >= ?", export.since) if export.since
     base.where("last_updated <= ?", export.transaction_time).order(:id)
+  end
+
+  def all_of(type)
+    Fhir::ResourceRegistry.entry_for(type).fetch(:model).where(deleted: false)
+  end
+
+  # A group with no resolvable Patient members exports nothing: every type
+  # yields an empty relation, generate_type writes no file, and the manifest
+  # comes back with an empty "output" -- which is what the IG prescribes for an
+  # export that matched no data. An empty cohort is not an error.
+  # Note the Group resource itself is never emitted: it has no patient
+  # compartment, just as Patient/$export never emits Medication.
+  def group_scope(type)
+    return all_of(type).none if group_patient_ids.empty?
+    return Patient.where(deleted: false, id: group_patient_ids) if type == "Patient"
+
+    Fhir::PatientCompartment.scope_for_patient_ids(type, group_patient_ids)
+  end
+
+  def group_patient_ids
+    @group_patient_ids ||= begin
+      group = Group.find_by(id: export.group_id)
+      group ? Fhir::GroupMembers.patient_ids(group) : []
+    end
   end
 
   def generate_type(type)

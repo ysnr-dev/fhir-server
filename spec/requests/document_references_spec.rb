@@ -15,7 +15,7 @@ RSpec.describe "DocumentReference", type: :request do
       expect(response).to have_http_status(:created)
       body = JSON.parse(response.body)
       expect(body["meta"]["versionId"]).to eq("1")
-      expect(body["meta"]["profile"]).to eq(["http://hl7.org/fhir/StructureDefinition/DocumentReference"])
+      expect(body["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_DocumentReference"])
     end
 
     it "returns 422 when status is missing or invalid" do

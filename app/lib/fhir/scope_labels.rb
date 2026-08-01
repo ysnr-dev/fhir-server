@@ -36,7 +36,10 @@ module Fhir
       "PractitionerRole" => "医療従事者の役割",
       "Organization" => "組織・医療機関",
       "Location" => "場所・施設",
-      "Binary" => "添付ファイルの実体"
+      "Binary" => "添付ファイルの実体",
+      "Device" => "医療機器",
+      "RelatedPerson" => "家族・関係者の情報",
+      "Group" => "患者グループ(一括出力の対象集合)"
     }.freeze
 
     # コンテキストスコープは何かの「閲覧」ではない -- リフレッシュ系はアプリが

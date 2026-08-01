@@ -77,6 +77,12 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/fm-status (required) -- Coverage.status
     FINANCIAL_RESOURCE_STATUS = %w[active cancelled draft entered-in-error].freeze
 
+    # http://hl7.org/fhir/ValueSet/device-status (required)
+    DEVICE_STATUS = %w[active inactive entered-in-error unknown].freeze
+
+    # http://hl7.org/fhir/ValueSet/group-type (required)
+    GROUP_TYPE = %w[person animal practitioner device medication substance].freeze
+
     # http://hl7.org/fhir/ValueSet/publication-status (required) -- Questionnaire.status
     QUESTIONNAIRE_STATUS = %w[draft active retired unknown].freeze
     # http://hl7.org/fhir/ValueSet/questionnaire-answers-status (required)

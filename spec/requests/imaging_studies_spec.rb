@@ -18,7 +18,7 @@ RSpec.describe "ImagingStudies", type: :request do
 
       body = JSON.parse(response.body)
       expect(body["resourceType"]).to eq("ImagingStudy")
-      expect(body["meta"]["profile"]).to eq(["http://hl7.org/fhir/StructureDefinition/ImagingStudy"])
+      expect(body["meta"]["profile"]).to eq(["http://jpfhir.jp/fhir/core/StructureDefinition/JP_ImagingStudy_Radiology"])
     end
 
     it "returns 422 when status is missing" do

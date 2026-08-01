@@ -145,6 +145,23 @@ module Fhir
                          targets: %w[CarePlan ServiceRequest] },
         "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference],
                         targets: %w[Observation Procedure] }
+      },
+      "Device" => {
+        "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" },
+        # FHIR names the search param after the target, not the element (Device.owner).
+        "organization" => { path: %w[owner reference], targets: %w[Organization], column: "owner_reference" },
+        "location" => { path: %w[location reference], targets: %w[Location], column: "location_reference" }
+      },
+      "RelatedPerson" => {
+        "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" }
+      },
+      "Group" => {
+        "managing-entity" => { path: %w[managingEntity reference], column: "managing_entity_reference",
+                                targets: %w[Organization Practitioner PractitionerRole RelatedPerson] },
+        # Group.member is 0..* and its reference sits one level below the array
+        # element (member[].entity.reference), like Encounter:location.
+        "member" => { multiple: true, jsonb_key: "member", ref_path: %w[entity reference],
+                       targets: %w[Patient Practitioner PractitionerRole Device] }
       }
     }.freeze
 
