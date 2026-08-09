@@ -81,7 +81,11 @@ module Fhir
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
-        "requester" => { path: %w[requester reference], targets: %w[Practitioner PractitionerRole Organization], column: "requester_reference" }
+        "requester" => { path: %w[requester reference], targets: %w[Practitioner PractitionerRole Organization], column: "requester_reference" },
+        # ServiceRequest が別の ServiceRequest にぶら下がる形(オーダーのヘッダと明細)。
+        # 親から子を引く _revinclude=ServiceRequest:based-on と、:iterate による
+        # 2 段目(パネルの構成項目)の展開に使う。CarePlan は未実装なので載せない。
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] }
       },
       "PractitionerRole" => {
         "practitioner" => { path: %w[practitioner reference], targets: %w[Practitioner], column: "practitioner_reference" },

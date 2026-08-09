@@ -11,7 +11,12 @@ module Fhir
         "requester"  => { type: :reference, column: :requester_reference, target_type: "Practitioner" },
         "code"       => { type: :token_or_text, token_column: :code,
                            text_column: :code_text },
-        "authoredon" => { type: :datetime, column: :authored_on }
+        "authoredon" => { type: :datetime, column: :authored_on },
+        # 0..* references, so matched by jsonb containment rather than a column.
+        # ServiceRequest.basedOn は親のオーダーを指す(検体検査オーダーの
+        # ヘッダ → パネル → 構成項目)。`based-on:missing=true` で親だけを引ける。
+        "based-on"   => { type: :reference, multiple: true, jsonb_key: "basedOn",
+                           ref_path: %w[reference], target_type: "ServiceRequest" }
       }.freeze
     end
   end

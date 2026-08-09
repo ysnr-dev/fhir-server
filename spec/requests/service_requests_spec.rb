@@ -229,6 +229,85 @@ RSpec.describe "ServiceRequests", type: :request do
       end
     end
 
+    # ServiceRequest 同士の親子(オーダーのヘッダ → 明細 → パネルの構成項目)。
+    describe "based-on (ServiceRequest の親子)" do
+      # 親・子・孫を 1 件ずつ作る。
+      def create_hierarchy(subject_id)
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        parent_id = JSON.parse(response.body)["id"]
+        post "/ServiceRequest",
+             params: valid_service_request_payload(
+               subject_id: subject_id, basedOn: [{ "reference" => "ServiceRequest/#{parent_id}" }]
+             ),
+             as: :json
+        child_id = JSON.parse(response.body)["id"]
+        post "/ServiceRequest",
+             params: valid_service_request_payload(
+               subject_id: subject_id, basedOn: [{ "reference" => "ServiceRequest/#{child_id}" }]
+             ),
+             as: :json
+        [parent_id, child_id, JSON.parse(response.body)["id"]]
+      end
+
+      def entry_ids(mode)
+        JSON.parse(response.body)["entry"].to_a
+            .select { |entry| entry.dig("search", "mode") == mode }
+            .map { |entry| entry.dig("resource", "id") }
+      end
+
+      it "finds the children of a ServiceRequest" do
+        subject_id = create_patient
+        parent_id, child_id, = create_hierarchy(subject_id)
+
+        get "/ServiceRequest", params: { "based-on" => "ServiceRequest/#{parent_id}" }
+
+        expect(JSON.parse(response.body)["total"]).to eq(1)
+        expect(entry_ids("match")).to eq([child_id])
+      end
+
+      # オーダー一覧はヘッダだけを並べたいので、明細を落とせる必要がある。
+      it "returns only the top-level requests with based-on:missing=true" do
+        subject_id = create_patient
+        parent_id, = create_hierarchy(subject_id)
+
+        get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", "based-on:missing" => "true" }
+
+        expect(entry_ids("match")).to eq([parent_id])
+      end
+
+      it "includes the children with _revinclude=ServiceRequest:based-on" do
+        subject_id = create_patient
+        parent_id, child_id, = create_hierarchy(subject_id)
+
+        get "/ServiceRequest", params: { _id: parent_id, _revinclude: "ServiceRequest:based-on" }
+
+        expect(entry_ids("match")).to eq([parent_id])
+        expect(entry_ids("include")).to eq([child_id])
+      end
+
+      # パネル検査の構成項目まで(ヘッダ → パネル → 構成項目)を 1 リクエストで取る。
+      it "includes grandchildren with _revinclude:iterate" do
+        subject_id = create_patient
+        parent_id, child_id, grandchild_id = create_hierarchy(subject_id)
+
+        get "/ServiceRequest",
+            params: { _id: parent_id, "_revinclude:iterate" => "ServiceRequest:based-on" }
+
+        expect(entry_ids("match")).to eq([parent_id])
+        expect(entry_ids("include")).to contain_exactly(child_id, grandchild_id)
+      end
+
+      it "resolves the parent with _include=ServiceRequest:based-on" do
+        subject_id = create_patient
+        parent_id, child_id, = create_hierarchy(subject_id)
+
+        get "/ServiceRequest", params: { _id: child_id, _include: "ServiceRequest:based-on" }
+
+        expect(entry_ids("match")).to eq([child_id])
+        expect(entry_ids("include")).to eq([parent_id])
+      end
+    end
+
     it "ignores an unsupported _revinclude value" do
       subject_id = create_patient
       post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
