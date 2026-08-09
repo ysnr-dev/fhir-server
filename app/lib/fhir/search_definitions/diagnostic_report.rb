@@ -16,7 +16,13 @@ module Fhir
         "result"     => { type: :reference, multiple: true, jsonb_key: "result",
                            ref_path: %w[reference], target_type: "Observation" },
         "specimen"   => { type: :reference, multiple: true, jsonb_key: "specimen",
-                           ref_path: %w[reference], target_type: "Specimen" }
+                           ref_path: %w[reference], target_type: "Specimen" },
+        # DiagnosticReport.basedOn は結果の元になったオーダー(検体検査オーダーの
+        # ヘッダ)を指す。オーダーから結果を引く `based-on=ServiceRequest/{id}` と、
+        # 「まだ結果の付いていないオーダー」を選ばせるための
+        # `_revinclude=DiagnosticReport:based-on` に使う。CarePlan 等は未実装なので載せない。
+        "based-on"   => { type: :reference, multiple: true, jsonb_key: "basedOn",
+                           ref_path: %w[reference], target_type: "ServiceRequest" }
       }.freeze
     end
   end

@@ -168,5 +168,84 @@ RSpec.describe "DiagnosticReports", type: :request do
         expect(included.first["resource"]["id"]).to eq(specimen_id)
       end
     end
+
+    # 検査結果(DiagnosticReport)と、その元になった検体検査オーダー(ServiceRequest)。
+    describe "based-on (結果の元になったオーダー)" do
+      # オーダー 2 件を作り、片方にだけ結果を付ける。
+      def create_order_with_report(subject_id)
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        resulted_id = JSON.parse(response.body)["id"]
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        pending_id = JSON.parse(response.body)["id"]
+        post "/DiagnosticReport",
+             params: valid_diagnostic_report_payload(
+               subject_id: subject_id, basedOn: [{ "reference" => "ServiceRequest/#{resulted_id}" }]
+             ),
+             as: :json
+        [resulted_id, pending_id, JSON.parse(response.body)["id"]]
+      end
+
+      def entry_ids(mode)
+        JSON.parse(response.body)["entry"].to_a
+            .select { |entry| entry.dig("search", "mode") == mode }
+            .map { |entry| entry.dig("resource", "id") }
+      end
+
+      it "finds the report of an order" do
+        subject_id = create_patient
+        resulted_id, _pending_id, report_id = create_order_with_report(subject_id)
+
+        get "/DiagnosticReport", params: { "based-on" => "ServiceRequest/#{resulted_id}" }
+
+        expect(JSON.parse(response.body)["total"]).to eq(1)
+        expect(entry_ids("match")).to eq([report_id])
+      end
+
+      # 「まだ結果の付いていないオーダー」を選ばせるため、オーダーの検索に
+      # 結果を添えてもらう(結果が付いた方だけ include に現れる)。
+      it "includes the reports of the matched orders with _revinclude=DiagnosticReport:based-on" do
+        subject_id = create_patient
+        resulted_id, pending_id, report_id = create_order_with_report(subject_id)
+
+        get "/ServiceRequest",
+            params: { subject: "Patient/#{subject_id}", _revinclude: "DiagnosticReport:based-on" }
+
+        expect(entry_ids("match")).to contain_exactly(resulted_id, pending_id)
+        expect(entry_ids("include")).to eq([report_id])
+      end
+
+      # 検査結果の登録画面は「オーダーの明細(ラベル用)」と「結果の有無」を
+      # 1 リクエストで欲しいので、2 種類の _revinclude を同時に使う。
+      it "combines with _revinclude:iterate=ServiceRequest:based-on" do
+        subject_id = create_patient
+        resulted_id, pending_id, report_id = create_order_with_report(subject_id)
+        post "/ServiceRequest",
+             params: valid_service_request_payload(
+               subject_id: subject_id, basedOn: [{ "reference" => "ServiceRequest/#{resulted_id}" }]
+             ),
+             as: :json
+        item_id = JSON.parse(response.body)["id"]
+
+        get "/ServiceRequest",
+            params: {
+              subject: "Patient/#{subject_id}", "based-on:missing" => "true",
+              "_revinclude:iterate" => "ServiceRequest:based-on",
+              _revinclude: "DiagnosticReport:based-on"
+            }
+
+        expect(entry_ids("match")).to contain_exactly(resulted_id, pending_id)
+        expect(entry_ids("include")).to contain_exactly(item_id, report_id)
+      end
+
+      it "resolves the order with _include=DiagnosticReport:based-on" do
+        subject_id = create_patient
+        resulted_id, _pending_id, report_id = create_order_with_report(subject_id)
+
+        get "/DiagnosticReport", params: { _id: report_id, _include: "DiagnosticReport:based-on" }
+
+        expect(entry_ids("match")).to eq([report_id])
+        expect(entry_ids("include")).to eq([resulted_id])
+      end
+    end
   end
 end

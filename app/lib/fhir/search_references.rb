@@ -75,7 +75,11 @@ module Fhir
         "patient" => { alias: "subject" },
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
         "result" => { multiple: true, jsonb_key: "result", ref_path: %w[reference], targets: %w[Observation] },
-        "specimen" => { multiple: true, jsonb_key: "specimen", ref_path: %w[reference], targets: %w[Specimen] }
+        "specimen" => { multiple: true, jsonb_key: "specimen", ref_path: %w[reference], targets: %w[Specimen] },
+        # 結果の元になったオーダー(検体検査オーダーのヘッダ)。オーダーの検索に
+        # _revinclude=DiagnosticReport:based-on を添えると「そのオーダーに結果が
+        # 付いているか」を 1 リクエストで判定できる。
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] }
       },
       "ServiceRequest" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
