@@ -91,8 +91,23 @@ module Fhir
         # 2 段目(パネルの構成項目)の展開に使う。CarePlan は未実装なので載せない。
         "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] }
       },
+      "Task" => {
+        # Task.for の検索パラメータ名は FHIR 上 "subject"。patient はその別名。
+        "subject" => { path: %w[for reference], targets: %w[Patient], column: "for_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        "requester" => { path: %w[requester reference], column: "requester_reference",
+                          targets: %w[Practitioner PractitionerRole Organization Patient Device RelatedPerson] },
+        "owner" => { path: %w[owner reference], column: "owner_reference",
+                      targets: %w[Practitioner PractitionerRole Organization Patient Device RelatedPerson] },
+        # focus は作業対象そのもの、based-on は作業を生んだ依頼。オーダー画面は
+        # _revinclude=Task:based-on で「そのオーダーが今どこまで進んだか」を引く。
+        "focus" => { path: %w[focus reference], targets: %w[ServiceRequest], column: "focus_reference" },
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Task] }
+      },
       "PractitionerRole" => {
-        "practitioner" => { path: %w[practitioner reference], targets: %w[Practitioner], column: "practitioner_reference" },
+        "practitioner" =>{ path: %w[practitioner reference], targets: %w[Practitioner], column: "practitioner_reference" },
         "organization" => { path: %w[organization reference], targets: %w[Organization], column: "organization_reference" }
       },
       "Location" => {

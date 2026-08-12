@@ -27,6 +27,7 @@ module Fhir
       "DocumentReference" => "文書",
       "Coverage" => "保険情報",
       "ServiceRequest" => "検査・処置の依頼",
+      "Task" => "依頼の進捗・作業タスク",
       "Specimen" => "検体",
       "ImagingStudy" => "画像検査",
       "Questionnaire" => "問診票・診療テンプレート",

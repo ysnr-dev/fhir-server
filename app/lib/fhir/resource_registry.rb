@@ -98,6 +98,17 @@ module Fhir
         token_extraction: ExtractionDefinitions::ServiceRequest::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_ServiceRequest_Common"
       },
+      # ServiceRequest のワークフロー(受付 → 実施 → 完了)を表す。JP Core は Task を
+      # プロファイルしていないので、Group / Composition と同じく基底 HL7 定義に載り、
+      # 検証は手書きの TaskValidator だけが行う。
+      "Task" => {
+        model: Task,
+        validator: TaskValidator,
+        search_params: SearchDefinitions::Task::PARAMS,
+        extraction: ExtractionDefinitions::Task::FIELDS,
+        token_extraction: ExtractionDefinitions::Task::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Task"
+      },
       "Practitioner" => {
         model: Practitioner,
         validator: PractitionerValidator,

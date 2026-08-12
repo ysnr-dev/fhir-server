@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_02_000003) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_12_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -872,6 +872,52 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_02_000003) do
     t.index ["status"], name: "index_specimens_on_status"
     t.index ["subject_reference"], name: "index_specimens_on_subject_reference"
     t.index ["type_code"], name: "index_specimens_on_type_code"
+  end
+
+  create_table "tasks", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "intent"
+    t.string "priority"
+    t.string "business_status"
+    t.string "group_identifier"
+    t.string "performer_type"
+    t.string "code"
+    t.string "code_text"
+    t.string "for_reference"
+    t.string "encounter_reference"
+    t.string "requester_reference"
+    t.string "owner_reference"
+    t.string "focus_reference"
+    t.datetime "authored_on"
+    t.datetime "last_modified"
+    t.datetime "execution_period_start"
+    t.datetime "execution_period_end"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["authored_on"], name: "index_tasks_on_authored_on"
+    t.index ["business_status"], name: "index_tasks_on_business_status"
+    t.index ["code"], name: "index_tasks_on_code"
+    t.index ["code_text"], name: "index_tasks_on_code_text"
+    t.index ["content"], name: "index_tasks_on_content", using: :gin
+    t.index ["deleted"], name: "index_tasks_on_deleted"
+    t.index ["encounter_reference"], name: "index_tasks_on_encounter_reference"
+    t.index ["execution_period_end"], name: "index_tasks_on_execution_period_end"
+    t.index ["execution_period_start"], name: "index_tasks_on_execution_period_start"
+    t.index ["focus_reference"], name: "index_tasks_on_focus_reference"
+    t.index ["for_reference"], name: "index_tasks_on_for_reference"
+    t.index ["group_identifier"], name: "index_tasks_on_group_identifier"
+    t.index ["intent"], name: "index_tasks_on_intent"
+    t.index ["last_modified"], name: "index_tasks_on_last_modified"
+    t.index ["last_updated"], name: "index_tasks_on_last_updated"
+    t.index ["owner_reference"], name: "index_tasks_on_owner_reference"
+    t.index ["performer_type"], name: "index_tasks_on_performer_type"
+    t.index ["priority"], name: "index_tasks_on_priority"
+    t.index ["requester_reference"], name: "index_tasks_on_requester_reference"
+    t.index ["status"], name: "index_tasks_on_status"
   end
 
   create_table "users", force: :cascade do |t|

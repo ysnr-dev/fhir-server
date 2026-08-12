@@ -4,7 +4,7 @@ Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです�
 [JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) および
 問診票・診療テンプレートについては
 [JASPEHR 実装ガイド v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html)
-に準拠した 29 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
+に準拠した 30 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
 複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
@@ -316,13 +316,14 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 ### 対応リソース
 
-全 29 リソースが同一のエンドポイント群（後述）を持ちます。
+全 30 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
 | 基盤 | Patient / Practitioner / PractitionerRole / Organization / Location / Encounter |
 | 薬剤 | Medication / MedicationRequest / MedicationDispense / MedicationAdministration / MedicationStatement |
 | 検査・レポート | Observation / Specimen / ImagingStudy / DiagnosticReport / ServiceRequest |
+| ワークフロー | Task |
 | 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization |
 | 保険 | Coverage |
 | 問診 | Questionnaire / QuestionnaireResponse |
@@ -392,8 +393,8 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
    | [JASPEHR v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html) | `vendor/jaspehr/` | `Questionnaire` / `QuestionnaireResponse` |
 
    検証の対象になるかは「そのプロファイル URL が vendor 済みか」だけで決まります
-   （`Composition` / `Group` は JP Core に該当プロファイルが無く基底 HL7 プロファイルのため対象外で、
-   手書きバリデータのみが働きます）。
+   （`Composition` / `Group` / `Task` は JP Core に該当プロファイルが無く基底 HL7 プロファイルのため
+   対象外で、手書きバリデータのみが働きます）。
    `ImagingStudy` は JP Core が Radiology / Endoscopy の 2 プロファイルに分けていますが、レジストリの
    `profile:` は 1 リソース 1 プロファイルなので、汎用側の `JP_ImagingStudy_Radiology` を採用しています
    （2 つは検証の厳密さは同一で、Endoscopy は参照先の型をより狭めるだけです）。
@@ -582,6 +583,78 @@ curl -s "http://localhost:3000/ServiceRequest?subject=Patient/{patientId}&status
 **必須項目（JP-Core）**: `status`（値セット `draft|active|on-hold|revoked|completed|entered-in-error|unknown`）、
 `intent`（値セット `proposal|plan|directive|order|original-order|reflex-order|filler-order|instance-order|option`）、
 `subject`。
+
+---
+
+### Task の例（ServiceRequest のワークフロー管理）
+
+`ServiceRequest` が「何を依頼したか」を表すのに対し、`Task` は「その依頼が今どこまで進んだか」を表します。
+JP Core は `Task` をプロファイルしていないため、基底の FHIR R4 定義に対する手書きバリデータのみが働きます
+（`Composition` / `Group` と同じ扱い）。
+
+依頼と Task の結び付けは 2 つの要素で行います。
+
+| 要素 | 意味 | 検索パラメータ |
+|---|---|---|
+| `focus` | 作業の対象そのもの（0..1） | `focus` |
+| `basedOn` | この作業を生んだ依頼（0..*） | `based-on` |
+
+進捗は 2 系統で持ちます。`status` は FHIR 固定の値セット
+（`draft|requested|received|accepted|rejected|ready|cancelled|in-progress|on-hold|failed|completed|entered-in-error`）、
+`businessStatus` は施設ごとの工程コードです。`Task.for` は「誰のための作業か」で、
+これがある Task だけが患者コンパートメント（`Patient/$everything` / `Patient/$export` /
+患者コンテキストのトークン）に入ります。無い場合は作成自体は成功しますが warning を返します。
+
+**作成**
+
+```bash
+curl -i -X POST http://localhost:3000/Task \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{
+    "resourceType": "Task",
+    "identifier": [{ "system": "http://example.org/task", "value": "TSK1" }],
+    "groupIdentifier": { "system": "http://example.org/order-group", "value": "ORD-2026-0001" },
+    "status": "in-progress",
+    "businessStatus": {
+      "coding": [{ "system": "http://example.org/CodeSystem/lab-workflow", "code": "collected" }],
+      "text": "検体採取済"
+    },
+    "intent": "order",
+    "priority": "routine",
+    "code": { "coding": [{ "system": "http://hl7.org/fhir/CodeSystem/task-code", "code": "fulfill" }] },
+    "focus": { "reference": "ServiceRequest/{serviceRequestId}" },
+    "basedOn": [{ "reference": "ServiceRequest/{serviceRequestId}" }],
+    "for": { "reference": "Patient/{patientId}" },
+    "owner": { "reference": "Practitioner/{practitionerId}" },
+    "authoredOn": "2026-08-12T09:00:00+09:00",
+    "lastModified": "2026-08-12T10:30:00+09:00",
+    "executionPeriod": { "start": "2026-08-12T09:30:00+09:00", "end": "2026-08-12T10:30:00+09:00" }
+  }'
+```
+
+**検索**
+
+```bash
+# 担当者の未処理ワークリスト（更新の新しい順）
+curl -s "http://localhost:3000/Task?owner=Practitioner/{practitionerId}&status=in-progress&_sort=-modified"
+
+# 施設独自の工程コードで絞る
+curl -s "http://localhost:3000/Task?business-status=http://example.org/CodeSystem/lab-workflow|collected"
+
+# オーダーとその進捗を 1 リクエストで（オーダー画面の典型形）
+curl -s "http://localhost:3000/ServiceRequest?_id={serviceRequestId}&_revinclude=Task:based-on"
+
+# 進行中の Task があるオーダーだけを引く
+curl -s "http://localhost:3000/ServiceRequest?_has:Task:focus:status=in-progress"
+```
+
+**主な検索パラメータ**: `identifier` / `status` / `intent` / `priority` / `business-status` /
+`group-identifier` / `performer`（`performerType`）/ `code` / `subject`（別名 `patient`、`Task.for`）/
+`encounter` / `requester` / `owner` / `focus` / `based-on` / `part-of` / `authored-on` /
+`modified`（`lastModified`）/ `period`（`executionPeriod`）。
+
+**必須項目（FHIR R4）**: `status`、`intent`（値セットは request-intent に `unknown` を加えたもの）。
+加えて invariant `inv-1`（`lastModified` は `authoredOn` 以降）を検証します。
 
 ---
 

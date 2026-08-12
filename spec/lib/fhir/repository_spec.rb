@@ -347,6 +347,22 @@ RSpec.describe Fhir::Repository do
           "name" => "Smoke Cohort",
           "managingEntity" => { "reference" => "Organization/#{organization_id}" },
           "member" => [{ "entity" => { "reference" => "Patient/#{patient_id}" } }] }
+      when "Task"
+        { "resourceType" => "Task",
+          "identifier" => [{ "system" => "http://example.org/task", "value" => "smoke-task" }],
+          "groupIdentifier" => { "system" => "http://example.org/order-group", "value" => "smoke-grp-id" },
+          "status" => "in-progress",
+          "businessStatus" => { "coding" => [
+            { "system" => "http://example.org/CodeSystem/lab-workflow", "code" => "collected" }
+          ] },
+          "intent" => "order",
+          "priority" => "routine",
+          "code" => { "coding" => [
+            { "system" => "http://hl7.org/fhir/CodeSystem/task-code", "code" => "fulfill" }
+          ] },
+          "for" => { "reference" => "Patient/#{patient_id}" },
+          "authoredOn" => "2026-08-12T09:00:00+09:00",
+          "lastModified" => "2026-08-12T10:30:00+09:00" }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end

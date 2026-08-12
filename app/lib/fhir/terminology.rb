@@ -29,6 +29,16 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/request-intent (required)
     SERVICE_REQUEST_INTENT = %w[proposal plan directive order original-order reflex-order filler-order instance-order option].freeze
 
+    # http://hl7.org/fhir/ValueSet/task-status (required)
+    TASK_STATUS = %w[draft requested received accepted rejected ready cancelled
+                     in-progress on-hold failed completed entered-in-error].freeze
+    # http://hl7.org/fhir/ValueSet/task-intent (required) -- request-intent plus
+    # the Task-only "unknown" code.
+    TASK_INTENT = %w[unknown proposal plan order original-order reflex-order
+                     filler-order instance-order option].freeze
+    # http://hl7.org/fhir/ValueSet/request-priority (required) -- Task.priority
+    REQUEST_PRIORITY = %w[routine urgent asap stat].freeze
+
     # http://hl7.org/fhir/ValueSet/encounter-status (required)
     ENCOUNTER_STATUS = %w[planned arrived triaged in-progress onleave finished cancelled entered-in-error unknown].freeze
 
