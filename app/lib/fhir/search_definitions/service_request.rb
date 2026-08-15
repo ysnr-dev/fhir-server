@@ -22,7 +22,15 @@ module Fhir
         # ServiceRequest.basedOn は親のオーダーを指す(検体検査オーダーの
         # ヘッダ → パネル → 構成項目)。`based-on:missing=true` で親だけを引ける。
         "based-on"   => { type: :reference, multiple: true, jsonb_key: "basedOn",
-                           ref_path: %w[reference], target_type: "ServiceRequest" }
+                           ref_path: %w[reference], target_type: "ServiceRequest" },
+        # ServiceRequest.reasonReference は依頼の理由で、実運用では対象の病名
+        # (プロブレム)。カルテを 1 つのプロブレムで縦に読むための絞り込みに使う。
+        # 明細の ServiceRequest も親から引き継いだ理由を持つため、ヘッダだけを
+        # 引くには `based-on:missing=true` を併用する。R4 の参照先は
+        # Condition|Observation|DiagnosticReport|DocumentReference だが、
+        # 書かれているのは Condition だけなので既定の参照先はそれに絞る。
+        "reason-reference" => { type: :reference, multiple: true, jsonb_key: "reasonReference",
+                                 ref_path: %w[reference], target_type: "Condition" }
       }.freeze
     end
   end

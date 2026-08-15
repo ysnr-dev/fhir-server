@@ -148,6 +148,29 @@ RSpec.describe "Observations", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
 
+    # テンプレート回答から抽出した値。回答を編集・削除する側が「前回この回答から
+    # 作った Observation」を引き直すのに使う。
+    it "finds by derived-from (the answer it was extracted from)" do
+      subject_id = create_patient
+      post "/Observation",
+           params: valid_observation_payload(
+             subject_id: subject_id, derivedFrom: [{ "reference" => "QuestionnaireResponse/qr1" }]
+           ),
+           as: :json
+      derived_id = JSON.parse(response.body)["id"]
+      # 別の回答から作った値と、抽出でない値。どちらも拾われないことを確かめる。
+      post "/Observation",
+           params: valid_observation_payload(
+             subject_id: subject_id, derivedFrom: [{ "reference" => "QuestionnaireResponse/qr2" }]
+           ),
+           as: :json
+      post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json
+
+      get "/Observation", params: { "derived-from" => "QuestionnaireResponse/qr1" }
+
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([derived_id])
+    end
+
     it "finds by date (effective time)" do
       subject_id = create_patient
       post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json

@@ -1,6 +1,10 @@
 module Fhir
   module SearchDefinitions
     module QuestionnaireResponse
+      # テンプレート回答が対象とする病名(プロブレム)。Composition と同じ理由
+      # (base に対象疾患を表す要素が無い)でルート直下の拡張に置かれる。
+      PROBLEM_EXTENSION_URL = "http://fhir-client.local/StructureDefinition/questionnaire-response-problem".freeze
+
       PARAMS = {
         "identifier"    => { type: :identifier },
         # A canonical ("<url>|<version>"), not a Reference -- :uri, not :reference,
@@ -25,7 +29,12 @@ module Fhir
         "based-on"      => { type: :reference, multiple: true, jsonb_key: "basedOn",
                              ref_path: %w[reference], target_type: "ServiceRequest" },
         "part-of"       => { type: :reference, multiple: true, jsonb_key: "partOf",
-                             ref_path: %w[reference], target_type: "Observation" }
+                             ref_path: %w[reference], target_type: "Observation" },
+        # 標準外のローカル検索パラメータ。Composition:problem と同じ扱い
+        # (extension[] は他の拡張と配列を共有するので url も一致条件に入れる)。
+        "problem"       => { type: :reference, multiple: true, jsonb_key: "extension",
+                             ref_path: %w[valueReference reference], target_type: "Condition",
+                             element_match: { "url" => PROBLEM_EXTENSION_URL } }
       }.freeze
     end
   end

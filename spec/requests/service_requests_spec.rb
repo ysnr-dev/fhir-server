@@ -243,6 +243,68 @@ RSpec.describe "ServiceRequests", type: :request do
       end
     end
 
+    # 依頼の理由(対象の病名)。カルテを 1 つのプロブレムで縦に読むための絞り込み。
+    describe "reason-reference" do
+      def create_with_reason(subject_id, condition_ref, **overrides)
+        post "/ServiceRequest",
+             params: valid_service_request_payload(
+               subject_id: subject_id,
+               reasonReference: [{ "reference" => condition_ref }],
+               **overrides
+             ),
+             as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      it "finds the orders placed for one problem" do
+        subject_id = create_patient
+        target_id = create_with_reason(subject_id, "Condition/c1")
+        create_with_reason(subject_id, "Condition/c2")
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+
+        get "/ServiceRequest", params: { "reason-reference" => "Condition/c1" }
+
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+
+      it "qualifies a bare id as a Condition" do
+        subject_id = create_patient
+        target_id = create_with_reason(subject_id, "Condition/c1")
+
+        get "/ServiceRequest", params: { "reason-reference" => "c1" }
+
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+
+      # 明細のオーダーも親から引き継いだ理由を持つので、ヘッダだけを引くには
+      # based-on:missing=true を併用する。
+      it "narrows to the header order with based-on:missing" do
+        subject_id = create_patient
+        header_id = create_with_reason(subject_id, "Condition/c1")
+        create_with_reason(subject_id, "Condition/c1", basedOn: [{ "reference" => "ServiceRequest/#{header_id}" }])
+
+        get "/ServiceRequest", params: { "reason-reference" => "Condition/c1" }
+        expect(JSON.parse(response.body)["total"]).to eq(2)
+
+        get "/ServiceRequest",
+            params: { "reason-reference" => "Condition/c1", "based-on:missing" => "true" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([header_id])
+      end
+
+      it "includes the referenced Condition with _include" do
+        subject_id = create_patient
+        post "/Condition", params: valid_condition_payload(subject_id: subject_id), as: :json
+        condition_id = JSON.parse(response.body)["id"]
+        create_with_reason(subject_id, "Condition/#{condition_id}")
+
+        get "/ServiceRequest", params: { "_include" => "ServiceRequest:reason-reference" }
+
+        included = JSON.parse(response.body)["entry"].select { |e| e.dig("search", "mode") == "include" }
+        expect(included.map { |e| e.dig("resource", "id") }).to eq([condition_id])
+      end
+    end
+
     describe "_revinclude=MedicationRequest:based-on" do
       it "includes MedicationRequests that reference the matched ServiceRequest" do
         subject_id = create_patient

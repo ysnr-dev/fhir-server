@@ -65,7 +65,12 @@ module Fhir
         "patient" => { alias: "subject" },
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
         # 実施記録に伴って測った値(放射線検査の被曝線量)。
-        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] }
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] },
+        # 抽出元のテンプレート回答。回答の検索に
+        # _revinclude=Observation:derived-from を添えると、その回答から作られた値まで
+        # 同じ応答で揃う。
+        "derived-from" => { multiple: true, jsonb_key: "derivedFrom", ref_path: %w[reference],
+                             targets: %w[QuestionnaireResponse] }
       },
       "Specimen" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
@@ -95,7 +100,11 @@ module Fhir
         # ServiceRequest が別の ServiceRequest にぶら下がる形(オーダーのヘッダと明細)。
         # 親から子を引く _revinclude=ServiceRequest:based-on と、:iterate による
         # 2 段目(パネルの構成項目)の展開に使う。CarePlan は未実装なので載せない。
-        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] }
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
+        # 依頼の理由(対象の病名)。オーダーの検索に _include=ServiceRequest:reason-reference を
+        # 添えると、絞り込んだプロブレムの Condition まで同じ応答で揃う。
+        "reason-reference" => { multiple: true, jsonb_key: "reasonReference", ref_path: %w[reference],
+                                 targets: %w[Condition] }
       },
       "Task" => {
         # Task.for の検索パラメータ名は FHIR 上 "subject"。patient はその別名。

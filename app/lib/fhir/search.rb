@@ -221,7 +221,7 @@ module Fhir
       return scope.none if refs.empty?
 
       where_or(scope, refs.map do |ref|
-        ["content @> ?", [{ definition[:jsonb_key] => [nest(definition[:ref_path], ref)] }.to_json]]
+        ["content @> ?", [{ definition[:jsonb_key] => [containment_element(definition, ref)] }.to_json]]
       end)
     end
 
@@ -239,9 +239,14 @@ module Fhir
       # Multi-valued source references (only Encounter.location/participant):
       # extract refs in Ruby, mirroring IncludeResolver#collect_forward_refs.
       prefix = "#{resource_type}/"
+      match = ref_definition[:element_match]
       ids = inner_scope.pluck(:content).flat_map do |content|
         Array(content[ref_definition[:jsonb_key]]).filter_map do |element|
-          element.dig(*ref_definition[:ref_path]) if element.is_a?(Hash)
+          next unless element.is_a?(Hash)
+          # Same reason as containment_element: other extensions share the array.
+          next if match && match.any? { |key, value| element[key] != value }
+
+          element.dig(*ref_definition[:ref_path])
         end
       end.filter_map { |ref| ref.delete_prefix(prefix) if ref.is_a?(String) && ref.start_with?(prefix) }
 
@@ -266,7 +271,12 @@ module Fhir
           null_fragment(scope, definition[:column], missing)
         end
       when :reference
-        if definition[:multiple]
+        if definition[:element_match]
+          # The array holds other kinds of element too (extension[] is shared),
+          # so presence has to be asked of the matching element, not the key.
+          containment = element_presence_containment(definition)
+          scope.where("#{missing ? 'NOT ' : ''}(content @> ?)", containment)
+        elsif definition[:multiple]
           # jsonb_exists() instead of the `?` operator, whose literal form would
           # collide with bind placeholders. A present-but-empty array counts as
           # not missing; the extractor never writes empty arrays.
@@ -491,7 +501,7 @@ module Fhir
       # 0..* reference lives only in content; match array membership via jsonb
       # containment (GIN-indexed), mirroring Fhir::IncludeResolver#query_reverse.
       fragments = refs.map do |ref|
-        containment = { definition[:jsonb_key] => [nest(definition[:ref_path], ref)] }
+        containment = { definition[:jsonb_key] => [containment_element(definition, ref)] }
         ["content @> ?", [containment.to_json]]
       end
       where_or(scope, fragments)
@@ -505,6 +515,22 @@ module Fhir
     # nest(["individual", "reference"], "Practitioner/1") => {"individual"=>{"reference"=>"Practitioner/1"}}
     def nest(path, value)
       path.reverse.reduce(value) { |acc, key| { key => acc } }
+    end
+
+    # One element of the 0..* array, as it appears in a containment query.
+    # :element_match pins additional constant keys on the same element -- an
+    # extension's `url`. Without it a parameter reading `extension[].valueReference`
+    # would also match a DIFFERENT extension that happens to carry the same
+    # reference, since containment only asks "is there an element like this".
+    def containment_element(definition, ref)
+      element = nest(definition[:ref_path], ref)
+      definition[:element_match] ? element.merge(definition[:element_match]) : element
+    end
+
+    # The same element with the reference left out: "an element of this kind
+    # exists at all", used by :missing.
+    def element_presence_containment(definition)
+      { definition[:jsonb_key] => [definition[:element_match]] }.to_json
     end
 
     # --- :date / :datetime -------------------------------------------------------

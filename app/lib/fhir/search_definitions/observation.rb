@@ -16,7 +16,13 @@ module Fhir
         # 被曝線量)。R4 の参照先は投薬・撮影など複数あるが、実際に束ねているのは
         # Procedure なので参照先を絞る。
         "part-of"    => { type: :reference, multiple: true, jsonb_key: "partOf",
-                           ref_path: %w[reference], target_type: "Procedure" }
+                           ref_path: %w[reference], target_type: "Procedure" },
+        # Observation.derivedFrom は「この値の元になった記録」。テンプレート回答
+        # (QuestionnaireResponse)から抽出した Observation が回答を指すので、回答を
+        # 更新・削除する側が「前回この回答から作った Observation」を引くのに使う。
+        # R4 の参照先は多いが、抽出元として書かれるのは回答だけなので絞る。
+        "derived-from" => { type: :reference, multiple: true, jsonb_key: "derivedFrom",
+                             ref_path: %w[reference], target_type: "QuestionnaireResponse" }
       }.freeze
     end
   end

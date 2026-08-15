@@ -92,6 +92,86 @@ RSpec.describe "Composition", type: :request do
       get "/Composition?identifier=http://example.org/composition|COMP1"
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
+
+    # POS/POMR のカルテを 1 つのプロブレムで縦に読むための絞り込み。対象疾患は
+    # base Composition に置き場が無くローカル拡張に入るため、標準外のパラメータで引く。
+    describe "problem" do
+      let(:problem_url) { "http://fhir-client.local/StructureDefinition/clinical-note-problem" }
+      let(:other_url) { "http://fhir-client.local/StructureDefinition/some-other-reference" }
+
+      def create_with_extension(patient_id, extension)
+        post "/Composition",
+             params: valid_composition_payload(subject_id: patient_id).merge("extension" => extension),
+             as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      def problem_extension(condition_id)
+        [{ "url" => problem_url, "valueReference" => { "reference" => "Condition/#{condition_id}" } }]
+      end
+
+      it "finds the notes written against one problem" do
+        patient_id = create_patient
+        target_id = create_with_extension(patient_id, problem_extension("c1"))
+        create_with_extension(patient_id, problem_extension("c2"))
+
+        get "/Composition", params: { problem: "Condition/c1" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+
+      it "qualifies a bare id as a Condition" do
+        patient_id = create_patient
+        target_id = create_with_extension(patient_id, problem_extension("c1"))
+
+        get "/Composition", params: { problem: "c1" }
+
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+
+      # 一致条件に url を入れていないと、同じ参照を持つ別の拡張まで拾ってしまう。
+      it "ignores a different extension carrying the same reference" do
+        patient_id = create_patient
+        create_with_extension(
+          patient_id,
+          [{ "url" => other_url, "valueReference" => { "reference" => "Condition/c1" } }]
+        )
+
+        get "/Composition", params: { problem: "Condition/c1" }
+
+        expect(JSON.parse(response.body)["total"]).to eq(0)
+      end
+
+      it "supports problem:missing" do
+        patient_id = create_patient
+        linked_id = create_with_extension(patient_id, problem_extension("c1"))
+        # 別の拡張だけを持つ記録は「プロブレム未設定」に数える。
+        unlinked_id = create_with_extension(
+          patient_id,
+          [{ "url" => other_url, "valueReference" => { "reference" => "Condition/c1" } }]
+        )
+
+        get "/Composition", params: { patient: patient_id, "problem:missing" => "true" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([unlinked_id])
+
+        get "/Composition", params: { patient: patient_id, "problem:missing" => "false" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([linked_id])
+      end
+
+      it "chains into the Condition (problem.code)" do
+        patient_id = create_patient
+        post "/Condition", params: valid_condition_payload(subject_id: patient_id), as: :json
+        condition_id = JSON.parse(response.body)["id"]
+        target_id = create_with_extension(patient_id, problem_extension(condition_id))
+        create_with_extension(patient_id, problem_extension("c2"))
+
+        get "/Composition", params: { "problem.code" => "J20.9" }
+
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+    end
   end
 
   it "joins the patient compartment ($everything)" do

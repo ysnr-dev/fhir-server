@@ -150,6 +150,65 @@ RSpec.describe "QuestionnaireResponse", type: :request do
       expect(total).to eq(1)
     end
 
+    # Composition:problem と同じローカル拡張による絞り込み。単独登録のテンプレート
+    # 回答(初期計画など)も 1 つのプロブレムの経過として読めるようにする。
+    describe "problem" do
+      let(:problem_url) { "http://fhir-client.local/StructureDefinition/questionnaire-response-problem" }
+
+      def create_with_problem(patient_id, condition_ref)
+        payload = valid_questionnaire_response_payload(subject_id: patient_id)
+        # deep_merge は配列を差し替えるので、既存の拡張(保険医療機関番号)に足す形で組む。
+        payload["extension"] += [{ "url" => problem_url, "valueReference" => { "reference" => condition_ref } }]
+        post "/QuestionnaireResponse", params: payload, as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      it "finds the answers recorded against one problem" do
+        patient_id = create_patient
+        target_id = create_with_problem(patient_id, "Condition/c1")
+        create_with_problem(patient_id, "Condition/c2")
+        post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+
+        get "/QuestionnaireResponse", params: { problem: "Condition/c1" }
+
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+
+      # 既存の valueIdentifier 拡張(保険医療機関番号)を巻き込まないこと。
+      it "counts a response carrying only other extensions as missing" do
+        patient_id = create_patient
+        linked_id = create_with_problem(patient_id, "Condition/c1")
+        post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+        plain_id = JSON.parse(response.body)["id"]
+
+        get "/QuestionnaireResponse", params: { patient: patient_id, "problem:missing" => "true" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([plain_id])
+
+        get "/QuestionnaireResponse", params: { patient: patient_id, "problem:missing" => "false" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([linked_id])
+      end
+    end
+
+    # 回答と、そこから抽出した値を 1 リクエストで揃える。
+    it "resolves _revinclude=Observation:derived-from" do
+      patient_id = create_patient
+      post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+      response_id = JSON.parse(response.body)["id"]
+      post "/Observation",
+           params: valid_observation_payload(
+             subject_id: patient_id,
+             derivedFrom: [{ "reference" => "QuestionnaireResponse/#{response_id}" }]
+           ),
+           as: :json
+      observation_id = JSON.parse(response.body)["id"]
+
+      get "/QuestionnaireResponse", params: { patient: patient_id, "_revinclude" => "Observation:derived-from" }
+
+      included = JSON.parse(response.body)["entry"].select { |e| e.dig("search", "mode") == "include" }
+      expect(included.map { |e| e.dig("resource", "id") }).to eq([observation_id])
+    end
+
     it "resolves _include:subject to the Patient" do
       patient_id = create_patient
       post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
