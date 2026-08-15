@@ -130,6 +130,24 @@ RSpec.describe "Observations", type: :request do
       expect(JSON.parse(response.body)["total"]).to be >= 1
     end
 
+    # 実施記録に伴って測った値(放射線検査の被曝線量)。
+    it "finds by part-of (the procedure it was measured during)" do
+      subject_id = create_patient
+      post "/Procedure", params: valid_procedure_payload(subject_id: subject_id), as: :json
+      procedure_id = JSON.parse(response.body)["id"]
+      post "/Observation",
+           params: valid_observation_payload(
+             subject_id: subject_id, partOf: [{ "reference" => "Procedure/#{procedure_id}" }]
+           ),
+           as: :json
+      # 同じ患者の、実施に紐づかない検査値。part-of で拾われないことを確かめる。
+      post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json
+
+      get "/Observation", params: { "part-of" => "Procedure/#{procedure_id}" }
+
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+
     it "finds by date (effective time)" do
       subject_id = create_patient
       post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json

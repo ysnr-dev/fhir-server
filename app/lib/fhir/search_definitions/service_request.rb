@@ -5,6 +5,12 @@ module Fhir
         "identifier" => { type: :identifier },
         "status"     => { type: :token, column: :status },
         "intent"     => { type: :token, column: :intent },
+        # ServiceRequest.category はオーダーの種別(処方・検体検査・放射線検査…)を
+        # 分ける唯一の手掛かりで、部門ごとのワークリストが「その日の放射線検査だけ」を
+        # 引くのに使う。0..* CodeableConcept で意味のある coding が先頭とは限らないため、
+        # 平坦化した列は持たず resource_tokens だけで突き合わせる(Observation の
+        # category_code のように先頭を採る列は、並び順に依存して取りこぼす)。
+        "category"   => { type: :token },
         "subject"    => { type: :reference, column: :subject_reference,
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },

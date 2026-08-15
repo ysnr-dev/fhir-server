@@ -108,6 +108,24 @@ RSpec.describe "MedicationAdministrations", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
 
+    # 実施記録に伴う投与(放射線検査の造影剤)。
+    it "finds by part-of (the procedure it was given during)" do
+      subject_id = create_patient
+      post "/Procedure", params: valid_procedure_payload(subject_id: subject_id), as: :json
+      procedure_id = JSON.parse(response.body)["id"]
+      post "/MedicationAdministration",
+           params: valid_medication_administration_payload(
+             subject_id: subject_id, partOf: [{ "reference" => "Procedure/#{procedure_id}" }]
+           ),
+           as: :json
+      # 同じ患者の、実施に紐づかない投与。part-of で拾われないことを確かめる。
+      post "/MedicationAdministration", params: valid_medication_administration_payload(subject_id: subject_id), as: :json
+
+      get "/MedicationAdministration", params: { "part-of" => "Procedure/#{procedure_id}" }
+
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+
     it "includes the referenced Patient via MedicationAdministration:subject" do
       subject_id = create_patient
       post "/MedicationAdministration", params: valid_medication_administration_payload(subject_id: subject_id), as: :json

@@ -49,7 +49,11 @@ module Fhir
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
         "context" => { path: %w[context reference], targets: %w[Encounter], column: "context_reference" },
-        "request" => { path: %w[request reference], targets: %w[MedicationRequest], column: "request_reference" }
+        "request" => { path: %w[request reference], targets: %w[MedicationRequest], column: "request_reference" },
+        # 実施記録(Procedure)に伴う投与(放射線検査の造影剤)。実施記録を含む検索に
+        # _revinclude:iterate=MedicationAdministration:part-of を添えると、使った薬剤まで
+        # 同じ応答で揃う。
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] }
       },
       "MedicationStatement" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
@@ -59,7 +63,9 @@ module Fhir
       "Observation" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
-        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" }
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        # 実施記録に伴って測った値(放射線検査の被曝線量)。
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] }
       },
       "Specimen" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
@@ -128,7 +134,12 @@ module Fhir
       "Procedure" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
-        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" }
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        # 実施の元になった依頼。オーダーの検索に _revinclude=Procedure:based-on を
+        # 添えると「そのオーダーが実施済みか、何を使ったか」を 1 リクエストで引ける。
+        # 2 件目以降の手技(partOf でぶら下がる子)も basedOn を持つので同時に付いてくる。
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] }
       },
       "Immunization" => {
         "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" }

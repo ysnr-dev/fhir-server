@@ -188,6 +188,61 @@ RSpec.describe "ServiceRequests", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(0)
     end
 
+    # 部門ワークリストは「その日の放射線検査だけ」を引くために category で絞る。
+    # 1 件のオーダーが種別(rad)と入外区分(outpatient)のように複数の概念を並べるので、
+    # 先頭以外の concept でも引けることまで見る。
+    describe "category" do
+      let(:order_type_system) { "http://fhir-client.local/CodeSystem/order-type" }
+      let(:setting_system) { "http://fhir-client.local/CodeSystem/encounter-setting" }
+
+      def create_categorized(subject_id, type_code)
+        post "/ServiceRequest",
+             params: valid_service_request_payload(
+               subject_id: subject_id,
+               category: [
+                 { "coding" => [{ "system" => order_type_system, "code" => type_code }] },
+                 { "coding" => [{ "system" => setting_system, "code" => "outpatient" }] }
+               ]
+             ),
+             as: :json
+        JSON.parse(response.body)["id"]
+      end
+
+      it "finds by system|code and leaves other order types out" do
+        subject_id = create_patient
+        rad_id = create_categorized(subject_id, "rad")
+        create_categorized(subject_id, "lab")
+
+        get "/ServiceRequest", params: { category: "#{order_type_system}|rad" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["total"]).to eq(1)
+        expect(bundle["entry"].first["resource"]["id"]).to eq(rad_id)
+      end
+
+      it "matches a concept that is not the first one" do
+        subject_id = create_patient
+        rad_id = create_categorized(subject_id, "rad")
+
+        get "/ServiceRequest", params: { category: "#{setting_system}|outpatient" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["entry"].map { |e| e["resource"]["id"] }).to include(rad_id)
+      end
+
+      it "supports category:missing" do
+        subject_id = create_patient
+        create_categorized(subject_id, "rad")
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        uncategorized_id = JSON.parse(response.body)["id"]
+
+        get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", "category:missing" => "true" }
+
+        bundle = JSON.parse(response.body)
+        expect(bundle["entry"].map { |e| e["resource"]["id"] }).to eq([uncategorized_id])
+      end
+    end
+
     describe "_revinclude=MedicationRequest:based-on" do
       it "includes MedicationRequests that reference the matched ServiceRequest" do
         subject_id = create_patient

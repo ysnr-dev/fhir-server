@@ -114,4 +114,99 @@ RSpec.describe "Procedures", type: :request do
       expect(included.map { |entry| entry["resource"]["resourceType"] }).to eq(["Patient"])
     end
   end
+
+  # 放射線検査の実施記録。1 回の実施を Procedure 1 件(ハブ)で表し、手技が
+  # 複数あるときだけ 2 件目以降を partOf でぶら下げる。どちらもオーダーを basedOn に
+  # 持つので、カルテのオーダー表示は based-on だけで実施記録を揃えられる。
+  describe "based-on / part-of" do
+    # オーダー(ServiceRequest)と、それを basedOn に持つ実施記録一式を作る。
+    def create_order_with_procedures
+      subject_id = create_patient
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+      order_id = JSON.parse(response.body)["id"]
+
+      post "/Procedure",
+           params: valid_procedure_payload(subject_id: subject_id,
+                                           basedOn: [{ "reference" => "ServiceRequest/#{order_id}" }]),
+           as: :json
+      hub_id = JSON.parse(response.body)["id"]
+
+      post "/Procedure",
+           params: valid_procedure_payload(subject_id: subject_id,
+                                           basedOn: [{ "reference" => "ServiceRequest/#{order_id}" }],
+                                           partOf: [{ "reference" => "Procedure/#{hub_id}" }]),
+           as: :json
+      child_id = JSON.parse(response.body)["id"]
+
+      { subject_id: subject_id, order_id: order_id, hub_id: hub_id, child_id: child_id }
+    end
+
+    def match_ids(bundle)
+      bundle["entry"].select { |entry| entry.dig("search", "mode") == "match" }
+                     .map { |entry| entry["resource"]["id"] }
+    end
+
+    it "finds the procedures of an order with based-on" do
+      ids = create_order_with_procedures
+
+      get "/Procedure", params: { "based-on" => "ServiceRequest/#{ids[:order_id]}" }
+
+      expect(response).to have_http_status(:ok)
+      expect(match_ids(JSON.parse(response.body))).to match_array([ids[:hub_id], ids[:child_id]])
+    end
+
+    it "finds only the child procedures with part-of" do
+      ids = create_order_with_procedures
+
+      get "/Procedure", params: { "part-of" => "Procedure/#{ids[:hub_id]}" }
+
+      expect(match_ids(JSON.parse(response.body))).to eq([ids[:child_id]])
+    end
+
+    it "returns only the hub with part-of:missing=true" do
+      ids = create_order_with_procedures
+
+      get "/Procedure", params: { "based-on" => "ServiceRequest/#{ids[:order_id]}", "part-of:missing" => "true" }
+
+      expect(match_ids(JSON.parse(response.body))).to eq([ids[:hub_id]])
+    end
+
+    # fhir-client のカルテがオーダー 1 件の実施情報を引く形。実施記録(Procedure)と、
+    # それにぶら下がる造影剤(MedicationAdministration)・被曝線量(Observation)まで
+    # 1 リクエストで揃うことを固定する。
+    it "includes the procedures and their children from the order in one request" do
+      ids = create_order_with_procedures
+
+      post "/MedicationAdministration",
+           params: valid_medication_administration_payload(
+             subject_id: ids[:subject_id],
+             partOf: [{ "reference" => "Procedure/#{ids[:hub_id]}" }]
+           ),
+           as: :json
+      contrast_id = JSON.parse(response.body)["id"]
+
+      post "/Observation",
+           params: valid_observation_payload(
+             subject_id: ids[:subject_id],
+             partOf: [{ "reference" => "Procedure/#{ids[:hub_id]}" }]
+           ),
+           as: :json
+      dose_id = JSON.parse(response.body)["id"]
+
+      # :iterate を 2 つ渡すので、Hash では表せない(同じキーの繰り返し)クエリ文字列で投げる。
+      get "/ServiceRequest?_id=#{ids[:order_id]}&_revinclude=Procedure:based-on" \
+          "&_revinclude:iterate=MedicationAdministration:part-of" \
+          "&_revinclude:iterate=Observation:part-of"
+
+      bundle = JSON.parse(response.body)
+      included = bundle["entry"].select { |entry| entry.dig("search", "mode") == "include" }
+                                .map { |entry| entry["resource"] }
+      expect(included.select { |r| r["resourceType"] == "Procedure" }.map { |r| r["id"] })
+        .to match_array([ids[:hub_id], ids[:child_id]])
+      expect(included.select { |r| r["resourceType"] == "MedicationAdministration" }.map { |r| r["id"] })
+        .to eq([contrast_id])
+      expect(included.select { |r| r["resourceType"] == "Observation" }.map { |r| r["id"] })
+        .to eq([dose_id])
+    end
+  end
 end
