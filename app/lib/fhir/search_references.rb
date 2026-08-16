@@ -121,6 +121,37 @@ module Fhir
         "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
         "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Task] }
       },
+      # 予約画面は Appointment を起点に「誰の・どの枠・何の依頼か」を 1 リクエストで
+      # 揃えたい。participant[].actor は 1 つの配列に患者も担当医も診察室も並ぶので、
+      # patient / actor / location は同じ jsonb_key を参照先の型で切り分けている。
+      "Appointment" => {
+        # Appointment.patient は participant[].actor のうち Patient を指すもの。
+        # 検索側(SearchDefinitions)は平坦化した patient_reference 列を使うが、
+        # _include/_revinclude は content を辿るので配列側の定義になる。
+        "patient" => { multiple: true, jsonb_key: "participant", ref_path: %w[actor reference],
+                        targets: %w[Patient] },
+        "actor" => { multiple: true, jsonb_key: "participant", ref_path: %w[actor reference],
+                      targets: %w[Patient Practitioner PractitionerRole RelatedPerson Device Location] },
+        "practitioner" => { alias: "actor" },
+        "location" => { multiple: true, jsonb_key: "participant", ref_path: %w[actor reference],
+                         targets: %w[Location] },
+        # 枠側から予約を引く _revinclude=Appointment:slot が、空き枠一覧に
+        # 「誰の予約で埋まっているか」を添えるのに使う。
+        "slot" => { multiple: true, jsonb_key: "slot", ref_path: %w[reference], targets: %w[Slot] },
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference],
+                         targets: %w[ServiceRequest] },
+        "reason-reference" => { multiple: true, jsonb_key: "reasonReference", ref_path: %w[reference],
+                                 targets: %w[Condition] }
+      },
+      "Slot" => {
+        # Slot.schedule は 1..1。枠表から枠を引く _revinclude=Slot:schedule と、
+        # 枠から枠表を引く _include=Slot:schedule の両方に使う。
+        "schedule" => { path: %w[schedule reference], targets: %w[Schedule], column: "schedule_reference" }
+      },
+      "Schedule" => {
+        "actor" => { multiple: true, jsonb_key: "actor", ref_path: %w[reference],
+                      targets: %w[Patient Practitioner PractitionerRole RelatedPerson Device Location] }
+      },
       "PractitionerRole" => {
         "practitioner" =>{ path: %w[practitioner reference], targets: %w[Practitioner], column: "practitioner_reference" },
         "organization" => { path: %w[organization reference], targets: %w[Organization], column: "organization_reference" }

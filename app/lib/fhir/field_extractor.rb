@@ -93,6 +93,20 @@ module Fhir
       [concept["text"], coding && coding["display"]].compact.join(" ").presence
     end
 
+    # --- references ---------------------------------------------------------
+
+    # First Patient reference among a 0..* backbone array whose elements each carry
+    # a Reference at `actor` (Appointment.participant). Appointment has no
+    # single-valued Patient element, but patient-compartment membership is derived
+    # from single-valued indexed columns, so the patient among the participants is
+    # flattened into one. An appointment listing two Patient participants keeps only
+    # the first -- FHIR allows it, but no scheduling workflow here produces one.
+    def actor_patient_reference(participants)
+      Array(participants).filter_map do |participant|
+        participant["actor"]["reference"] if participant.is_a?(Hash) && participant["actor"].is_a?(Hash)
+      end.find { |reference| reference.is_a?(String) && reference.start_with?("Patient/") }
+    end
+
     # --- HumanName ----------------------------------------------------------
 
     # family of the official name (or the first name when none is marked official).

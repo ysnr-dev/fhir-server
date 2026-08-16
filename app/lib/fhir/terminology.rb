@@ -39,6 +39,18 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/request-priority (required) -- Task.priority
     REQUEST_PRIORITY = %w[routine urgent asap stat].freeze
 
+    # http://hl7.org/fhir/ValueSet/appointmentstatus (required)
+    APPOINTMENT_STATUS = %w[proposed pending booked arrived fulfilled cancelled
+                            noshow entered-in-error checked-in waitlist].freeze
+    # http://hl7.org/fhir/ValueSet/participationstatus (required) --
+    # Appointment.participant.status
+    PARTICIPATION_STATUS = %w[accepted declined tentative needs-action].freeze
+    # http://hl7.org/fhir/ValueSet/participantrequired (required) --
+    # Appointment.participant.required
+    PARTICIPANT_REQUIRED = %w[required optional information-only].freeze
+    # http://hl7.org/fhir/ValueSet/slotstatus (required)
+    SLOT_STATUS = %w[busy free busy-unavailable busy-tentative entered-in-error].freeze
+
     # http://hl7.org/fhir/ValueSet/encounter-status (required)
     ENCOUNTER_STATUS = %w[planned arrived triaged in-progress onleave finished cancelled entered-in-error unknown].freeze
 

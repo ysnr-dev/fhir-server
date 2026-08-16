@@ -31,9 +31,17 @@ module Fhir
       end
     end
 
+    # Unlike Fhir::FieldExtractor#dig_path this one steps through arrays: a key
+    # applied to an Array collects that key from every element. It is what lets a
+    # code buried in a repeating backbone element be searched as a token without a
+    # bespoke kind -- "participant.status" on Appointment yields every
+    # participant's status, which :code_list then turns into one row each.
     def dig_path(resource, path)
       path.to_s.split(".").reduce(resource) do |node, key|
-        node.is_a?(Hash) ? node[key] : nil
+        case node
+        when Hash then node[key]
+        when Array then node.filter_map { |element| element[key] if element.is_a?(Hash) }
+        end
       end
     end
 

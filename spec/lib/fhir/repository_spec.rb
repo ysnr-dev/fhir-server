@@ -363,6 +363,31 @@ RSpec.describe Fhir::Repository do
           "for" => { "reference" => "Patient/#{patient_id}" },
           "authoredOn" => "2026-08-12T09:00:00+09:00",
           "lastModified" => "2026-08-12T10:30:00+09:00" }
+      when "Schedule"
+        { "resourceType" => "Schedule",
+          "identifier" => [{ "system" => "http://example.org/schedule", "value" => "smoke-sch" }],
+          "active" => true,
+          "actor" => [{ "reference" => "Organization/#{organization_id}" }],
+          "planningHorizon" => { "start" => "2026-09-01T00:00:00+09:00",
+                                 "end" => "2026-09-30T23:59:59+09:00" } }
+      when "Slot"
+        # Slot.schedule is structural-only, so the smoke fixture does not need a
+        # stored Schedule to hang off.
+        { "resourceType" => "Slot",
+          "identifier" => [{ "system" => "http://example.org/slot", "value" => "smoke-slot" }],
+          "schedule" => { "reference" => "Schedule/smoke" },
+          "status" => "free",
+          "start" => "2026-09-01T09:00:00+09:00",
+          "end" => "2026-09-01T09:30:00+09:00" }
+      when "Appointment"
+        { "resourceType" => "Appointment",
+          "identifier" => [{ "system" => "http://example.org/appointment", "value" => "smoke-apt" }],
+          "status" => "booked",
+          "start" => "2026-09-01T09:00:00+09:00",
+          "end" => "2026-09-01T09:30:00+09:00",
+          "participant" => [
+            { "actor" => { "reference" => "Patient/#{patient_id}" }, "status" => "accepted" }
+          ] }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end

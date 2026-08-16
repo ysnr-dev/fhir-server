@@ -147,6 +147,39 @@ class ResourceValidator
     )
   end
 
+  # Validates a FHIR `instant` element. No-op when absent. Unlike `dateTime` an
+  # instant has no partial precision and its timezone offset is mandatory, so
+  # Time.iso8601 alone is too lenient (it accepts "2026-09-01T09:00:00", reading
+  # the offset off the server's clock -- which for a booking slot silently shifts
+  # it by hours). The pattern pins the shape; Time.iso8601 then rejects a
+  # well-shaped but non-existent instant such as 2026-02-30T00:00:00Z.
+  INSTANT_PATTERN = /\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})\z/
+
+  def validate_instant(field, value: payload[field], expression: "#{resource_type}.#{field}")
+    return if value.nil?
+    return if instant?(value)
+
+    add_error(
+      code: "value",
+      diagnostics: "#{resource_type}.#{field} must be a valid FHIR instant " \
+                   "(full ISO8601 with a timezone, e.g. 2026-09-01T09:00:00+09:00)",
+      expression: expression
+    )
+  end
+
+  def instant?(value)
+    return false unless value.is_a?(String) && value.match?(INSTANT_PATTERN)
+
+    # Time.iso8601 rolls an impossible date over silently (2026-02-30 becomes
+    # 2026-03-02), which for a booking would move it rather than reject it, so the
+    # date half is checked against the real calendar separately.
+    Date.iso8601(value[0, 10])
+    Time.iso8601(value)
+    true
+  rescue ArgumentError
+    false
+  end
+
   # Validates that an optional element is a JSON boolean. No-op when absent.
   def validate_boolean(field, value: payload[field], expression: "#{resource_type}.#{field}")
     return unless payload.key?(field)

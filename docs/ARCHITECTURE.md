@@ -42,7 +42,7 @@ flowchart TB
     IDP["外部 IdP（Auth0）"]
 
     subgraph serverRepo["fhir-server — Rails 8 / JP-Core v1.2.0 + JASPEHR v1.0.0"]
-        REST["FHIR REST<br/>30 リソース / 検索 / _history / Bundle / $validate"]
+        REST["FHIR REST<br/>33 リソース / 検索 / _history / Bundle / $validate"]
         AUTH["SMART 認可サーバー<br/>token / authorize / introspect / revoke / JWKS"]
         BULK["Bulk Data<br/>$export（system / patient / group）"]
         ADMINAPI["管理 API<br/>/admin/oauth_clients・/admin/scopes"]
@@ -85,7 +85,7 @@ flowchart TB
 
 | 領域 | 内容 |
 |---|---|
-| FHIR REST | 30 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` ほか）の CRUD、チェーン検索・`_has`・`_include`、`_history` / vread、条件付き操作、JSON Patch、`$validate`、`Patient/$everything`、Bundle（transaction / batch） |
+| FHIR REST | 33 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` ほか）の CRUD、チェーン検索・`_has`・`_include`、`_history` / vread、条件付き操作、JSON Patch、`$validate`、`Patient/$everything`、Bundle（transaction / batch） |
 | 認証・認可 | SMART Backend Services（`client_credentials` / client assertion JWT）、SMART v2 スコープ、OpenID Connect（`id_token` / `fhirUser`）、standalone launch、Token Introspection（RFC 7662）、revoke、JWKS、`.well-known/smart-configuration` |
 | Bulk Data | Bulk Data Access IG v2.0.0。`/$export`・`/Patient/$export`・`/Group/{id}/$export` と非同期ジョブ、status / download / cancel |
 | 運用・管理 | `/metadata`（CapabilityStatement）、`/up`（ヘルスチェック）、`AuditEvent`（サーバー生成・読み取り専用）、管理 API `/admin/oauth_clients`・`/admin/scopes` |
@@ -93,7 +93,7 @@ flowchart TB
 内部構造の要点:
 
 - `app/lib/fhir/` に検索定義・プロファイル検証・スコープ・用語集を集約
-- ルーティングは 30 リソースへ同一のルートセットを生成し、`FhirResourcesController` に集約
+- ルーティングは 33 リソースへ同一のルートセットを生成し、`FhirResourcesController` に集約
 - 管理 API は FHIR のスコープではなく専用の共有トークン（`FHIR_ADMIN_TOKEN`）で認証し、
   未設定なら常に 503（fail closed）。CORS は意図的に無効
 

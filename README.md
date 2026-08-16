@@ -4,7 +4,7 @@ Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです�
 [JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) および
 問診票・診療テンプレートについては
 [JASPEHR 実装ガイド v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html)
-に準拠した 30 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
+に準拠した 33 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
 複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
@@ -316,7 +316,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 ### 対応リソース
 
-全 30 リソースが同一のエンドポイント群（後述）を持ちます。
+全 33 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
@@ -324,6 +324,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 | 薬剤 | Medication / MedicationRequest / MedicationDispense / MedicationAdministration / MedicationStatement |
 | 検査・レポート | Observation / Specimen / ImagingStudy / DiagnosticReport / ServiceRequest |
 | ワークフロー | Task |
+| 予約 | Appointment / Schedule / Slot |
 | 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization |
 | 保険 | Coverage |
 | 問診 | Questionnaire / QuestionnaireResponse |
@@ -407,8 +408,8 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
    | [JASPEHR v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html) | `vendor/jaspehr/` | `Questionnaire` / `QuestionnaireResponse` |
 
    検証の対象になるかは「そのプロファイル URL が vendor 済みか」だけで決まります
-   （`Composition` / `Group` / `Task` は JP Core に該当プロファイルが無く基底 HL7 プロファイルのため
-   対象外で、手書きバリデータのみが働きます）。
+   （`Composition` / `Group` / `Task` / `Appointment` / `Schedule` / `Slot` は JP Core に該当プロファイルが
+   無く基底 HL7 プロファイルのため対象外で、手書きバリデータのみが働きます）。
    `ImagingStudy` は JP Core が Radiology / Endoscopy の 2 プロファイルに分けていますが、レジストリの
    `profile:` は 1 リソース 1 プロファイルなので、汎用側の `JP_ImagingStudy_Radiology` を採用しています
    （2 つは検証の厳密さは同一で、Endoscopy は参照先の型をより狭めるだけです）。
@@ -669,6 +670,122 @@ curl -s "http://localhost:3000/ServiceRequest?_has:Task:focus:status=in-progress
 
 **必須項目（FHIR R4）**: `status`、`intent`（値セットは request-intent に `unknown` を加えたもの）。
 加えて invariant `inv-1`（`lastModified` は `authoredOn` 以降）を検証します。
+
+---
+
+### Appointment / Schedule / Slot の例（予約）
+
+予約は 3 リソースの組で表します。JP Core はいずれもプロファイルしていないため、基底の FHIR R4 定義に
+対する手書きバリデータのみが働きます（`Composition` / `Group` / `Task` と同じ扱い）。
+
+| リソース | 意味 | 主な参照 |
+|---|---|---|
+| `Schedule` | 担当医・診察室ごとの「枠表」。いつの期間の枠を提供するか | `actor`（1..*、Practitioner / Location など） |
+| `Slot` | 枠表の中の個々の時間枠。空きかどうかを `status` が持つ | `schedule`（1..1） |
+| `Appointment` | 枠を押さえた予約そのもの | `slot`（0..*）、`participant.actor`（1..*） |
+
+`Appointment` には患者を指す単一の要素がありません（患者は `participant` の 1 人）。このサーバーは
+`participant.actor` のうち Patient を指すものを 1 件取り出して索引しており、それがある予約だけが
+患者コンパートメント（`Patient/$everything` / `Patient/$export` / 患者コンテキストのトークン）に入ります。
+無い場合（枠止め・院内会議など）は作成自体は成功しますが warning を返します。
+
+**作成（枠表 → 枠 → 予約）**
+
+```bash
+# 1. 診療枠（枠表）
+curl -i -X POST http://localhost:3000/Schedule \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{
+    "resourceType": "Schedule",
+    "identifier": [{ "system": "http://example.org/schedule", "value": "SCH1" }],
+    "active": true,
+    "serviceType": [{ "coding": [{ "system": "http://example.org/CodeSystem/service-type", "code": "outpatient" }], "text": "一般外来" }],
+    "specialty": [{ "coding": [{ "system": "http://snomed.info/sct", "code": "419192003" }], "text": "内科" }],
+    "actor": [{ "reference": "Practitioner/{practitionerId}" }],
+    "planningHorizon": { "start": "2026-09-01T00:00:00+09:00", "end": "2026-09-30T23:59:59+09:00" }
+  }'
+
+# 2. 予約可能な時間枠（start / end は instant。タイムゾーン必須）
+curl -i -X POST http://localhost:3000/Slot \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{
+    "resourceType": "Slot",
+    "schedule": { "reference": "Schedule/{scheduleId}" },
+    "status": "free",
+    "appointmentType": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/v2-0276", "code": "ROUTINE" }] },
+    "start": "2026-09-01T09:00:00+09:00",
+    "end": "2026-09-01T09:30:00+09:00"
+  }'
+
+# 3. 予約（枠を押さえたら Slot.status は busy に更新する）
+curl -i -X POST http://localhost:3000/Appointment \
+  -H 'Content-Type: application/fhir+json' \
+  -d '{
+    "resourceType": "Appointment",
+    "identifier": [{ "system": "http://example.org/appointment", "value": "APT1" }],
+    "status": "booked",
+    "appointmentType": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/v2-0276", "code": "ROUTINE" }] },
+    "description": "内科 再診",
+    "start": "2026-09-01T09:00:00+09:00",
+    "end": "2026-09-01T09:30:00+09:00",
+    "minutesDuration": 30,
+    "slot": [{ "reference": "Slot/{slotId}" }],
+    "participant": [
+      { "actor": { "reference": "Patient/{patientId}" }, "required": "required", "status": "accepted" },
+      { "actor": { "reference": "Practitioner/{practitionerId}" }, "required": "required", "status": "accepted" }
+    ]
+  }'
+```
+
+**検索**
+
+```bash
+# 空き枠を探す（予約画面の中心的なクエリ）。start を 2 回並べると AND で期間になる
+curl -s "http://localhost:3000/Slot?schedule=Schedule/{scheduleId}&status=free&start=ge2026-09-01&start=lt2026-09-02&_sort=start"
+
+# その患者のその日の予約
+curl -s "http://localhost:3000/Appointment?patient=Patient/{patientId}&date=ge2026-09-01&date=lt2026-09-02"
+
+# 担当医の予約一覧 / 診察室の予約一覧（どちらも participant.actor を参照先の型で切り分ける）
+curl -s "http://localhost:3000/Appointment?practitioner=Practitioner/{practitionerId}&status=booked"
+curl -s "http://localhost:3000/Appointment?location=Location/{locationId}&date=ge2026-09-01"
+
+# 患者の承諾待ちの予約（status ではなく participant.status で持つ）
+curl -s "http://localhost:3000/Appointment?part-status=needs-action"
+
+# 枠と、その枠を埋めている予約を 1 リクエストで
+curl -s "http://localhost:3000/Slot?schedule=Schedule/{scheduleId}&_revinclude=Appointment:slot"
+
+# 予約と参加者（患者・担当医・診察室）を 1 リクエストで
+curl -s "http://localhost:3000/Appointment?date=ge2026-09-01&_include=Appointment:actor"
+
+# 空き枠が残っている枠表だけを引く
+curl -s "http://localhost:3000/Schedule?active=true&_has:Slot:schedule:status=free"
+```
+
+**主な検索パラメータ**
+
+| リソース | パラメータ |
+|---|---|
+| `Schedule` | `identifier` / `active` / `actor` / `date`（`planningHorizon`。期間の包含）/ `service-category` / `service-type` / `specialty` |
+| `Slot` | `identifier` / `status` / `schedule` / `start` / `appointment-type` / `service-category` / `service-type` / `specialty` |
+| `Appointment` | `identifier` / `status` / `appointment-type` / `service-category` / `service-type` / `specialty` / `reason-code` / `part-status` / `patient` / `actor`（別名 `practitioner`）/ `location` / `slot` / `based-on` / `reason-reference` / `date`（`Appointment.start`） |
+
+R4 が `Slot.end` / `Appointment.end` に検索パラメータを定めていないため、期間の指定は
+`start`（`Slot`）・`date`（`Appointment`）を 2 回並べた AND で表します。
+
+**必須項目（FHIR R4）**
+
+- `Schedule`: `actor`（1..*）。`planningHorizon` は `end` が `start` 以降であること。
+- `Slot`: `status`（値セット `busy|free|busy-unavailable|busy-tentative|entered-in-error`）、`schedule`、
+  `start`、`end`。`start` / `end` は `instant` なのでタイムゾーン付きの完全な ISO8601 のみ受け付け、
+  `end` は `start` より後であること。
+- `Appointment`: `status`（値セット `proposed|pending|booked|arrived|fulfilled|cancelled|noshow|
+  entered-in-error|checked-in|waitlist`）、`participant`（1..*、各要素の `status` は
+  `accepted|declined|tentative|needs-action`）。加えて invariant `app-1`（`participant` は `type` か
+  `actor` のいずれかが必要）、`app-2`（`start` と `end` は両方あるか両方無いか）、`app-3`（`start` /
+  `end` を省略できるのは `proposed` / `cancelled` / `waitlist` のみ）、`app-4`（`cancelationReason` は
+  `cancelled` / `noshow` のときだけ）を検証します。
 
 ---
 

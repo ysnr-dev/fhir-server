@@ -109,6 +109,34 @@ module Fhir
         token_extraction: ExtractionDefinitions::Task::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/Task"
       },
+      # 予約の 3 リソース。Schedule が「担当医・診察室ごとの枠表」、Slot がその中の
+      # 個々の時間枠、Appointment が枠を押さえた予約そのもの。Task / Group /
+      # Composition と同じく JP Core にプロファイルが無いので基底 HL7 定義に載り、
+      # 検証は手書きのバリデータだけが行う。
+      "Appointment" => {
+        model: Appointment,
+        validator: AppointmentValidator,
+        search_params: SearchDefinitions::Appointment::PARAMS,
+        extraction: ExtractionDefinitions::Appointment::FIELDS,
+        token_extraction: ExtractionDefinitions::Appointment::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Appointment"
+      },
+      "Schedule" => {
+        model: Schedule,
+        validator: ScheduleValidator,
+        search_params: SearchDefinitions::Schedule::PARAMS,
+        extraction: ExtractionDefinitions::Schedule::FIELDS,
+        token_extraction: ExtractionDefinitions::Schedule::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Schedule"
+      },
+      "Slot" => {
+        model: Slot,
+        validator: SlotValidator,
+        search_params: SearchDefinitions::Slot::PARAMS,
+        extraction: ExtractionDefinitions::Slot::FIELDS,
+        token_extraction: ExtractionDefinitions::Slot::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Slot"
+      },
       "Practitioner" => {
         model: Practitioner,
         validator: PractitionerValidator,

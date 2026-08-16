@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_12_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_16_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,6 +57,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_12_000001) do
     t.index ["last_updated"], name: "index_allergy_intolerances_on_last_updated"
     t.index ["patient_reference"], name: "index_allergy_intolerances_on_patient_reference"
     t.index ["recorded_time"], name: "index_allergy_intolerances_on_recorded_time"
+  end
+
+  create_table "appointments", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "appointment_type"
+    t.string "patient_reference"
+    t.datetime "start_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_type"], name: "index_appointments_on_appointment_type"
+    t.index ["content"], name: "index_appointments_on_content", using: :gin
+    t.index ["deleted"], name: "index_appointments_on_deleted"
+    t.index ["last_updated"], name: "index_appointments_on_last_updated"
+    t.index ["patient_reference"], name: "index_appointments_on_patient_reference"
+    t.index ["start_time"], name: "index_appointments_on_start_time"
+    t.index ["status"], name: "index_appointments_on_status"
   end
 
   create_table "audit_events", id: :string, force: :cascade do |t|
@@ -824,6 +844,24 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_12_000001) do
     t.index ["resource_type", "resource_id", "version_id"], name: "index_resource_versions_on_type_id_version", unique: true
   end
 
+  create_table "schedules", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.boolean "active"
+    t.datetime "planning_horizon_start"
+    t.datetime "planning_horizon_end"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_schedules_on_active"
+    t.index ["content"], name: "index_schedules_on_content", using: :gin
+    t.index ["deleted"], name: "index_schedules_on_deleted"
+    t.index ["last_updated"], name: "index_schedules_on_last_updated"
+    t.index ["planning_horizon_end"], name: "index_schedules_on_planning_horizon_end"
+    t.index ["planning_horizon_start"], name: "index_schedules_on_planning_horizon_start"
+  end
+
   create_table "service_requests", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
     t.jsonb "content", null: false
@@ -850,6 +888,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_12_000001) do
     t.index ["requester_reference"], name: "index_service_requests_on_requester_reference"
     t.index ["status"], name: "index_service_requests_on_status"
     t.index ["subject_reference"], name: "index_service_requests_on_subject_reference"
+  end
+
+  create_table "slots", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "appointment_type"
+    t.string "schedule_reference"
+    t.datetime "start_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_type"], name: "index_slots_on_appointment_type"
+    t.index ["content"], name: "index_slots_on_content", using: :gin
+    t.index ["deleted"], name: "index_slots_on_deleted"
+    t.index ["last_updated"], name: "index_slots_on_last_updated"
+    t.index ["schedule_reference"], name: "index_slots_on_schedule_reference"
+    t.index ["start_time"], name: "index_slots_on_start_time"
+    t.index ["status"], name: "index_slots_on_status"
   end
 
   create_table "specimens", id: :string, force: :cascade do |t|
