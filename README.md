@@ -336,11 +336,11 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 正確な一覧と各リソースの検索パラメータは `GET /metadata`（CapabilityStatement）で確認できます。
 
-**標準外の検索パラメータ**: `Composition` と `QuestionnaireResponse` の `problem` は FHIR R4 に無い
-ローカルの検索パラメータです。POS/POMR のカルテを 1 つのプロブレム（病名）で縦に読むための絞り込みで、
-base に対象疾患を表す要素が無いため、ルート直下の拡張
+**標準外の検索パラメータ**: `Composition` / `QuestionnaireResponse` / `Observation` の `problem` は
+FHIR R4 に無いローカルの検索パラメータです。POS/POMR のカルテを 1 つのプロブレム（病名）で縦に読む
+ための絞り込みで、base に対象疾患を表す要素が無いため、ルート直下の拡張
 （`http://fhir-client.local/StructureDefinition/clinical-note-problem` /
-`…/questionnaire-response-problem`）の `valueReference` を引きます。`extension[]` は他の拡張と配列を
+`…/questionnaire-response-problem` / `…/observation-problem`）の `valueReference` を引きます。`extension[]` は他の拡張と配列を
 共有するので、参照だけでなく拡張の `url` も一致条件に含めています。`_include`/`_revinclude` では
 辿れません（`Fhir::SearchReferences` には登録していないため）。
 

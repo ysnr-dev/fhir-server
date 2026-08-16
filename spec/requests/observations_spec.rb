@@ -171,6 +171,42 @@ RSpec.describe "Observations", type: :request do
       expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([derived_id])
     end
 
+    # バイタルなど、対象プロブレムを持つ測定値の絞り込み。Composition:problem と同じ
+    # ローカル拡張の読み方(url も一致条件に入れる)。
+    describe "problem" do
+      let(:problem_url) { "http://fhir-client.local/StructureDefinition/observation-problem" }
+      let(:other_url) { "http://fhir-client.local/StructureDefinition/some-other-reference" }
+
+      def create_with_extension(subject_id, extension)
+        post "/Observation",
+             params: valid_observation_payload(subject_id: subject_id).merge("extension" => extension),
+             as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      it "finds the measurements recorded against one problem" do
+        subject_id = create_patient
+        target_id = create_with_extension(
+          subject_id,
+          [{ "url" => problem_url, "valueReference" => { "reference" => "Condition/c1" } }]
+        )
+        create_with_extension(
+          subject_id,
+          [{ "url" => problem_url, "valueReference" => { "reference" => "Condition/c2" } }]
+        )
+        # 同じ参照を持つ別の拡張は拾わない。
+        create_with_extension(
+          subject_id,
+          [{ "url" => other_url, "valueReference" => { "reference" => "Condition/c1" } }]
+        )
+
+        get "/Observation", params: { problem: "Condition/c1" }
+
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+    end
+
     it "finds by date (effective time)" do
       subject_id = create_patient
       post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json
