@@ -32,6 +32,32 @@ namespace :fhir do
     puts "purged #{expired_count} export(s) finished more than #{retention_days} days ago"
   end
 
+  desc "過ぎた予約枠(Slot)を物理削除する(日次cron想定)"
+  task purge_past_slots: :environment do
+    # 予約枠は 15 分刻みなどで機械的に大量生成されるため、放っておくと過去ぶんが
+    # 積み上がる。過ぎた枠は使い道が無いので、保持期間を過ぎたら物理削除して減らす。
+    # 保持期間は SLOT_RETENTION_DAYS(デフォルト30日)。
+    retention_days = Integer(ENV.fetch("SLOT_RETENTION_DAYS", 30))
+    cutoff = retention_days.days.ago
+
+    # 予約が押さえている枠(busy / busy-tentative)は消さない。予約の取消・日時変更は
+    # 枠の現物を読んでから status を戻すので、消すとそれらの操作が 410 で失敗する。
+    # 論理削除済み(deleted)の枠はもう読めないので、状態によらず物理削除の対象。
+    past = Slot.where(start_time: ...cutoff)
+    scope = past.where(status: %w[free busy-unavailable entered-in-error]).or(past.where(deleted: true))
+
+    # dependent: :destroy に任せて resource_versions / resource_tokens /
+    # resource_identifiers も一緒に消す(履歴ごと消すのが目的なので delete_all は使わない)。
+    # 一度に抱え込まないようバッチで回す。
+    purged = 0
+    scope.find_in_batches(batch_size: 500) do |batch|
+      batch.each(&:destroy)
+      purged += batch.size
+    end
+
+    puts "purged #{purged} slot(s) starting more than #{retention_days} days ago (kept booked ones)"
+  end
+
   desc "resource_tokens を content から再構築する(system|code token 検索の導入時に一度実行)"
   task reindex_tokens: :environment do
     # resource_tokens は書き込み時にしか埋まらないため、テーブル導入前から存在する

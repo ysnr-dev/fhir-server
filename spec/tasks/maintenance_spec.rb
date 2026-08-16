@@ -98,3 +98,73 @@ RSpec.describe "fhir:purge_bulk_exports", type: :task do
     expect(BulkExport.exists?(recent_completed.id)).to be(true)
   end
 end
+
+RSpec.describe "fhir:purge_past_slots", type: :task do
+  before(:all) do
+    Rails.application.load_tasks unless Rake::Task.task_defined?("fhir:purge_past_slots")
+  end
+
+  let(:task) { Rake::Task["fhir:purge_past_slots"] }
+
+  after { task.reenable }
+
+  it "過ぎた空き枠だけを消し、予約済みの枠と保持期間内の枠は残す" do
+    old_free = create_slot(start_time: 40.days.ago, status: "free")
+    old_unavailable = create_slot(start_time: 40.days.ago, status: "busy-unavailable")
+    # 予約が押さえている枠は、取消・日時変更で現物を読むので消さない。
+    old_booked = create_slot(start_time: 40.days.ago, status: "busy")
+    recent_free = create_slot(start_time: 1.day.ago, status: "free")
+    future_free = create_slot(start_time: 3.days.from_now, status: "free")
+    # 論理削除済みは誰からも読めないので、状態によらず物理削除する。
+    deleted = create_slot(start_time: 40.days.ago, status: "busy")
+    deleted.update!(deleted: true)
+
+    expect { task.invoke }.to output(/purged 3 slot\(s\)/).to_stdout
+
+    expect(Slot.exists?(old_free.id)).to be(false)
+    expect(Slot.exists?(old_unavailable.id)).to be(false)
+    expect(Slot.exists?(deleted.id)).to be(false)
+    expect(Slot.exists?(old_booked.id)).to be(true)
+    expect(Slot.exists?(recent_free.id)).to be(true)
+    expect(Slot.exists?(future_free.id)).to be(true)
+  end
+
+  it "消した枠の履歴(resource_versions)も残さない" do
+    slot = create_slot(start_time: 40.days.ago, status: "free")
+    slot.resource_versions.create!(resource_type: "Slot", version_id: 1, content: slot.content,
+                                   last_updated: slot.last_updated)
+
+    expect { task.invoke }.to output(/purged 1 slot/).to_stdout
+
+    expect(ResourceVersion.where(resource_type: "Slot", resource_id: slot.id)).to be_empty
+  end
+
+  it "保持期間は SLOT_RETENTION_DAYS で変えられる" do
+    slot = create_slot(start_time: 10.days.ago, status: "free")
+
+    previous = ENV["SLOT_RETENTION_DAYS"]
+    ENV["SLOT_RETENTION_DAYS"] = "5"
+    begin
+      task.invoke
+    ensure
+      ENV["SLOT_RETENTION_DAYS"] = previous
+    end
+
+    expect(Slot.exists?(slot.id)).to be(false)
+  end
+
+  def create_slot(start_time:, status:)
+    Slot.create!(
+      id: SecureRandom.uuid,
+      version_id: 1,
+      last_updated: Time.current,
+      status: status,
+      start_time: start_time,
+      content: {
+        "resourceType" => "Slot", "status" => status,
+        "schedule" => { "reference" => "Schedule/x" },
+        "start" => start_time.iso8601, "end" => (start_time + 15.minutes).iso8601
+      }
+    )
+  end
+end

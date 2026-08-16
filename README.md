@@ -1103,13 +1103,22 @@ docker compose -f docker-compose.prod.yml exec -T web bin/rails fhir:reindex_tok
 
 ### 定期メンテナンス
 
-期限切れトークン/JTIの掃除、および Bulk Data $export のスタックジョブ失敗化・期限切れジョブ削除を
-日次cronで実行する(Render+Neon構成では `.github/workflows/purge_expired.yml` がこれを代行する):
+期限切れトークン/JTIの掃除、Bulk Data $export のスタックジョブ失敗化・期限切れジョブ削除、
+および過ぎた予約枠(Slot)の削除を日次cronで実行する
+(Render+Neon構成では `.github/workflows/purge_expired.yml` がこれを代行する):
 
 ```
 0 4 * * * docker compose -f /path/to/docker-compose.prod.yml exec -T web bin/rails fhir:purge_expired
 0 4 * * * docker compose -f /path/to/docker-compose.prod.yml exec -T web bin/rails fhir:purge_bulk_exports
+0 4 * * * docker compose -f /path/to/docker-compose.prod.yml exec -T web bin/rails fhir:purge_past_slots
 ```
+
+`purge_past_slots` は予約枠の掃除。Slot は 15 分刻みなどで機械的に大量生成されるため、
+過ぎた枠を残すと件数が積み上がる。保持期間(`SLOT_RETENTION_DAYS`、デフォルト30日)より
+前に始まる枠のうち、**予約が押さえていないもの**(`free` / `busy-unavailable` /
+`entered-in-error`、および論理削除済み)を履歴ごと物理削除する。`busy` / `busy-tentative` の
+枠は残す — 予約の取消・日時変更は枠の現物を読んでから status を戻すため、消すと
+それらの操作が 410 で失敗するため。
 
 ### デプロイ後スモークテスト
 

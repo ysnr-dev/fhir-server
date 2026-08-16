@@ -35,3 +35,10 @@ jobs:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           FHIR_ALLOWED_HOSTS: cron.invalid
         run: bin/rails fhir:purge_bulk_exports
+      - name: Purge past slots
+        env:
+          RAILS_ENV: production
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          FHIR_ALLOWED_HOSTS: cron.invalid
+        run: bin/rails fhir:purge_past_slots
