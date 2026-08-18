@@ -120,4 +120,63 @@ RSpec.describe "Specimens", type: :request do
       expect(included.map { |entry| entry["resource"]["resourceType"] }).to eq(["Patient"])
     end
   end
+
+  # Specimen.request は採取の元になったオーダー。検体検査のワークリストが
+  # 「このオーダーの管がどこまで揃ったか」を引くのに使う。
+  describe "request (採取の元になったオーダー)" do
+    def create_service_request(subject_id)
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    def create_specimen(subject_id, order_id: nil)
+      overrides =
+        order_id ? { "request" => [{ "reference" => "ServiceRequest/#{order_id}" }] } : {}
+      post "/Specimen", params: valid_specimen_payload(subject_id: subject_id, **overrides), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    def entry_ids(mode)
+      JSON.parse(response.body)["entry"].to_a
+          .select { |entry| entry.dig("search", "mode") == mode }
+          .map { |entry| entry.dig("resource", "id") }
+    end
+
+    it "finds only the specimens of the given order" do
+      subject_id = create_patient
+      order_id = create_service_request(subject_id)
+      other_order_id = create_service_request(subject_id)
+      specimen_id = create_specimen(subject_id, order_id: order_id)
+      create_specimen(subject_id, order_id: other_order_id)
+      create_specimen(subject_id)
+
+      get "/Specimen", params: { request: "ServiceRequest/#{order_id}" }
+
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+      expect(entry_ids("match")).to eq([specimen_id])
+    end
+
+    it "includes the specimens with _revinclude=Specimen:request" do
+      subject_id = create_patient
+      order_id = create_service_request(subject_id)
+      specimen_id = create_specimen(subject_id, order_id: order_id)
+      create_specimen(subject_id)
+
+      get "/ServiceRequest", params: { _id: order_id, _revinclude: "Specimen:request" }
+
+      expect(entry_ids("match")).to eq([order_id])
+      expect(entry_ids("include")).to eq([specimen_id])
+    end
+
+    it "includes the order with _include=Specimen:request" do
+      subject_id = create_patient
+      order_id = create_service_request(subject_id)
+      specimen_id = create_specimen(subject_id, order_id: order_id)
+
+      get "/Specimen", params: { _id: specimen_id, _include: "Specimen:request" }
+
+      expect(entry_ids("match")).to eq([specimen_id])
+      expect(entry_ids("include")).to eq([order_id])
+    end
+  end
 end

@@ -74,7 +74,11 @@ module Fhir
       },
       "Specimen" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
-        "patient" => { alias: "subject" }
+        "patient" => { alias: "subject" },
+        # 採取の元になったオーダー。オーダーの検索に _revinclude=Specimen:request を
+        # 添えると「そのオーダーの管(検体)がどこまで揃ったか」が 1 リクエストで引ける。
+        "request" => { multiple: true, jsonb_key: "request", ref_path: %w[reference],
+                        targets: %w[ServiceRequest] }
       },
       "ImagingStudy" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
