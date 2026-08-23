@@ -438,4 +438,76 @@ RSpec.describe "ServiceRequests", type: :request do
       expect(bundle["entry"].map { |entry| entry.dig("search", "mode") }).to eq(["match"])
     end
   end
+
+
+  # 部門ワークリストが実施予定日・依頼科・病棟でサーバー側の絞り込みを行うための
+  # 検索パラメータ。department / ward は fhir-client のローカル拡張
+  # (ルート直下 extension の valueReference)を引く。
+  describe "GET /ServiceRequest (search) occurrence / department / ward" do
+    let(:department_ext_url) { "http://fhir-client.local/StructureDefinition/order-department" }
+    let(:ward_ext_url) { "http://fhir-client.local/StructureDefinition/order-ward" }
+
+    def create_order(subject_id, **overrides)
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id, **overrides), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    it "finds by occurrence independently of authoredOn" do
+      subject_id = create_patient
+      target = create_order(subject_id, "occurrenceDateTime" => "2026-08-24T09:30:00+09:00")
+      create_order(subject_id, "occurrenceDateTime" => "2026-08-25T09:30:00+09:00")
+      create_order(subject_id) # 実施予定なし
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", occurrence: "2026-08-24" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first["resource"]["id"]).to eq(target)
+    end
+
+    it "finds by the order-department extension (typed and bare id)" do
+      subject_id = create_patient
+      target = create_order(subject_id, "extension" => [
+        { "url" => department_ext_url, "valueReference" => { "reference" => "Organization/dept-1" } },
+        { "url" => ward_ext_url, "valueReference" => { "reference" => "Location/ward-1" } }
+      ])
+      create_order(subject_id, "extension" => [
+        { "url" => department_ext_url, "valueReference" => { "reference" => "Organization/dept-2" } }
+      ])
+      create_order(subject_id)
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", department: "Organization/dept-1" }
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first["resource"]["id"]).to eq(target)
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", department: "dept-1" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+
+    it "does not match a different extension carrying the same reference" do
+      subject_id = create_patient
+      create_order(subject_id, "extension" => [
+        { "url" => "http://example.org/other-ext", "valueReference" => { "reference" => "Organization/dept-1" } }
+      ])
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", department: "Organization/dept-1" }
+
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+
+    it "finds by the order-ward extension" do
+      subject_id = create_patient
+      target = create_order(subject_id, "extension" => [
+        { "url" => ward_ext_url, "valueReference" => { "reference" => "Location/ward-1" } }
+      ])
+      create_order(subject_id)
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", ward: "Location/ward-1" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first["resource"]["id"]).to eq(target)
+    end
+  end
 end

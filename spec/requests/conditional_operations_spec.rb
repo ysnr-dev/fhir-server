@@ -136,14 +136,18 @@ RSpec.describe "Conditional operations", type: :request do
       expect(response).to have_http_status(:no_content)
     end
 
-    it "returns 412 when multiple resources match, deleting nothing" do
+    it "deletes every matching resource with 204 (conditionalDelete: multiple)" do
       post "/Patient", params: patient_payload("cd-3"), as: :json
       post "/Patient", params: patient_payload("cd-3"), as: :json
+      post "/Patient", params: patient_payload("cd-other"), as: :json
 
       delete conditional_put_url("cd-3")
 
-      expect(response).to have_http_status(:precondition_failed)
-      expect(Patient.where(deleted: false).count).to eq(2)
+      expect(response).to have_http_status(:no_content)
+      expect(Patient.where(deleted: true).count).to eq(2)
+      expect(Patient.where(deleted: false).count).to eq(1)
+      # どちらの削除も履歴(delete 版)を残す。
+      expect(ResourceVersion.where(resource_type: "Patient", deleted: true).count).to eq(2)
     end
 
     it "returns 400 for unrecognized or empty criteria" do

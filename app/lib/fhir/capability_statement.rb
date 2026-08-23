@@ -79,7 +79,7 @@ module Fhir
         # Both If-None-Match and If-Modified-Since are honored on read.
         "conditionalRead" => "full-support",
         "conditionalUpdate" => true,
-        "conditionalDelete" => "single",
+        "conditionalDelete" => "multiple",
         # Chained search (one hop) and _has (one level) are also supported on
         # reference params, but CapabilityStatement has no structural way to
         # advertise chaining -- documented here only.

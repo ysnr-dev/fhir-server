@@ -8,6 +8,8 @@ module Fhir
         encounter_reference: { path: "encounter.reference" },
         requester_reference: { path: "requester.reference" },
         authored_on: { path: "authoredOn", transform: :datetime },
+        # 実施予定日時(撮影日・採取日)。オーダー発行日(authoredOn)と別に検索する。
+        occurrence_date_time: { path: "occurrenceDateTime", transform: :datetime },
         code: { path: "code", transform: :coding_code },
         code_text: { path: "code", transform: :concept_text }
       }.freeze

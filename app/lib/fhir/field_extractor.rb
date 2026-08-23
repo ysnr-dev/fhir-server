@@ -93,6 +93,15 @@ module Fhir
       [concept["text"], coding && coding["display"]].compact.join(" ").presence
     end
 
+    # --- identifiers --------------------------------------------------------
+
+    # First identifier's value of a 0..* Identifier array. Matching goes through
+    # resource_identifiers (all identifiers); this flat column exists for _sort
+    # (e.g. Organization departments ordered by department code).
+    def first_identifier_value(identifiers)
+      Array.wrap(identifiers).filter_map { |i| i.is_a?(Hash) ? i["value"].presence : nil }.first
+    end
+
     # --- references ---------------------------------------------------------
 
     # First Patient reference among a 0..* backbone array whose elements each carry

@@ -17,6 +17,12 @@ module Fhir
 
     STRING_MODIFIERS = %w[exact contains].freeze
 
+    # :not is supported on token params only (reference/date negation is not
+    # implemented). Comma values negate as a set: `status:not=a,b` matches
+    # resources whose value is neither a nor b -- including resources that
+    # have no value at all, per the spec's definition of :not.
+    TOKEN_MODIFIERS = %w[not].freeze
+
     # :missing accepts exactly one value, true or false; anything else makes the
     # clause unsupported (rejected in conditional criteria, skipped in search).
     MISSING_VALUES = [%w[true], %w[false]].freeze
@@ -86,6 +92,17 @@ module Fhir
       search_params.clauses.reject { |clause| resolve_clause(clause) }.map(&:name)
     end
 
+    # _sort keys this searcher would silently drop (no sortable column). Plain
+    # search ignores them; strict handling (Prefer: handling=strict) rejects.
+    def unsupported_sort_names
+      search_params.sort.to_s.split(",").filter_map do |token|
+        name = token.strip.delete_prefix("-")
+        next if name.blank?
+
+        sort_column(name) ? nil : name
+      end
+    end
+
     # Public so _has resolution can look up the reference param (with aliases)
     # on the SOURCE type's searcher.
     def definition_for(name)
@@ -119,6 +136,7 @@ module Fhir
 
     def supported_modifier?(definition, modifier)
       return true if modifier.nil?
+      return true if definition[:type] == :token && TOKEN_MODIFIERS.include?(modifier)
 
       %i[string token_or_text].include?(definition[:type]) && STRING_MODIFIERS.include?(modifier)
     end
@@ -402,17 +420,26 @@ module Fhir
     # primary-key column directly. The flat token columns (status, class_code, ...) are
     # still populated for _sort but no longer used for matching.
     def token_fragment(scope, definition, clause)
-      return column_token_fragment(scope, definition[:column], clause) if definition[:backing] == :column
+      negate = clause.modifier == "not"
+      if definition[:backing] == :column
+        return column_token_fragment(scope, definition[:column], clause, negate: negate)
+      end
 
       token_ids = token_id_scope(canonical_name(clause.name), clause.values)
-      token_ids ? scope.where(id: token_ids) : scope
+      return scope unless token_ids
+      # :not excludes any resource with a matching token row; resources without
+      # a row for this param (no value at all) match, per spec.
+      negate ? scope.where.not(id: token_ids) : scope.where(id: token_ids)
     end
 
-    def column_token_fragment(scope, column, clause)
+    def column_token_fragment(scope, column, clause, negate: false)
       codes = clause.values.map { |v| token_code(v) }
       return scope if codes.empty?
+      return scope.where(column => codes) unless negate
 
-      scope.where(column => codes)
+      # NOT IN alone would also drop NULL rows (NULL <> x is NULL); :not must
+      # keep resources that have no value.
+      scope.where("#{column} IS NULL OR #{column} NOT IN (?)", codes)
     end
 
     def token_code(value)

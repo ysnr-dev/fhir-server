@@ -163,4 +163,48 @@ RSpec.describe "Organizations", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(0)
     end
   end
+
+
+  # 施設(prov)と診療科(dept)は同じ Organization で、これまでは partof:missing で
+  # 判別していた。type 検索と、診療科コード順の一覧のための _sort=identifier。
+  describe "GET /Organization (search) type and _sort=identifier" do
+    let(:type_system) { "http://terminology.hl7.org/CodeSystem/organization-type" }
+
+    def create_org(code, type_code: nil)
+      overrides = { "identifier" => [{ "system" => "http://example.org/department-code", "value" => code }] }
+      if type_code
+        overrides["type"] = [{ "coding" => [{ "system" => type_system, "code" => type_code }] }]
+      end
+      post "/Organization", params: valid_organization_payload(overrides), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    it "finds by type token (bare and system|code) and leaves other types out" do
+      dept = create_org("01", type_code: "dept")
+      create_org("02", type_code: "prov")
+      create_org("03") # type なし
+
+      get "/Organization", params: { type: "dept" }
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first["resource"]["id"]).to eq(dept)
+
+      get "/Organization", params: { type: "#{type_system}|dept" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Organization", params: { "type:missing" => "true" }
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["identifier"].first["value"] }).to eq(["03"])
+    end
+
+    it "sorts by the first identifier value with _sort=identifier" do
+      create_org("03", type_code: "dept")
+      create_org("01", type_code: "dept")
+      create_org("02", type_code: "dept")
+
+      get "/Organization", params: { type: "dept", _sort: "identifier" }
+
+      codes = JSON.parse(response.body)["entry"].map { |e| e["resource"]["identifier"].first["value"] }
+      expect(codes).to eq(%w[01 02 03])
+    end
+  end
 end

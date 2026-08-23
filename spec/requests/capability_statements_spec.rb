@@ -82,7 +82,7 @@ RSpec.describe "CapabilityStatement", type: :request do
       resources = registry_resources
       expect(resources).to all(
         include("conditionalCreate" => true, "conditionalRead" => "full-support",
-                "conditionalUpdate" => true, "conditionalDelete" => "single")
+                "conditionalUpdate" => true, "conditionalDelete" => "multiple")
       )
     end
   end

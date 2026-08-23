@@ -72,6 +72,15 @@ purge cron: GitHub Actions(このリポジトリの purge_expired.yml)
 > fhir-client/render.yaml の rewrite 先 URL を実ホスト名に合わせて修正すること。
 
 初回デプロイで `bin/rails db:prepare`(entrypoint)がスキーマを流すため、マイグレーション操作は不要。
+2 回目以降のデプロイでも同じ `db:prepare` が未適用のマイグレーションを流す。
+
+> **無料枠には Shell も cron も無い**ので、デプロイ後に rake タスクを手で流すことはできない。
+> 検索インデックスの再構築(`fhir:reindex_tokens` / `fhir:reindex_identifiers` 相当)が要る
+> 変更は、rake タスクに頼らず**マイグレーションに畳み込む**こと
+> (例: `db/migrate/20260823000003_backfill_organization_type_tokens.rb`)。
+> rake タスク側は開発環境と、任意のタイミングで流したいとき用に残してある。
+> バックフィルは `db:prepare` の中で Puma 起動前に走るため、長時間かかるとデプロイが
+> ヘルスチェック待ちでタイムアウトする。バッチサイズを小さく保ち、重い一括処理は避ける。
 
 ## 3. SMART クライアント登録(1 回だけ)
 

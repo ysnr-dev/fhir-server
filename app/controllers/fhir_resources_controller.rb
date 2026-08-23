@@ -30,7 +30,10 @@ class FhirResourcesController < ApplicationController
   }.freeze
 
   def index
-    result = Fhir::Operation.search(resource_type, request.query_string, base_url: base_url, context: access_context)
+    result = Fhir::Operation.search(
+      resource_type, request.query_string,
+      base_url: base_url, context: access_context, handling: preferred_handling
+    )
     render_operation_result(result)
   end
 
@@ -227,6 +230,16 @@ class FhirResourcesController < ApplicationController
   # compared, so this and Bundle.entry.request.ifMatch behave identically.
   def if_match_version
     request.headers["If-Match"].presence
+  end
+
+  # `Prefer: handling=strict` asks that parameters the server would silently
+  # drop fail the search instead (400 + OperationOutcome). The header is a
+  # comma-separated list of preferences (e.g. "return=minimal, handling=strict");
+  # anything other than handling=strict -- including the spec's explicit
+  # handling=lenient -- selects the default lenient behavior.
+  def preferred_handling
+    preferences = request.headers["Prefer"].to_s.split(",").map(&:strip)
+    preferences.include?("handling=strict") ? "strict" : nil
   end
 
   # Absent or wildcard Accept defaults to the FHIR JSON representation.

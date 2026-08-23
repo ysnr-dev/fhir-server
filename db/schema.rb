@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_16_000003) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_23_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -606,9 +606,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_16_000003) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "partof_reference"
+    t.string "identifier_value"
     t.index ["active"], name: "index_organizations_on_active"
     t.index ["content"], name: "index_organizations_on_content", using: :gin
     t.index ["deleted"], name: "index_organizations_on_deleted"
+    t.index ["identifier_value"], name: "index_organizations_on_identifier_value"
     t.index ["last_updated"], name: "index_organizations_on_last_updated"
     t.index ["name"], name: "index_organizations_on_name"
     t.index ["partof_reference"], name: "index_organizations_on_partof_reference"
@@ -877,6 +879,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_16_000003) do
     t.datetime "updated_at", null: false
     t.string "encounter_reference"
     t.string "requester_reference"
+    t.datetime "occurrence_date_time"
     t.index ["authored_on"], name: "index_service_requests_on_authored_on"
     t.index ["code"], name: "index_service_requests_on_code"
     t.index ["code_text"], name: "index_service_requests_on_code_text"
@@ -885,6 +888,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_16_000003) do
     t.index ["encounter_reference"], name: "index_service_requests_on_encounter_reference"
     t.index ["intent"], name: "index_service_requests_on_intent"
     t.index ["last_updated"], name: "index_service_requests_on_last_updated"
+    t.index ["occurrence_date_time"], name: "index_service_requests_on_occurrence_date_time"
     t.index ["requester_reference"], name: "index_service_requests_on_requester_reference"
     t.index ["status"], name: "index_service_requests_on_status"
     t.index ["subject_reference"], name: "index_service_requests_on_subject_reference"

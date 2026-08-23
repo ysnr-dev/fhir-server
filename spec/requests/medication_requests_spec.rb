@@ -332,4 +332,62 @@ RSpec.describe "MedicationRequests", type: :request do
       end
     end
   end
+
+
+  # 処方の明細は MedicationRequest.basedOn で処方オーダー(ServiceRequest)にぶら下がる。
+  # based-on 検索でオーダー単位の明細取得と、条件付き削除(multiple)による
+  # カスケード削除が 1 往復になる。
+  describe "GET /MedicationRequest?based-on=" do
+    def create_order(subject_id)
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    def create_request(subject_id, order_id: nil)
+      overrides = order_id ? { "basedOn" => [{ "reference" => "ServiceRequest/#{order_id}" }] } : {}
+      post "/MedicationRequest", params: valid_medication_request_payload(subject_id: subject_id, **overrides), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    it "finds the requests based on an order" do
+      subject_id = create_patient
+      order_id = create_order(subject_id)
+      first = create_request(subject_id, order_id: order_id)
+      second = create_request(subject_id, order_id: order_id)
+      create_request(subject_id) # 別のオーダーに属さない明細
+
+      get "/MedicationRequest", params: { "based-on" => "ServiceRequest/#{order_id}" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(2)
+      expect(bundle["entry"].map { |e| e["resource"]["id"] }).to contain_exactly(first, second)
+    end
+
+    it "supports based-on:missing" do
+      subject_id = create_patient
+      order_id = create_order(subject_id)
+      create_request(subject_id, order_id: order_id)
+      standalone = create_request(subject_id)
+
+      get "/MedicationRequest", params: { subject: "Patient/#{subject_id}", "based-on:missing" => "true" }
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["entry"].map { |e| e["resource"]["id"] }).to eq([standalone])
+    end
+
+    it "cascade-deletes every matching detail via conditional delete" do
+      subject_id = create_patient
+      order_id = create_order(subject_id)
+      first = create_request(subject_id, order_id: order_id)
+      second = create_request(subject_id, order_id: order_id)
+      other = create_request(subject_id)
+
+      delete "/MedicationRequest?based-on=ServiceRequest/#{order_id}"
+
+      expect(response).to have_http_status(:no_content)
+      expect(MedicationRequest.find(first).deleted).to be(true)
+      expect(MedicationRequest.find(second).deleted).to be(true)
+      expect(MedicationRequest.find(other).deleted).to be(false)
+    end
+  end
 end

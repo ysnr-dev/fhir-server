@@ -45,8 +45,8 @@ module Fhir
       new(resource_type).validate(payload, profile: profile)
     end
 
-    def self.search(resource_type, query_string, base_url:, context: nil)
-      new(resource_type, context: context).search(query_string, base_url: base_url)
+    def self.search(resource_type, query_string, base_url:, context: nil, handling: nil)
+      new(resource_type, context: context).search(query_string, base_url: base_url, handling: handling)
     end
 
     # context: a Fhir::PatientContext confining reads to one patient
@@ -210,23 +210,21 @@ module Fhir
       Result.new(status: :no_content, resource_id: id)
     end
 
-    # DELETE /{type}?{criteria}: deletes the single resource matching the
-    # criteria. No match is a success (204) -- DELETE is idempotent, and with
-    # criteria "never existed" and "already deleted" are indistinguishable --
-    # while ambiguous criteria fail with 412 (this server only supports
-    # single-match conditional delete).
+    # DELETE /{type}?{criteria}: deletes EVERY resource matching the criteria
+    # (conditionalDelete: "multiple" -- e.g. an order's cascade delete via
+    # `DELETE /MedicationRequest?based-on=ServiceRequest/X` in one round trip).
+    # No match is a success (204) -- DELETE is idempotent, and with criteria
+    # "never existed" and "already deleted" are indistinguishable. The criteria
+    # themselves stay strict: an unknown parameter is a 400, never a broader
+    # delete than the client asked for.
     def conditional_delete(criteria)
       return unsupported_type_result unless entry
 
-      match = ConditionalMatch.call(resource_type, criteria)
-      case match.outcome
-      when :invalid, :multiple
-        conditional_failure_result(match)
-      when :none
-        Result.new(status: :no_content)
-      else
-        delete(match.record.id)
-      end
+      match = ConditionalMatch.all(resource_type, criteria)
+      return conditional_failure_result(match) if match.outcome == :invalid
+
+      match.records.each { |record| repository.delete(record) }
+      Result.new(status: :no_content)
     end
 
     # POST /{type}/$validate: runs the resource through the same validator as
@@ -281,11 +279,22 @@ module Fhir
       end
     end
 
-    def search(query_string, base_url:)
+    # handling: nil (lenient, the default -- unknown parameters are silently
+    # ignored per spec) or "strict" (Prefer: handling=strict -- any parameter,
+    # modifier, _include/_revinclude token, or _sort key this server would
+    # silently drop fails the search with 400 + OperationOutcome instead).
+    def search(query_string, base_url:, handling: nil)
       return unsupported_type_result unless entry
 
       search_params = SearchParams.parse(query_string.to_s)
-      result = Search.call(resource_type, search_params, context: context)
+      searcher = Search.new(resource_type, search_params, context: context)
+
+      if handling == "strict"
+        problems = strict_search_problems(searcher, search_params)
+        return strict_search_failure(problems) if problems.any?
+      end
+
+      result = searcher.call
       # _summary=count renders no entries, so resolving includes would be wasted work.
       included =
         if search_params.summary == "count"
@@ -414,6 +423,32 @@ module Fhir
       return [registry_profile, false] if Fhir::Profile::DefinitionStore.known_profile?(registry_profile)
 
       [nil, false]
+    end
+
+    # Everything a lenient search would silently drop, phrased for the client.
+    # Chained params and _has report the raw clause name, so a typo'd tail
+    # ("subject.nmae") is visible as-is.
+    def strict_search_problems(searcher, search_params)
+      problems = searcher.unsupported_clause_names.map { |name| "search parameter '#{name}'" }
+
+      include_tokens = search_params.includes + search_params.iterate_includes
+      revinclude_tokens = search_params.revincludes + search_params.iterate_revincludes
+      problems += include_tokens.reject { |t| SearchReferences.lookup(t) }.map { |t| "_include token '#{t}'" }
+      problems += revinclude_tokens.reject { |t| SearchReferences.lookup(t) }.map { |t| "_revinclude token '#{t}'" }
+      problems += searcher.unsupported_sort_names.map { |name| "_sort key '#{name}'" }
+      problems
+    end
+
+    def strict_search_failure(problems)
+      issues = problems.map do |problem|
+        {
+          severity: "error",
+          code: "not-supported",
+          diagnostics: "Unsupported #{problem} (rejected because handling=strict was requested)",
+          expression: []
+        }
+      end
+      Result.new(status: :bad_request, outcome: Fhir::OperationOutcome.build(issues))
     end
 
     # Maps a failed ConditionalMatch to its HTTP result: unusable criteria are

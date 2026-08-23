@@ -222,4 +222,147 @@ RSpec.describe "Search features (chaining, _has, _summary/_elements, _total)", t
       expect(JSON.parse(response.body)["total"]).to eq(0)
     end
   end
+
+
+  describe ":not modifier on token search" do
+    it "excludes the value on a column-backed token (comma = none of them)" do
+      patient_id = create_patient
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: patient_id), as: :json
+      active_id = JSON.parse(response.body)["id"]
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: patient_id, status: "completed"), as: :json
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: patient_id, status: "revoked"), as: :json
+
+      get "/ServiceRequest?subject=Patient/#{patient_id}&status:not=completed,revoked"
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first["resource"]["id"]).to eq(active_id)
+    end
+
+    it "excludes token-row matches, keeping resources without any value" do
+      order_type_system = "http://fhir-client.local/CodeSystem/order-type"
+      patient_id = create_patient
+      post "/ServiceRequest", params: valid_service_request_payload(
+        subject_id: patient_id,
+        category: [{ "coding" => [{ "system" => order_type_system, "code" => "lab" }] }]
+      ), as: :json
+      post "/ServiceRequest", params: valid_service_request_payload(
+        subject_id: patient_id,
+        category: [{ "coding" => [{ "system" => order_type_system, "code" => "rad" }] }]
+      ), as: :json
+      rad_id = JSON.parse(response.body)["id"]
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: patient_id), as: :json
+      uncategorized_id = JSON.parse(response.body)["id"]
+
+      get "/ServiceRequest?subject=Patient/#{patient_id}&category:not=#{Rack::Utils.escape("#{order_type_system}|lab")}"
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["entry"].map { |e| e["resource"]["id"] }).to contain_exactly(rad_id, uncategorized_id)
+    end
+
+    it "excludes an id with _id:not" do
+      first = create_patient
+      second = create_patient
+
+      get "/Patient?_id:not=#{first}"
+
+      ids = JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }
+      expect(ids).to include(second)
+      expect(ids).not_to include(first)
+    end
+
+    it "is rejected on non-token params (lenient skip)" do
+      patient_id = create_patient
+
+      get "/Patient?birthdate:not=1990-01-01"
+
+      # date に :not は未対応。lenient では無視され全件が返る(strict では 400)。
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to include(patient_id)
+    end
+  end
+
+  describe "Prefer: handling=strict" do
+    it "rejects an unknown parameter with 400 + OperationOutcome naming it" do
+      get "/Patient?bogus=1", headers: { "Prefer" => "handling=strict" }
+
+      expect(response).to have_http_status(:bad_request)
+      body = JSON.parse(response.body)
+      expect(body["resourceType"]).to eq("OperationOutcome")
+      expect(body["issue"].first["code"]).to eq("not-supported")
+      expect(body["issue"].first["diagnostics"]).to include("bogus")
+    end
+
+    it "rejects an unsupported modifier and reports every problem at once" do
+      get "/Patient?birthdate:contains=1990&bogus=1", headers: { "Prefer" => "handling=strict" }
+
+      expect(response).to have_http_status(:bad_request)
+      diagnostics = JSON.parse(response.body)["issue"].map { |i| i["diagnostics"] }.join("\n")
+      expect(diagnostics).to include("birthdate")
+      expect(diagnostics).to include("bogus")
+    end
+
+    it "rejects unknown _include / _revinclude tokens and _sort keys" do
+      get "/Patient?_include=Patient:bogus", headers: { "Prefer" => "handling=strict" }
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)["issue"].first["diagnostics"]).to include("Patient:bogus")
+
+      get "/Patient?_revinclude=Bogus:subject", headers: { "Prefer" => "handling=strict" }
+      expect(response).to have_http_status(:bad_request)
+
+      get "/Patient?_sort=bogus", headers: { "Prefer" => "handling=strict" }
+      expect(response).to have_http_status(:bad_request)
+      expect(JSON.parse(response.body)["issue"].first["diagnostics"]).to include("bogus")
+    end
+
+    it "accepts a fully supported search, alongside other preferences" do
+      patient_id = create_patient
+      create_observation(patient_id)
+
+      get "/Observation?subject=Patient/#{patient_id}&_include=Observation:subject&_sort=-_lastUpdated",
+          headers: { "Prefer" => "return=minimal, handling=strict" }
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+
+    it "stays lenient without the header (unknown params are ignored)" do
+      create_patient
+
+      get "/Patient?bogus=1"
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["total"]).to be >= 1
+    end
+  end
+
+  # ワークリストの進捗フィルタ。オーダー(ServiceRequest)側から、進捗を持つ別リソース
+  # (Task)の status で絞る。綴りを回帰 spec で固定して防御する。
+  describe "_has:Task:focus:status" do
+    it "finds orders whose Task has the given status" do
+      patient_id = create_patient
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: patient_id), as: :json
+      in_progress_order = JSON.parse(response.body)["id"]
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: patient_id), as: :json
+      completed_order = JSON.parse(response.body)["id"]
+      post "/Task", params: valid_task_payload(for_id: patient_id, service_request_id: in_progress_order), as: :json
+      post "/Task", params: valid_task_payload(for_id: patient_id, service_request_id: completed_order, status: "completed"), as: :json
+
+      get "/ServiceRequest?subject=Patient/#{patient_id}&_has:Task:focus:status=in-progress"
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first["resource"]["id"]).to eq(in_progress_order)
+    end
+
+    it "combines with business-status" do
+      patient_id = create_patient
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: patient_id), as: :json
+      order_id = JSON.parse(response.body)["id"]
+      post "/Task", params: valid_task_payload(for_id: patient_id, service_request_id: order_id), as: :json
+
+      get "/ServiceRequest?subject=Patient/#{patient_id}&_has:Task:focus:business-status=collected"
+
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+  end
 end

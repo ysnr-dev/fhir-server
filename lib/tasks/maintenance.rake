@@ -58,12 +58,14 @@ namespace :fhir do
     puts "purged #{purged} slot(s) starting more than #{retention_days} days ago (kept booked ones)"
   end
 
-  desc "resource_tokens を content から再構築する(system|code token 検索の導入時に一度実行)"
+  desc "resource_tokens を content から再構築する(token 検索パラメータの追加時に一度実行)"
   task reindex_tokens: :environment do
-    # resource_tokens は書き込み時にしか埋まらないため、テーブル導入前から存在する
-    # リソースには token 行が無い。全リソースを走査して sync_tokens! を呼び直す。
+    # resource_tokens は書き込み時にしか埋まらないため、token 抽出の宣言を増やしても
+    # 既存リソースには行が無い。対象リソースを走査して sync_tokens! を呼び直す。
+    # 追加した型だけで済むときは RESOURCE_TYPE=Organization のように絞る。
+    types = ENV["RESOURCE_TYPE"].presence&.split(",") || Fhir::ResourceRegistry.types
     total = 0
-    Fhir::ResourceRegistry.types.each do |type|
+    types.each do |type|
       model = Fhir::ResourceRegistry.entry_for(type).fetch(:model)
       count = 0
       model.find_each do |record|
@@ -73,7 +75,7 @@ namespace :fhir do
       total += count
       puts "reindexed #{count} #{type} record(s)"
     end
-    puts "done: reindexed tokens for #{total} record(s) across #{Fhir::ResourceRegistry.types.size} types"
+    puts "done: reindexed tokens for #{total} record(s) across #{types.size} type(s)"
   end
 
   desc "resource_identifiers を content から再構築する(extra_identifiers の宣言追加時に一度実行)"
