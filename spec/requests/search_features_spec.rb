@@ -557,4 +557,67 @@ RSpec.describe "Search features (chaining, _has, _summary/_elements, _total)", t
       expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to include(ongoing)
     end
   end
+
+
+  # クライアントが「上流の _sort を信用せず画面側で並べ直す」のをやめられるよう、
+  # 並び順の保証を固定する。
+  describe "_sort ordering guarantees" do
+    it "puts rows without a value last in both directions" do
+      patient_id = create_patient
+      dated = create_observation(patient_id, "effectiveDateTime" => "2026-08-20T09:00:00+09:00")
+      payload = valid_observation_payload(subject_id: patient_id)
+      payload.delete("effectiveDateTime")
+      post "/Observation", params: payload, as: :json
+      undated = JSON.parse(response.body)["id"]
+
+      get "/Observation?patient=Patient/#{patient_id}&_sort=-date"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([dated, undated])
+
+      get "/Observation?patient=Patient/#{patient_id}&_sort=date"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([dated, undated])
+    end
+
+    it "orders appointments and encounters by their date param" do
+      patient_id = create_patient
+      post "/Appointment", params: valid_appointment_payload(patient_id: patient_id,
+                                                             "start" => "2026-08-20T09:00:00+09:00",
+                                                             "end" => "2026-08-20T09:30:00+09:00"), as: :json
+      older = JSON.parse(response.body)["id"]
+      post "/Appointment", params: valid_appointment_payload(patient_id: patient_id,
+                                                             "start" => "2026-08-25T09:00:00+09:00",
+                                                             "end" => "2026-08-25T09:30:00+09:00"), as: :json
+      newer = JSON.parse(response.body)["id"]
+
+      get "/Appointment?patient=Patient/#{patient_id}&_sort=-date"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([newer, older])
+
+      post "/Encounter", params: valid_encounter_payload(
+        "status" => "planned", "subject" => { "reference" => "Patient/#{patient_id}" },
+        "period" => { "start" => "2026-09-10T10:00:00+09:00" }
+      ), as: :json
+      later = JSON.parse(response.body)["id"]
+      post "/Encounter", params: valid_encounter_payload(
+        "status" => "planned", "subject" => { "reference" => "Patient/#{patient_id}" },
+        "period" => { "start" => "2026-09-01T10:00:00+09:00" }
+      ), as: :json
+      sooner = JSON.parse(response.body)["id"]
+
+      get "/Encounter?patient=Patient/#{patient_id}&status=planned&_sort=date"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([sooner, later])
+    end
+
+    it "returns instance history newest version first" do
+      patient_id = create_patient
+      3.times do |i|
+        put "/Patient/#{patient_id}",
+            params: valid_patient_payload("id" => patient_id, "birthDate" => "199#{i}-01-01"), as: :json
+      end
+
+      get "/Patient/#{patient_id}/_history"
+
+      versions = JSON.parse(response.body)["entry"].map { |e| e.dig("resource", "meta", "versionId").to_i }
+      expect(versions).to eq(versions.sort.reverse)
+      expect(versions.first).to eq(versions.max)
+    end
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_23_000005) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_23_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -48,6 +48,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_23_000005) do
     t.datetime "recorded_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "onset_time"
     t.index ["category_code"], name: "index_allergy_intolerances_on_category_code"
     t.index ["clinical_status"], name: "index_allergy_intolerances_on_clinical_status"
     t.index ["code_value"], name: "index_allergy_intolerances_on_code_value"
@@ -55,6 +56,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_23_000005) do
     t.index ["criticality"], name: "index_allergy_intolerances_on_criticality"
     t.index ["deleted"], name: "index_allergy_intolerances_on_deleted"
     t.index ["last_updated"], name: "index_allergy_intolerances_on_last_updated"
+    t.index ["onset_time"], name: "index_allergy_intolerances_on_onset_time"
     t.index ["patient_reference"], name: "index_allergy_intolerances_on_patient_reference"
     t.index ["recorded_time"], name: "index_allergy_intolerances_on_recorded_time"
   end

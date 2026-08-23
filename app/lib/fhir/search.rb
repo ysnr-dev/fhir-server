@@ -728,13 +728,21 @@ module Fhir
 
     # --- sort / paging ------------------------------------------------------------
 
+    # 値を持たない行は方向によらず末尾に置く(NULLS LAST)。Postgres の既定は
+    # ASC が NULLS LAST・DESC が NULLS FIRST なので、そのままだと `_sort=-onset`
+    # のような「新しい順」で発症日未設定のものが先頭に来てしまう。「値のあるものを
+    # 並べ、無いものは後ろ」の方が一覧としては一貫している。
     def ordered(scope)
       clauses = sort_clauses
       return scope.order(:id) if clauses.empty?
 
+      table = model.table_name
+      order = clauses.map do |column, direction|
+        Arel.sql("#{table}.#{column} #{direction == :desc ? 'DESC' : 'ASC'} NULLS LAST")
+      end
       # Append id as a stable tiebreaker so pagination is deterministic.
-      clauses[:id] ||= :asc
-      scope.order(clauses)
+      order << Arel.sql("#{table}.id ASC") unless clauses.key?(:id)
+      scope.order(order)
     end
 
     def sort_clauses

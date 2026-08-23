@@ -108,4 +108,55 @@ RSpec.describe "AllergyIntolerances", type: :request do
       expect(included.map { |entry| entry["resource"]["resourceType"] }).to eq(["Patient"])
     end
   end
+
+
+  # 一覧が表示するのは発症日(onsetDateTime)なので、並べ替えも onset で行える
+  # ようにした(以前は検索パラメータが無く、記録日 date で代用していた)。
+  describe "onset search parameter" do
+    def create_allergy(patient_id, onset: nil, recorded: nil)
+      overrides = {}
+      overrides["onsetDateTime"] = onset if onset
+      overrides["recordedDate"] = recorded if recorded
+      post "/AllergyIntolerance",
+           params: valid_allergy_intolerance_payload(patient_id: patient_id, **overrides), as: :json
+      expect(response).to have_http_status(:created), "setup failed: #{response.body}"
+      JSON.parse(response.body)["id"]
+    end
+
+    it "filters by onset independently of recordedDate" do
+      patient_id = create_patient
+      old_onset = create_allergy(patient_id, onset: "2020-05-01", recorded: "2026-08-20T10:00:00+09:00")
+      new_onset = create_allergy(patient_id, onset: "2024-03-15", recorded: "2026-08-01T10:00:00+09:00")
+
+      get "/AllergyIntolerance?patient=Patient/#{patient_id}&onset=ge2023-01-01"
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["entry"].map { |e| e["resource"]["id"] }).to eq([new_onset])
+      # date(記録日)で引くと逆になる = 別の軸であることの確認。
+      get "/AllergyIntolerance?patient=Patient/#{patient_id}&date=ge2026-08-10"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([old_onset])
+    end
+
+    it "sorts newest onset first, with undated entries last" do
+      patient_id = create_patient
+      older = create_allergy(patient_id, onset: "2020-05-01")
+      undated = create_allergy(patient_id)
+      newer = create_allergy(patient_id, onset: "2024-03-15")
+
+      get "/AllergyIntolerance?patient=Patient/#{patient_id}&_sort=-onset"
+
+      # 発症日未設定は末尾(Postgres の DESC 既定は NULLS FIRST なので明示している)。
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] })
+        .to eq([newer, older, undated])
+    end
+
+    it "supports onset:missing" do
+      patient_id = create_patient
+      create_allergy(patient_id, onset: "2020-05-01")
+      undated = create_allergy(patient_id)
+
+      get "/AllergyIntolerance?patient=Patient/#{patient_id}&onset:missing=true"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([undated])
+    end
+  end
 end

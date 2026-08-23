@@ -80,6 +80,17 @@ docker compose down -v    # DBデータも含めて削除
   現在の設定は `/metadata` の `implementation.description` に出る
 - `SPECIMEN_ACCESSION_SYSTEM`: 設定するとその system の `Specimen.accessionIdentifier` が値なしで
   作成されたとき、サーバーが連番（10 桁 + M10W3 チェックデジット）を採番する
+
+### `_sort` について
+
+- 並べ替えできるのは、抽出列を持つ検索パラメータ（`Fhir::SearchDefinitions` の各定義で
+  `column:` を持つもの）と `_id` / `_lastUpdated`。`resource_tokens` 経由でしか引かない
+  トークン（`ServiceRequest.category` など）は並べ替えの対象外。
+- 対応していないキーは既定（lenient）では黙って無視され、`Prefer: handling=strict` を
+  付けると 400 + OperationOutcome でキー名が返る。
+- **値を持たない行は方向によらず末尾**（`NULLS LAST`）。Postgres の既定は DESC が
+  NULLS FIRST だが、それだと「新しい順」で日付未設定のものが先頭に来てしまうため。
+- 同値のタイブレークは `id` 昇順で、ページ送りをまたいでも並びが安定する。
 - アプリコードはボリュームマウントされるため、ソース変更は再ビルドなしで反映されます
   （`Gemfile` を変更した場合のみ `docker compose build` で再ビルド）
 
