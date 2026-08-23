@@ -44,13 +44,16 @@ module Fhir
 
     # context: a Fhir::PatientContext confining results to one patient
     # compartment, or nil for an unrestricted search.
-    def initialize(resource_type, search_params, context: nil)
+    # chain_depth: how many chain hops led to this (inner) searcher -- guards
+    # multi-level chains against unbounded recursion.
+    def initialize(resource_type, search_params, context: nil, chain_depth: 0)
       entry = ResourceRegistry.entry_for(resource_type)
       @resource_type = resource_type
       @model = entry.fetch(:model)
       @search_param_defs = entry.fetch(:search_params)
       @search_params = search_params
       @context = context
+      @chain_depth = chain_depth
     end
 
     def call
@@ -114,7 +117,7 @@ module Fhir
 
     private
 
-    attr_reader :resource_type, :model, :search_param_defs, :search_params, :context
+    attr_reader :resource_type, :model, :search_param_defs, :search_params, :context, :chain_depth
 
     SORTABLE_META = { "_id" => :id, "_lastUpdated" => :last_updated }.freeze
 
@@ -179,20 +182,30 @@ module Fhir
 
     # --- chained search / _has ------------------------------------------------
 
-    # Single-level chains only: an inner param that would itself be a chain or a
-    # _has makes the whole clause unsupported, so inner searches can never recurse.
+    # Chains may span up to this many dotted segments (location.partof.partof:
+    # bed -> room -> ward). Each extra segment becomes one nested subquery, so
+    # the cap bounds SQL depth; anything deeper is treated as unsupported.
+    MAX_CHAIN_SEGMENTS = 3
+
+    # _has tails stay single-level: a tail that is itself a chain or another
+    # _has makes the whole clause unsupported.
     def chainable_tail?(param, tail_modifier)
       param != "_has" && !param.include?(".") && !tail_modifier.to_s.include?(".")
     end
 
     # subject:Patient.name=X / subject.name=X: valid iff the base is a reference
     # param whose (single) target type matches the explicit type when given, and
-    # the target type fully supports the tail clause.
+    # the target type fully supports the tail clause. The tail may itself be a
+    # chain (location.partof.partof) -- the inner searcher resolves it
+    # recursively, bounded by MAX_CHAIN_HOPS.
     def chain_resolution(chain, clause)
       definition = definition_for(chain.base)
       return nil unless definition && definition[:type] == :reference
       return nil if chain.target_type && chain.target_type != definition[:target_type]
-      return nil unless chainable_tail?(chain.param, chain.tail_modifier)
+      return nil if chain.param == "_has" || chain.tail_modifier.to_s.include?(".")
+      # depth n の chain 解決は n+2 個目までのセグメントを消費する
+      # (深さ 0: a.b、深さ 1: a.b.c)。上限を超える解決は許可しない。
+      return nil if chain_depth >= MAX_CHAIN_SEGMENTS - 1
       return nil unless ResourceRegistry.entry_for(definition[:target_type])
 
       inner = inner_search(definition[:target_type], chain.param, chain.tail_modifier, clause.values)
@@ -220,7 +233,7 @@ module Fhir
     def inner_search(type, param, tail_modifier, values)
       Search.new(type, SearchParams.new([
         SearchParams::Clause.new(name: param, modifier: tail_modifier, values: values)
-      ]), context: context)
+      ]), context: context, chain_depth: chain_depth + 1)
     end
 
     def chain_fragment(scope, definition, inner)

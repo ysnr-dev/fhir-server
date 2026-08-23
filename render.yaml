@@ -24,6 +24,10 @@ services:
       # 未設定なら管理APIは常に 503 で閉じたままになり、他の機能には影響しない。
       - key: FHIR_ADMIN_TOKEN
         sync: false
+      # 検体ラベル番号のサーバー採番。fhir-client のラベル発行が依存する
+      # (未設定だと番号なしの Specimen ができてラベル発行がエラーになる)。
+      - key: SPECIMEN_ACCESSION_SYSTEM
+        value: http://fhir-client.local/IdSystem/lab-label-number
       # 無料枠は RAM 512MB のため Puma ワーカーを 1 に抑える。
       - key: WEB_CONCURRENCY
         value: "1"

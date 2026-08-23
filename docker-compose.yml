@@ -36,6 +36,10 @@ services:
       # 503 で閉じる。fhir-client の管理画面から使う場合は同じ値を設定する。
       # 例: FHIR_ADMIN_TOKEN=$(openssl rand -hex 32) docker compose up
       FHIR_ADMIN_TOKEN: ${FHIR_ADMIN_TOKEN:-}
+      # 検体ラベル番号のサーバー採番(Fhir::AccessionAssigner)。この system の
+      # accessionIdentifier が値なしで POST されたとき、作成時に連番から採番する。
+      # fhir-client の検体ラベル発行が使う。未設定なら採番しない。
+      SPECIMEN_ACCESSION_SYSTEM: http://fhir-client.local/IdSystem/lab-label-number
     ports:
       - "3000:3000"
     volumes:

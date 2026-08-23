@@ -26,7 +26,8 @@ class FhirResourcesController < ApplicationController
     "destroy" => "delete",
     "conditional_destroy" => "delete",
     "everything" => "operation",
-    "validate" => "operation"
+    "validate" => "operation",
+    "distinct_dates" => "operation"
   }.freeze
 
   def index
@@ -137,6 +138,15 @@ class FhirResourcesController < ApplicationController
     render_fhir_resource(bundle, status: :ok)
   rescue Fhir::PatientEverything::InvalidType => e
     render_operation_outcome_single(status: :bad_request, severity: "error", code: "value", diagnostics: e.message)
+  end
+
+  # GET /{type}/$distinct-dates -- ある date 検索パラメータが取る値の重複なし集合。
+  # 検索条件は通常の検索パラメータと同じで、Prefer: handling=strict も同様に効く。
+  def distinct_dates
+    result = Fhir::DistinctDates.call(
+      resource_type, request.query_string, context: access_context, handling: preferred_handling
+    )
+    render_operation_result(result)
   end
 
   def destroy

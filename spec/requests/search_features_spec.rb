@@ -365,4 +365,96 @@ RSpec.describe "Search features (chaining, _has, _summary/_elements, _total)", t
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
   end
+
+
+  # 病棟(ward) > 病室(room) > ベッド(bed)の 3 階層。入院(Encounter.location = bed)を
+  # 病棟でサーバー側から絞るための多段チェーン。
+  describe "multi-level chained search (location.partof.partof)" do
+    def create_location(name, partof_id: nil)
+      overrides = { "name" => name }
+      overrides["partOf"] = { "reference" => "Location/#{partof_id}" } if partof_id
+      post "/Location", params: valid_location_payload(overrides), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    def create_admission(patient_id, bed_id)
+      post "/Encounter", params: valid_encounter_payload(
+        "status" => "in-progress",
+        "class" => { "system" => "http://terminology.hl7.org/CodeSystem/v3-ActCode", "code" => "IMP" },
+        "subject" => { "reference" => "Patient/#{patient_id}" },
+        "location" => [{ "location" => { "reference" => "Location/#{bed_id}" } }],
+        "period" => { "start" => "2026-08-20T10:00:00+09:00" }
+      ), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    it "filters encounters by ward through bed -> room -> ward" do
+      ward = create_location("東3階病棟")
+      room = create_location("301号室", partof_id: ward)
+      bed = create_location("1", partof_id: room)
+      other_ward = create_location("西2階病棟")
+      other_room = create_location("201号室", partof_id: other_ward)
+      other_bed = create_location("1", partof_id: other_room)
+
+      patient_id = create_patient
+      target = create_admission(patient_id, bed)
+      create_admission(create_patient, other_bed)
+
+      get "/Encounter?status=in-progress&location.partof.partof=Location/#{ward}"
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["total"]).to eq(1)
+      expect(bundle["entry"].first["resource"]["id"]).to eq(target)
+
+      # 2 段(病室)でも引ける。
+      get "/Encounter?status=in-progress&location.partof=Location/#{room}"
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+
+    it "rejects chains deeper than 3 hops (strict) and skips them leniently" do
+      get "/Encounter?location.partof.partof.partof=Location/x",
+          headers: { "Prefer" => "handling=strict" }
+      expect(response).to have_http_status(:bad_request)
+
+      get "/Encounter?location.partof.partof.partof=Location/x"
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
+  # ベッドの読み出しに _include:iterate を重ねると、病室(1 段目)だけでなく
+  # 病棟(2 段目)まで同じ応答に含まれる。患者ヘッダの入院場所の表示が依存する。
+  describe "_include:iterate over Location.partof (bed -> room -> ward)" do
+    it "includes both the room and the ward" do
+      post "/Location", params: valid_location_payload("name" => "病棟"), as: :json
+      ward = JSON.parse(response.body)["id"]
+      post "/Location", params: valid_location_payload("name" => "病室", "partOf" => { "reference" => "Location/#{ward}" }), as: :json
+      room = JSON.parse(response.body)["id"]
+      post "/Location", params: valid_location_payload("name" => "ベッド", "partOf" => { "reference" => "Location/#{room}" }), as: :json
+      bed = JSON.parse(response.body)["id"]
+
+      get "/Location?_id=#{bed}&_include=Location:partof&_include:iterate=Location:partof"
+
+      bundle = JSON.parse(response.body)
+      ids = bundle["entry"].map { |e| e["resource"]["id"] }
+      expect(ids).to contain_exactly(bed, room, ward)
+    end
+  end
+
+  # テンプレート回答からの派生 Observation の一括参照。複数の回答を保存する前に
+  # 1 検索で「前回生成した Observation」を集められる(N+1 の解消)。
+  describe "reference search with comma-OR (derived-from)" do
+    it "finds observations derived from any of the listed responses" do
+      patient_id = create_patient
+      qr_a = "QuestionnaireResponse/qr-a"
+      qr_b = "QuestionnaireResponse/qr-b"
+      obs_a = create_observation(patient_id, "derivedFrom" => [{ "reference" => qr_a }])
+      obs_b = create_observation(patient_id, "derivedFrom" => [{ "reference" => qr_b }])
+      create_observation(patient_id) # 派生ではない測定
+
+      get "/Observation?derived-from=#{qr_a},#{qr_b}"
+
+      bundle = JSON.parse(response.body)
+      expect(bundle["entry"].map { |e| e["resource"]["id"] }).to contain_exactly(obs_a, obs_b)
+    end
+  end
 end

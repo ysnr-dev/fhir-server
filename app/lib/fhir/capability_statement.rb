@@ -114,7 +114,9 @@ module Fhir
     # three entries stay distinguishable within one CapabilityStatement.
     def operations(resource_type)
       list = [
-        { "name" => "validate", "definition" => "http://hl7.org/fhir/OperationDefinition/Resource-validate" }
+        { "name" => "validate", "definition" => "http://hl7.org/fhir/OperationDefinition/Resource-validate" },
+        # 独自 operation: date 検索パラメータの値の重複なし集合(Fhir::DistinctDates)。
+        { "name" => "distinct-dates", "definition" => "http://fhir-server.local/OperationDefinition/distinct-dates" }
       ]
       case resource_type
       when "Patient"

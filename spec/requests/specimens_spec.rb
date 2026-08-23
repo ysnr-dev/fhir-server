@@ -179,4 +179,79 @@ RSpec.describe "Specimens", type: :request do
       expect(entry_ids("include")).to eq([order_id])
     end
   end
+
+
+  # 検体ラベル番号のサーバー採番(Fhir::AccessionAssigner)。設定された system の
+  # accessionIdentifier が値なしで来たときだけ、作成時に連番 10 桁 + M10W3 の
+  # チェックデジット 1 桁を払い出す。
+  describe "accession number assignment" do
+    let(:accession_system) { "http://example.org/IdSystem/accession-test" }
+
+    around do |example|
+      original = ENV["SPECIMEN_ACCESSION_SYSTEM"]
+      ENV["SPECIMEN_ACCESSION_SYSTEM"] = accession_system
+      example.run
+    ensure
+      ENV["SPECIMEN_ACCESSION_SYSTEM"] = original
+    end
+
+    def create_specimen(subject_id, accession)
+      post "/Specimen", params: valid_specimen_payload(subject_id: subject_id, "accessionIdentifier" => accession), as: :json
+      JSON.parse(response.body)
+    end
+
+    def m10w3(digits)
+      sum = digits.chars.reverse.each_with_index.sum { |ch, i| ch.to_i * (i.even? ? 3 : 1) }
+      ((10 - sum % 10) % 10).to_s
+    end
+
+    it "fills a sequential 11-digit number when the value is absent" do
+      subject_id = create_patient
+      first = create_specimen(subject_id, { "system" => accession_system })
+      second = create_specimen(subject_id, { "system" => accession_system })
+
+      [first, second].each do |specimen|
+        number = specimen.dig("accessionIdentifier", "value")
+        expect(number).to match(/\A\d{11}\z/)
+        expect(number[10]).to eq(m10w3(number[0, 10]))
+      end
+      expect(second.dig("accessionIdentifier", "value")[0, 10].to_i)
+        .to be > first.dig("accessionIdentifier", "value")[0, 10].to_i
+
+      # 保存された content にも番号が残る(読み直しても同じ番号)。
+      get "/Specimen/#{first['id']}"
+      expect(JSON.parse(response.body).dig("accessionIdentifier", "value"))
+        .to eq(first.dig("accessionIdentifier", "value"))
+    end
+
+    it "leaves explicit values and other systems untouched" do
+      subject_id = create_patient
+      explicit = create_specimen(subject_id, { "system" => accession_system, "value" => "MANUAL-1" })
+      expect(explicit.dig("accessionIdentifier", "value")).to eq("MANUAL-1")
+
+      other = create_specimen(subject_id, { "system" => "http://example.org/other" })
+      expect(other.dig("accessionIdentifier", "value")).to be_nil
+    end
+
+    it "does nothing when the env is not configured" do
+      ENV["SPECIMEN_ACCESSION_SYSTEM"] = nil
+      subject_id = create_patient
+      specimen = create_specimen(subject_id, { "system" => accession_system })
+      expect(specimen.dig("accessionIdentifier", "value")).to be_nil
+    end
+
+    it "assigns only on actual creation (conditional create joins the existing one)" do
+      subject_id = create_patient
+      first = create_specimen(subject_id, { "system" => accession_system })
+      number = first.dig("accessionIdentifier", "value")
+
+      post "/Specimen",
+           params: valid_specimen_payload(subject_id: subject_id, "accessionIdentifier" => { "system" => accession_system }),
+           headers: { "If-None-Exist" => "subject=Patient/#{subject_id}" },
+           as: :json
+
+      expect(response).to have_http_status(:ok) # 既存に合流
+      expect(JSON.parse(response.body).dig("accessionIdentifier", "value")).to eq(number)
+    end
+  end
 end

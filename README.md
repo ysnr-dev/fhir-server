@@ -363,8 +363,9 @@ curl -s "http://localhost:3000/ServiceRequest?reason-reference=Condition/{condit
 | `PUT` | `/{Resource}?{criteria}` | 条件付き更新（upsert） |
 | `PATCH` | `/{Resource}/:id` | 部分更新（JSON Patch, RFC 6902。`Content-Type: application/json-patch+json`） |
 | `DELETE` | `/{Resource}/:id` | 削除（論理削除） |
-| `DELETE` | `/{Resource}?{criteria}` | 条件付き削除（単一マッチのみ） |
-| `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索・`_has`・`_include`/`_revinclude`・`_sort`・`_count`/`_offset`・`_summary`/`_elements`・`_total`・`:missing` 等に対応 |
+| `DELETE` | `/{Resource}?{criteria}` | 条件付き削除（該当全件を削除。`conditionalDelete: "multiple"`） |
+| `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索（3 セグメントまでの多段対応）・`_has`・`_include`/`_revinclude`・`_sort`・`_count`/`_offset`・`_summary`/`_elements`・`_total`・`:missing`・`:not`・`Prefer: handling=strict` 等に対応 |
+| `GET` | `/{Resource}/$distinct-dates` | 独自 operation: date 検索パラメータが取る値の重複なし集合（新しい順）。`date-param`（必須）・`precision=day\|full`・`timezone=±HH:MM`・`limit` |
 | `GET` | `/{Resource}/_history` | タイプレベル履歴（`_count` / `_since` 対応） |
 | `GET` | `/{Resource}/:id/_history` | インスタンスのバージョン履歴（Bundle） |
 | `GET` | `/{Resource}/:id/_history/:vid` | 特定バージョンの参照（vread） |

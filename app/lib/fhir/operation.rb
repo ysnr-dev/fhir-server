@@ -75,6 +75,10 @@ module Fhir
         end
       end
 
+      # 検体番号のサーバー採番(設定時のみ)。検証の前に埋めるので、採番された値も
+      # 検証を通り、保存される content にそのまま残る。
+      Fhir::AccessionAssigner.assign!(resource_type, payload)
+
       validation = entry[:validator].call(payload)
       blocked = blocking_validation_result(validation, payload)
       return blocked if blocked
