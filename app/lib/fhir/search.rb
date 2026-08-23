@@ -587,7 +587,10 @@ module Fhir
       prefix, date_str = split_date_prefix(value)
       return nil unless SUPPORTED_DATE_PREFIXES.include?(prefix)
 
-      interval = parse_date_interval(date_str)
+      # ローカルタイムゾーンの補正を掛けるのは timestamp 列(:datetime)だけ。
+      # `date` 型の列(生年月日など)はタイムゾーンを持たない日付そのもので、
+      # ずらすと 1 日違いになる。
+      interval = parse_date_interval(date_str, zoned: definition[:type] == :datetime)
       return nil unless interval
 
       if definition[:end_column]
@@ -606,24 +609,43 @@ module Fhir
     # its precision, e.g. "2024" => [2024-01-01, 2025-01-01). lo/hi may be Date or Time;
     # ActiveRecord/pg compare either correctly against both `date` and `timestamp`
     # columns, so callers don't need to normalize further.
-    def parse_date_interval(str)
+    #
+    # zoned: the target column is a timestamp, so a value carrying no timezone is
+    # interpreted in the server's local zone (Fhir::LocalTimeZone) per the search
+    # spec -- otherwise "2026-08-18" would be compared as the UTC day and a JST
+    # morning instant would fall into the previous one.
+    def parse_date_interval(str, zoned: false)
       case str
       when /\A\d{4}\z/
-        lo = Date.new(str.to_i, 1, 1)
-        [lo, lo.next_year]
+        day_interval(Date.new(str.to_i, 1, 1), { years: 1 }, zoned)
       when /\A\d{4}-\d{2}\z/
         year, month = str.split("-").map(&:to_i)
-        lo = Date.new(year, month, 1)
-        [lo, lo.next_month]
+        day_interval(Date.new(year, month, 1), { months: 1 }, zoned)
       when /\A\d{4}-\d{2}-\d{2}\z/
-        lo = Date.iso8601(str)
-        [lo, lo.next_day]
+        day_interval(Date.iso8601(str), { days: 1 }, zoned)
       else
-        lo = Time.iso8601(str)
+        lo = parse_instant(str, zoned)
         [lo, lo + 1]
       end
     rescue ArgumentError, TypeError
       nil
+    end
+
+    # 日付精度の値。timestamp 列に当てるときはローカルタイムゾーンの 0 時から
+    # 次の境界まで、date 列にはタイムゾーンを持たない Date のまま当てる。
+    def day_interval(date, step, zoned)
+      return [date, date.advance(step)] unless zoned
+
+      lo = LocalTimeZone.zone.local(date.year, date.month, date.day)
+      [lo, lo.advance(step)]
+    end
+
+    # dateTime 精度の値。TimeZone#parse はオフセット付きならそれを尊重し、無ければ
+    # そのゾーンとみなすので、仕様どおりの解釈になる。
+    def parse_instant(str, zoned)
+      return Time.iso8601(str) unless zoned
+
+      LocalTimeZone.zone.parse(str) || raise(ArgumentError, "unparseable dateTime: #{str}")
     end
 
     # sa/eb ask whether the value lies entirely after/before the search interval;

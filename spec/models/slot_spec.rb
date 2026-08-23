@@ -26,11 +26,9 @@ RSpec.describe Slot do
       expect(slot.schedule_reference).to eq("Schedule/sch1")
       expect(slot.appointment_type).to eq("ROUTINE")
       expect(slot.start_time).to eq(Time.iso8601("2026-09-01T09:00:00+09:00"))
-    end
-
-    # R4 gives Slot no `end` search parameter, so Slot.end stays in content only.
-    it "does not extract end into a column" do
-      expect(described_class.column_names).not_to include("end_time")
+      # R4 に `end` の検索パラメータは無いが、期間の頭をまたぐ枠を正確に引くために
+      # ローカル追加している(SearchDefinitions::Slot を参照)。
+      expect(slot.end_time).to eq(Time.iso8601("2026-09-01T09:30:00+09:00"))
     end
 
     it "is nil-safe when fields are absent" do

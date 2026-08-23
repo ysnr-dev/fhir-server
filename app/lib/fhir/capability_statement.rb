@@ -41,6 +41,12 @@ module Fhir
         "fhirVersion" => "4.0.1",
         "format" => %w[application/fhir+json json],
         "instantiates" => ["http://hl7.org/fhir/uv/bulkdata/CapabilityStatement/bulk-data"],
+        # タイムゾーンを持たない検索値をどのゾーンで解釈するか(Fhir::LocalTimeZone)。
+        # クライアントが「日付だけ渡してよいか」を判断できるよう明示する。
+        "implementation" => {
+          "description" => "Local timezone for timezone-less date search values: #{LocalTimeZone.zone.name} " \
+                           "(#{LocalTimeZone.zone.now.formatted_offset})"
+        },
         "rest" => [rest]
       }
     end

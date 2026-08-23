@@ -168,4 +168,38 @@ RSpec.describe "Slots", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
   end
+
+
+  # R4 に定義の無いローカル追加。start だけだと「期間の頭をまたぐ枠」を取りこぼす。
+  describe "GET /Slot?end=" do
+    it "finds slots overlapping a range with start+end" do
+      schedule_id = create_schedule
+      # 9:00-9:30 / 9:30-10:00 / 10:00-10:30
+      early = create_slot(schedule_id: schedule_id, "start" => "2026-08-24T09:00:00+09:00",
+                          "end" => "2026-08-24T09:30:00+09:00")
+      middle = create_slot(schedule_id: schedule_id, "start" => "2026-08-24T09:30:00+09:00",
+                           "end" => "2026-08-24T10:00:00+09:00")
+      create_slot(schedule_id: schedule_id, "start" => "2026-08-24T10:00:00+09:00",
+                  "end" => "2026-08-24T10:30:00+09:00")
+
+      # 9:15〜9:45 に掛かる枠 = 開始が 9:45 より前 かつ 終了が 9:15 より後。
+      get "/Slot?schedule=Schedule/#{schedule_id}" \
+          "&start=lt2026-08-24T09:45:00%2B09:00&end=gt2026-08-24T09:15:00%2B09:00"
+
+      ids = JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }
+      expect(ids).to contain_exactly(early, middle)
+    end
+
+    it "supports end:missing for slots recorded without an end" do
+      schedule_id = create_schedule
+      create_slot(schedule_id: schedule_id, "start" => "2026-08-24T09:00:00+09:00",
+                  "end" => "2026-08-24T09:30:00+09:00")
+
+      get "/Slot?schedule=Schedule/#{schedule_id}&end:missing=true"
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+
+      get "/Slot?schedule=Schedule/#{schedule_id}&end:missing=false"
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+  end
 end

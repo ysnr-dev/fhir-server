@@ -457,4 +457,104 @@ RSpec.describe "Search features (chaining, _has, _summary/_elements, _total)", t
       expect(bundle["entry"].map { |e| e["resource"]["id"] }).to contain_exactly(obs_a, obs_b)
     end
   end
+
+
+  # 検索値にタイムゾーンが無いときはサーバーのローカルタイムゾーンで解釈する
+  # (FHIR search の date の節)。既定は Asia/Tokyo。
+  describe "local timezone interpretation of date search values" do
+    def create_observation_at(patient_id, effective)
+      post "/Observation",
+           params: valid_observation_payload(subject_id: patient_id, "effectiveDateTime" => effective),
+           as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    it "treats a date-only value as the local day, not the UTC day" do
+      patient_id = create_patient
+      # JST 8/24 08:00 は UTC では 8/23 23:00。UTC の 1 日として比べると前日に落ちる。
+      morning = create_observation_at(patient_id, "2026-08-24T08:00:00+09:00")
+      # JST 8/24 22:00 は UTC でも 8/24。
+      evening = create_observation_at(patient_id, "2026-08-24T22:00:00+09:00")
+      # JST 8/23 23:00(= UTC 8/23 14:00)は前日なので入らない。
+      create_observation_at(patient_id, "2026-08-23T23:00:00+09:00")
+
+      get "/Observation?patient=Patient/#{patient_id}&date=2026-08-24"
+
+      ids = JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }
+      expect(ids).to contain_exactly(morning, evening)
+    end
+
+    it "honors an explicit offset in the search value" do
+      patient_id = create_patient
+      morning = create_observation_at(patient_id, "2026-08-24T08:00:00+09:00")
+
+      # UTC で明示すると 8/23 側に入る(JST の朝 9 時前なので)。
+      get "/Observation?patient=Patient/#{patient_id}&date=ge2026-08-23T00:00:00Z&date=lt2026-08-24T00:00:00Z"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([morning])
+    end
+
+    it "is configurable and falls back to UTC-like behavior" do
+      patient_id = create_patient
+      morning = create_observation_at(patient_id, "2026-08-24T08:00:00+09:00")
+
+      original = ENV["FHIR_LOCAL_TIMEZONE"]
+      ENV["FHIR_LOCAL_TIMEZONE"] = "UTC"
+      get "/Observation?patient=Patient/#{patient_id}&date=2026-08-24"
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+
+      ENV["FHIR_LOCAL_TIMEZONE"] = "+09:00"
+      get "/Observation?patient=Patient/#{patient_id}&date=2026-08-24"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([morning])
+    ensure
+      ENV["FHIR_LOCAL_TIMEZONE"] = original
+    end
+
+    it "leaves date-typed columns (birthDate) unshifted" do
+      # 生年月日はタイムゾーンを持たない日付。ずらすと 1 日違いになる。
+      create_patient("birthDate" => "1990-06-15")
+
+      get "/Patient?birthdate=1990-06-15"
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Patient?birthdate=1990-06-14"
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+  end
+
+  # 期間(Encounter.period)への日付比較。FHIR の date 検索は「eq = 検索値の範囲が
+  # 対象の範囲を完全に含む」で、重なりではない(重なりが欲しい側は ge と le を
+  # 組み合わせる)。仕様どおりであることを固定する。
+  describe "period comparison semantics" do
+    def create_encounter(start_at, end_at)
+      payload = valid_encounter_payload(
+        "status" => "in-progress",
+        "class" => { "system" => "http://terminology.hl7.org/CodeSystem/v3-ActCode", "code" => "IMP" },
+        "period" => { "start" => start_at }.merge(end_at ? { "end" => end_at } : {})
+      )
+      payload["period"].delete("end") unless end_at
+      post "/Encounter", params: payload, as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    it "treats eq as containment and ge+le as overlap" do
+      # 8/20 〜 8/25 の入院。8/22 の 1 日には収まらないが、重なってはいる。
+      spanning = create_encounter("2026-08-20T10:00:00+09:00", "2026-08-25T10:00:00+09:00")
+      # 8/22 の中で完結する入院。
+      contained = create_encounter("2026-08-22T10:00:00+09:00", "2026-08-22T18:00:00+09:00")
+
+      get "/Encounter?class=IMP&date=2026-08-22"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([contained])
+
+      get "/Encounter?class=IMP&date=ge2026-08-22&date=le2026-08-22"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] })
+        .to contain_exactly(spanning, contained)
+    end
+
+    it "counts an open-ended period as still ongoing" do
+      ongoing = create_encounter("2026-08-20T10:00:00+09:00", nil)
+
+      get "/Encounter?class=IMP&date=ge2026-08-22&date=le2026-08-22"
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to include(ongoing)
+    end
+  end
 end

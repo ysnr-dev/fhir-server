@@ -40,6 +40,9 @@ services:
       # accessionIdentifier が値なしで POST されたとき、作成時に連番から採番する。
       # fhir-client の検体ラベル発行が使う。未設定なら採番しない。
       SPECIMEN_ACCESSION_SYSTEM: http://fhir-client.local/IdSystem/lab-label-number
+      # タイムゾーンを持たない検索値("2026-08-18" など)を解釈するゾーン。
+      # 既定も Asia/Tokyo なので通常は指定不要(明示のために書いている)。
+      FHIR_LOCAL_TIMEZONE: ${FHIR_LOCAL_TIMEZONE:-Asia/Tokyo}
     ports:
       - "3000:3000"
     volumes:

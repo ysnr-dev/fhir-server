@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_23_000004) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_23_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -905,9 +905,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_23_000004) do
     t.datetime "start_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "end_time"
     t.index ["appointment_type"], name: "index_slots_on_appointment_type"
     t.index ["content"], name: "index_slots_on_content", using: :gin
     t.index ["deleted"], name: "index_slots_on_deleted"
+    t.index ["end_time"], name: "index_slots_on_end_time"
     t.index ["last_updated"], name: "index_slots_on_last_updated"
     t.index ["schedule_reference"], name: "index_slots_on_schedule_reference"
     t.index ["start_time"], name: "index_slots_on_start_time"

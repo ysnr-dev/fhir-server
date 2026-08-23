@@ -74,6 +74,12 @@ docker compose down -v    # DBデータも含めて削除
   - ホスト側 `5433` はローカルの Homebrew PostgreSQL(5432) との競合を避けるための割り当て
 - DB接続情報は `web` に環境変数で注入（`DATABASE_HOST=db` / `DATABASE_USERNAME=postgres` / `DATABASE_PASSWORD=password`）
 - 認証トグル `FHIR_AUTH_ENABLED` も `web` に注入（既定 `false`。ホストの環境変数 / `.env` で上書き可能）
+- `FHIR_LOCAL_TIMEZONE`（既定 `Asia/Tokyo`）: タイムゾーンを持たない検索値（`date=2026-08-18` など）を
+  解釈するゾーン。FHIR の検索仕様は「タイムゾーンが無ければサーバーのタイムゾーン」と定めており、
+  UTC で解釈すると JST の朝 9 時前の記録が前日に落ちる。タイムゾーン名か `+09:00` 形式で指定。
+  現在の設定は `/metadata` の `implementation.description` に出る
+- `SPECIMEN_ACCESSION_SYSTEM`: 設定するとその system の `Specimen.accessionIdentifier` が値なしで
+  作成されたとき、サーバーが連番（10 桁 + M10W3 チェックデジット）を採番する
 - アプリコードはボリュームマウントされるため、ソース変更は再ビルドなしで反映されます
   （`Gemfile` を変更した場合のみ `docker compose build` で再ビルド）
 
@@ -365,7 +371,7 @@ curl -s "http://localhost:3000/ServiceRequest?reason-reference=Condition/{condit
 | `DELETE` | `/{Resource}/:id` | 削除（論理削除） |
 | `DELETE` | `/{Resource}?{criteria}` | 条件付き削除（該当全件を削除。`conditionalDelete: "multiple"`） |
 | `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索（3 セグメントまでの多段対応）・`_has`・`_include`/`_revinclude`・`_sort`・`_count`/`_offset`・`_summary`/`_elements`・`_total`・`:missing`・`:not`・`Prefer: handling=strict` 等に対応 |
-| `GET` | `/{Resource}/$distinct-dates` | 独自 operation: date 検索パラメータが取る値の重複なし集合（新しい順）。`date-param`（必須）・`precision=day\|full`・`timezone=±HH:MM`・`limit` |
+| `GET` | `/{Resource}/$distinct-dates` | 独自 operation: date 検索パラメータが取る値の重複なし集合（新しい順）。`date-param`（必須）・`precision=day\|full`・`timezone=±HH:MM`（既定はサーバーのローカルゾーン）・`limit`・`count=true`（日付ごとの件数） |
 | `GET` | `/{Resource}/_history` | タイプレベル履歴（`_count` / `_since` 対応） |
 | `GET` | `/{Resource}/:id/_history` | インスタンスのバージョン履歴（Bundle） |
 | `GET` | `/{Resource}/:id/_history/:vid` | 特定バージョンの参照（vread） |

@@ -1,13 +1,16 @@
 module Fhir
   module ExtractionDefinitions
     module Slot
-      # Slot.start is an instant and the only one of the two ends R4 gives a search
-      # parameter; the column is start_time because `start` is a SQL reserved word.
+      # Slot.start / Slot.end はどちらも instant。列名が *_time なのは `start` /
+      # `end` が SQL の予約語だから。R4 が検索パラメータを定めているのは start
+      # だけだが、「この期間に掛かる枠」を正確に引くために end も索引する
+      # (SearchDefinitions::Slot を参照)。
       FIELDS = {
         status: { path: "status" },
         appointment_type: { path: "appointmentType", transform: :coding_code },
         schedule_reference: { path: "schedule.reference" },
-        start_time: { path: "start", transform: :datetime }
+        start_time: { path: "start", transform: :datetime },
+        end_time: { path: "end", transform: :datetime }
       }.freeze
 
       # As on Schedule, the three 0..* CodeableConcept elements are token rows only.

@@ -28,6 +28,10 @@ services:
       # (未設定だと番号なしの Specimen ができてラベル発行がエラーになる)。
       - key: SPECIMEN_ACCESSION_SYSTEM
         value: http://fhir-client.local/IdSystem/lab-label-number
+      # タイムゾーンを持たない検索値("2026-08-18" など)を解釈するゾーン。
+      # アプリの既定も Asia/Tokyo なので、未設定でも同じ挙動になる。
+      - key: FHIR_LOCAL_TIMEZONE
+        value: Asia/Tokyo
       # 無料枠は RAM 512MB のため Puma ワーカーを 1 に抑える。
       - key: WEB_CONCURRENCY
         value: "1"

@@ -39,9 +39,13 @@ RSpec.describe "$distinct-dates operation", type: :request do
     expect(dates_of(body)).to eq(%w[2026-08-24 2026-08-23])
     expect(undated_of(body)).to be(false)
 
-    # タイムゾーン省略(UTC)では 3 件とも UTC の 8/23 に丸まる
-    # (8/24 08:00+09:00 は UTC では 8/23 23:00)。
+    # timezone 省略時はサーバーのローカルタイムゾーン(既定 Asia/Tokyo)なので同じ結果。
     get "/Observation/$distinct-dates?patient=Patient/#{patient_id}&date-param=date"
+    expect(dates_of(JSON.parse(response.body))).to eq(%w[2026-08-24 2026-08-23])
+
+    # UTC を明示すると 3 件とも UTC の 8/23 に丸まる
+    # (8/24 08:00+09:00 は UTC では 8/23 23:00)。
+    get "/Observation/$distinct-dates?patient=Patient/#{patient_id}&date-param=date&timezone=%2B00:00"
     expect(dates_of(JSON.parse(response.body))).to eq(%w[2026-08-23])
   end
 
@@ -120,5 +124,42 @@ RSpec.describe "$distinct-dates operation", type: :request do
         "&timezone=%2B09:00&based-on:missing=true"
 
     expect(dates_of(JSON.parse(response.body))).to eq(%w[2026-08-20])
+  end
+
+
+  # 月カレンダーの「その日の空き枠数」バッジのように、日付ごとの件数が要る用途。
+  describe "count=true" do
+    def parts_of(body)
+      body["parameter"].select { |p| p["name"] == "date" }.map do |p|
+        value = p["part"].find { |x| x["name"] == "value" }
+        count = p["part"].find { |x| x["name"] == "count" }
+        [value["valueDate"] || value["valueDateTime"], count["valueInteger"]]
+      end
+    end
+
+    it "returns per-date counts newest first" do
+      patient_id = create_patient
+      create_observation(patient_id, "2026-08-23T09:00:00+09:00")
+      create_observation(patient_id, "2026-08-23T12:00:00+09:00")
+      create_observation(patient_id, "2026-08-22T09:00:00+09:00")
+
+      get "/Observation/$distinct-dates?patient=Patient/#{patient_id}&date-param=date&count=true"
+
+      body = JSON.parse(response.body)
+      expect(parts_of(body)).to eq([["2026-08-23", 2], ["2026-08-22", 1]])
+      # undated は count=true でも真偽値のまま。
+      expect(undated_of(body)).to be(false)
+    end
+
+    it "keeps the plain (value-only) shape without count=true" do
+      patient_id = create_patient
+      create_observation(patient_id, "2026-08-23T09:00:00+09:00")
+
+      get "/Observation/$distinct-dates?patient=Patient/#{patient_id}&date-param=date"
+
+      entry = JSON.parse(response.body)["parameter"].find { |p| p["name"] == "date" }
+      expect(entry["valueDate"]).to eq("2026-08-23")
+      expect(entry["part"]).to be_nil
+    end
   end
 end
