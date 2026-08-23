@@ -472,11 +472,14 @@ module Fhir
       scope.where(id: ids)
     end
 
+    # The four FHIR identifier forms, mirroring token_value_fragment: `value`
+    # (any system), `system|value`, `system|` (any value in the system), `|value`.
     def identifier_value_fragment(value)
       return ["value = ?", [value]] unless value.include?("|")
 
       system, val = value.split("|", 2)
       return ["(system IS NULL AND value = ?)", [val]] if system.empty?
+      return ["system = ?", [system]] if val.empty?
 
       ["(system = ? AND value = ?)", [system, val]]
     end

@@ -221,6 +221,20 @@ RSpec.describe "Patients", type: :request do
       expect(bundle["total"]).to eq(1)
     end
 
+    it "finds a patient by identifier system alone (system| form)" do
+      payload = valid_patient_payload
+      system = payload["identifier"].first["system"]
+      post "/Patient", params: payload, as: :json
+
+      get "/Patient", params: { identifier: "#{system}|" }
+
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Patient", params: { identifier: "http://example.com/other-system|" }
+
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+
     it "finds a patient by kana (SYL) name" do
       post "/Patient", params: valid_patient_payload, as: :json
 
