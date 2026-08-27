@@ -354,17 +354,22 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 正確な一覧と各リソースの検索パラメータは `GET /metadata`（CapabilityStatement）で確認できます。
 
-**標準外の検索パラメータ**: `Composition` / `QuestionnaireResponse` / `Observation` の `problem` は
+**標準外の検索パラメータ**: `QuestionnaireResponse` / `Observation` の `problem` は
 FHIR R4 に無いローカルの検索パラメータです。POS/POMR のカルテを 1 つのプロブレム（病名）で縦に読む
 ための絞り込みで、base に対象疾患を表す要素が無いため、ルート直下の拡張
-（`http://fhir-client.local/StructureDefinition/clinical-note-problem` /
-`…/questionnaire-response-problem` / `…/observation-problem`）の `valueReference` を引きます。`extension[]` は他の拡張と配列を
+（`http://fhir-client.local/StructureDefinition/questionnaire-response-problem` /
+`…/observation-problem`）の `valueReference` を引きます。`extension[]` は他の拡張と配列を
 共有するので、参照だけでなく拡張の `url` も一致条件に含めています。`_include`/`_revinclude` では
 辿れません（`Fhir::SearchReferences` には登録していないため）。
 
+診療記録は標準の `Composition?entry=` で引けます。対象のプロブレムは C-CDA on FHIR
+Progress Note の problems_section（LOINC 11450-4）の `section.entry` に入るためです。
+`Composition.section[].entry[]` は配列の二重ネストなので、検索定義は `jsonb_key` に加えて
+`nested_path`（要素の中でさらに辿る配列キー）を持ちます。
+
 ```bash
 # 1 つのプロブレムに紐づく診療記録・オーダー
-curl -s "http://localhost:3000/Composition?patient={patientId}&problem=Condition/{conditionId}"
+curl -s "http://localhost:3000/Composition?patient={patientId}&entry=Condition/{conditionId}"
 curl -s "http://localhost:3000/ServiceRequest?reason-reference=Condition/{conditionId}&based-on:missing=true"
 ```
 

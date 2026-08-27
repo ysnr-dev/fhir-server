@@ -30,8 +30,10 @@ module Fhir
                              ref_path: %w[reference], target_type: "ServiceRequest" },
         "part-of"       => { type: :reference, multiple: true, jsonb_key: "partOf",
                              ref_path: %w[reference], target_type: "Observation" },
-        # 標準外のローカル検索パラメータ。Composition:problem と同じ扱い
-        # (extension[] は他の拡張と配列を共有するので url も一致条件に入れる)。
+        # 標準外のローカル検索パラメータ。base に対象疾患を表す要素が無いので
+        # ルート直下の拡張を引く(extension[] は他の拡張と配列を共有するので url も
+        # 一致条件に入れる)。診療記録は標準の Composition:entry で引けるため、
+        # 同じ絞り込みでもこちらだけがローカルのままになっている。
         "problem"       => { type: :reference, multiple: true, jsonb_key: "extension",
                              ref_path: %w[valueReference reference], target_type: "Condition",
                              element_match: { "url" => PROBLEM_EXTENSION_URL } }
