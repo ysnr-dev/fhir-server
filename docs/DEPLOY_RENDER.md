@@ -46,9 +46,21 @@ purge cron: GitHub Actions(このリポジトリの purge_expired.yml)
 | `fhir-client` | `backend_production` | ysnr-fhir-client-api 用 |
 
 - リージョンは AWS ap-southeast-1(Singapore)推奨(Render の singapore リージョンに合わせる)
-- それぞれの **Connection string(pooled)** を控える。形式:
+- それぞれの **Connection string(direct / unpooled)** を控える。形式:
   `postgresql://<user>:<pass>@<endpoint>.neon.tech/<db>?sslmode=require`
 - `sslmode=require` が付いていることを確認(Rails は `DATABASE_URL` をそのまま使う。database.yml の変更は不要)
+
+> **pooled(`-pooler` 付きホスト)は使わないこと。** pooled は PgBouncer の transaction pooling で、
+> entrypoint の `db:prepare` が
+> `PG::InFailedSqlTransaction: current transaction is aborted` で落ちる
+> (2026-08-29 に fhir-client で発生)。マイグレーション内の文はすべて成功ログを出しているのに
+> 直後の文がこのエラーになるのが特徴で、再デプロイしても同じ箇所で落ち続ける。
+> 原因は 2 つあり、どちらも transaction pooling 固有:
+> クライアントがトランザクション途中で落ちるとサーバー接続が abort 状態のまま次のクライアントに渡ること、
+> Rails のマイグレーション排他ロック `pg_advisory_lock` がセッション単位のため pooler 越しでは効かず、
+> コンテナ起動ごとに走る `db:prepare` が同時実行されうること。
+> 無料枠は単一インスタンス・`RAILS_MAX_THREADS=5` なので、pooler を挟む利点は無い。
+> ホスト名に `-pooler` が入っていたら外す(それ以外は同じ文字列)。
 
 ## 2. Render: Blueprint でデプロイ
 
@@ -177,4 +189,5 @@ open https://ysnr-fhir-client.onrender.com
 | client-api 経由が 401 のまま | `FHIR_SERVER_CLIENT_ID/SECRET` 未設定 or スコープ不足(書き込みには `system/*.write`) |
 | フロントで /fhir が 404 | render.yaml の rewrite 先 URL が実ホスト名とズレている |
 | DB 接続エラー | `DATABASE_URL` に `?sslmode=require` が付いているか確認(Neon は TLS 必須) |
+| デプロイが `PG::InFailedSqlTransaction` で落ちる | `DATABASE_URL` のホスト名に `-pooler` が入っている。直結エンドポイントに変える(手順 1 の注意書き) |
 | メモリ不足で再起動 | `WEB_CONCURRENCY=1` になっているか確認(無料枠 512MB) |
