@@ -4,7 +4,8 @@ require "rails_helper"
 # resource added with a typo'd column (or a definition drifting from the schema) fails
 # loudly here rather than at persist time.
 RSpec.describe "Fhir::ExtractionDefinitions integrity" do
-  TOKEN_KINDS = %i[code code_list codeable_concept codeable_concept_list coding coding_list identifier].freeze
+  TOKEN_KINDS = %i[code code_list codeable_concept codeable_concept_list coding coding_list
+                   coding_list_nested identifier].freeze
 
   Fhir::ResourceRegistry.types.each do |resource_type|
     entry = Fhir::ResourceRegistry.entry_for(resource_type)

@@ -47,7 +47,7 @@ Rails.application.routes.draw do
   # autoloads application code at boot. Keep in sync with Fhir::ResourceRegistry.
   %w[Patient MedicationRequest Medication MedicationDispense MedicationAdministration
      MedicationStatement Observation Specimen ImagingStudy DiagnosticReport
-     ServiceRequest Task Appointment Schedule Slot
+     ServiceRequest Task Provenance Appointment Schedule Slot
      Practitioner Organization
      PractitionerRole Encounter Location
      Condition AllergyIntolerance Procedure Immunization Coverage

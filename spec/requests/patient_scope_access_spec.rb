@@ -242,6 +242,40 @@ RSpec.describe "patient scope access", type: :request do
         expect(response).to have_http_status(:ok)
       end
     end
+
+    # Provenance.target is 0..* and heterogeneous, so it has no compartment
+    # either. Its whole point is to name who entered and who approved a record,
+    # which is staff information rather than the patient's own chart, so it is
+    # read with a system token (see Fhir::SearchDefinitions::Provenance).
+    describe "Provenance" do
+      let!(:provenance) do
+        create_resource(
+          "/Provenance",
+          { "resourceType" => "Provenance",
+            "target" => [{ "reference" => "Patient/#{mine}" }],
+            "recorded" => "2026-09-01T10:30:15+09:00",
+            "agent" => [{ "who" => { "reference" => "Practitioner/example" } }] }
+        )
+      end
+
+      it "is not readable by id" do
+        get "/Provenance/#{provenance}", headers: bearer_header(token)
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "is not returned by search even when the patient is the target" do
+        get "/Provenance", params: { patient: "Patient/#{mine}" }, headers: bearer_header(token)
+
+        expect(JSON.parse(response.body)["total"]).to eq(0)
+      end
+
+      it "stays readable with a system token" do
+        get "/Provenance/#{provenance}", headers: bearer_header(system_token)
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
   end
 
   describe "writes" do

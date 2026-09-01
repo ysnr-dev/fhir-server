@@ -30,6 +30,17 @@ module Fhir
     SERVICE_REQUEST_INTENT = %w[proposal plan directive order original-order reflex-order filler-order instance-order option].freeze
 
     # http://hl7.org/fhir/ValueSet/task-status (required)
+    # Provenance.agent.type。extensible binding なので、外れたコードは警告に留める
+    # (ValueSet: http://hl7.org/fhir/ValueSet/provenance-agent-type)。
+    # 代行入力は enterer(入力した人)+ author(指示した人)、承認は verifier。
+    PROVENANCE_AGENT_TYPE = %w[
+      enterer performer author verifier legal attester informant custodian assembler composer
+    ].freeze
+
+    # Provenance.entity.role。required binding なので外れたコードはエラー
+    # (ValueSet: http://hl7.org/fhir/ValueSet/provenance-entity-role)。
+    PROVENANCE_ENTITY_ROLE = %w[derivation revision quotation source removal].freeze
+
     TASK_STATUS = %w[draft requested received accepted rejected ready cancelled
                      in-progress on-hold failed completed entered-in-error].freeze
     # http://hl7.org/fhir/ValueSet/task-intent (required) -- request-intent plus

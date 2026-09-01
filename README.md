@@ -4,7 +4,7 @@ Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです�
 [JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) および
 問診票・診療テンプレートについては
 [JASPEHR 実装ガイド v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html)
-に準拠した 33 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
+に準拠した 34 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
 複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
@@ -333,7 +333,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 ### 対応リソース
 
-全 33 リソースが同一のエンドポイント群（後述）を持ちます。
+全 34 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
@@ -341,6 +341,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 | 薬剤 | Medication / MedicationRequest / MedicationDispense / MedicationAdministration / MedicationStatement |
 | 検査・レポート | Observation / Specimen / ImagingStudy / DiagnosticReport / ServiceRequest |
 | ワークフロー | Task |
+| 来歴 | Provenance |
 | 予約 | Appointment / Schedule / Slot |
 | 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization |
 | 保険 | Coverage |
@@ -431,8 +432,8 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
    | [JASPEHR v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html) | `vendor/jaspehr/` | `Questionnaire` / `QuestionnaireResponse` |
 
    検証の対象になるかは「そのプロファイル URL が vendor 済みか」だけで決まります
-   （`Composition` / `Group` / `Task` / `Appointment` / `Schedule` / `Slot` は JP Core に該当プロファイルが
-   無く基底 HL7 プロファイルのため対象外で、手書きバリデータのみが働きます）。
+   （`Composition` / `Group` / `Task` / `Provenance` / `Appointment` / `Schedule` / `Slot` は JP Core に
+   該当プロファイルが無く基底 HL7 プロファイルのため対象外で、手書きバリデータのみが働きます）。
    `ImagingStudy` は JP Core が Radiology / Endoscopy の 2 プロファイルに分けていますが、レジストリの
    `profile:` は 1 リソース 1 プロファイルなので、汎用側の `JP_ImagingStudy_Radiology` を採用しています
    （2 つは検証の厳密さは同一で、Endoscopy は参照先の型をより狭めるだけです）。
@@ -693,6 +694,78 @@ curl -s "http://localhost:3000/ServiceRequest?_has:Task:focus:status=in-progress
 
 **必須項目（FHIR R4）**: `status`、`intent`（値セットは request-intent に `unknown` を加えたもの）。
 加えて invariant `inv-1`（`lastModified` は `authoredOn` 以降）を検証します。
+
+---
+
+### Provenance の例（代行入力・承認）
+
+「この記録を誰が入力し、誰の指示によるもので、誰が承認したか」を、対象のリソースを書き換えずに残します。
+医師以外が医師の指示でオーダーを入力する**代行入力**と、指示医師が後から確認する**承認**の両方を
+`Provenance` 1 種で表します（JP Core は `Provenance` をプロファイルしていないので、基底 FHIR R4 に
+対する手書きバリデータのみが働きます）。
+
+| 要素 | 意味 |
+|---|---|
+| `target` | この活動が生んだ・更新したリソース（1..*、異種可）。オーダーなら `ServiceRequest` とその明細 |
+| `recorded` | 記録した日時（instant、必須）|
+| `agent[].type` | 役割。`author`＝指示した人、`enterer`＝入力した本人、`verifier`＝承認した人 |
+| `agent[].who` | その人（`Practitioner` など）|
+| `agent[].onBehalfOf` | 代行入力で「誰の指示か」を指す |
+| `signature[]` | 承認の署名（`type` / `when` / `who` が必須）|
+
+代行入力の記録:
+
+```bash
+curl -X POST http://localhost:3000/Provenance \
+  -H 'Content-Type: application/fhir+json' -d '{
+    "resourceType": "Provenance",
+    "target": [{ "reference": "ServiceRequest/<order-id>" }],
+    "recorded": "2026-09-01T10:30:15+09:00",
+    "agent": [
+      { "type": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                               "code": "author" }] },
+        "who": { "reference": "Practitioner/<doctor-id>" } },
+      { "type": { "coding": [{ "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                               "code": "enterer" }] },
+        "who": { "reference": "Practitioner/<clerk-id>" },
+        "onBehalfOf": { "reference": "Practitioner/<doctor-id>" } }
+    ]
+  }'
+```
+
+承認は、この `Provenance` に `verifier` の `agent` と `signature` を足して `PUT` します。
+
+検索:
+
+```bash
+# そのオーダーの来歴
+curl 'http://localhost:3000/Provenance?target=ServiceRequest/<order-id>'
+# オーダー本体と一緒に引く（画面はこちらを使う）
+curl 'http://localhost:3000/ServiceRequest?_id=<order-id>&_revinclude=Provenance:target'
+# 承認済みのオーダーだけ
+curl 'http://localhost:3000/ServiceRequest?_has:Provenance:target:agent-type=http://terminology.hl7.org/CodeSystem/provenance-participant-type|verifier'
+```
+
+**主な検索パラメータ**: `target`（0..* の異種参照。型を省いた id は `ServiceRequest` とみなします）/
+`patient`（`target` のうち `Patient` を指すもの）/ `agent`（`agent[].who`）/ `agent-type` /
+`signature-type` / `recorded`。`_sort` が効くのは `recorded` だけです。
+
+**必須項目（FHIR R4）**: `target`（1..*、各要素に `reference`）、`recorded`（instant）、
+`agent`（1..*、各要素に `who.reference`）。`signature` を入れるなら `type` / `when` / `who` が必須、
+`entity` を入れるなら `role`（値セット必須）/ `what.reference` が必須です。`agent.type` は
+extensible binding なので、値セットを外れても警告のみで受理します。
+
+**制約**:
+
+- **患者コンパートメントに入りません**。`target` が 0..* なので `Fhir::PatientCompartment`（単一値の
+  `Patient` 参照列だけを見る）の対象外で、`Group` / `Binary` と同じくシステムスコープでのみ読めます。
+  `Patient/$everything` にも含まれません。将来これを変えるなら、`target` に必ず `Patient` を含める規約に
+  したうえで `patient_reference` 列を抽出する必要があります（`Appointment` と同じ手）。
+- **バージョン付き参照（`ServiceRequest/1/_history/2`）は引けません**。このサーバーの参照検索と
+  `_include` は文字列の完全一致なので、`?target=ServiceRequest/1` からも `_revinclude` からも外れます。
+  POST は通りますが警告を返すので、バージョンを持たない参照を格納してください。
+- `_revinclude=Provenance:target` で逆引きできる型は `Fhir::SearchReferences::MAP` の `targets:` に
+  挙げたものだけです（挙げ忘れた型は静かに 0 件になります）。
 
 ---
 

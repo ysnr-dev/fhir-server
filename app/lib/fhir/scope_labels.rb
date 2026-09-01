@@ -28,6 +28,7 @@ module Fhir
       "Coverage" => "保険情報",
       "ServiceRequest" => "検査・処置の依頼",
       "Task" => "依頼の進捗・作業タスク",
+      "Provenance" => "記録の来歴(代行入力・承認)",
       "Appointment" => "診療の予約",
       "Schedule" => "診療枠(予約の受付単位)",
       "Slot" => "予約できる時間枠",

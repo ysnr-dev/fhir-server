@@ -388,6 +388,17 @@ RSpec.describe Fhir::Repository do
           "participant" => [
             { "actor" => { "reference" => "Patient/#{patient_id}" }, "status" => "accepted" }
           ] }
+      when "Provenance"
+        { "resourceType" => "Provenance",
+          "target" => [{ "reference" => "ServiceRequest/smoke" }],
+          "recorded" => "2026-09-01T10:30:15+09:00",
+          "agent" => [
+            { "type" => { "coding" => [
+                { "system" => "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                  "code" => "enterer" }
+              ] },
+              "who" => { "reference" => "Practitioner/smoke" } }
+          ] }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end
@@ -402,8 +413,11 @@ RSpec.describe Fhir::Repository do
 
         record = described_class.create(resource_type, fixture)
         expect(record.version_id).to eq(1)
-        # Binary is the one registered type with no identifier element in R4.
-        expect(record.resource_identifiers.pluck(:value)).not_to be_empty unless resource_type == "Binary"
+        # Binary and Provenance are the registered types with no identifier element in R4
+        # (Provenance is identified by what it points at, not by a business id).
+        unless %w[Binary Provenance].include?(resource_type)
+          expect(record.resource_identifiers.pluck(:value)).not_to be_empty
+        end
 
         updated = described_class.update(resource_type, record, fixture)
         expect(updated.version_id).to eq(2)

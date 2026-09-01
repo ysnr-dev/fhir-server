@@ -125,6 +125,19 @@ module Fhir
         "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
         "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Task] }
       },
+      # オーダー画面は _revinclude=Provenance:target で「このオーダーを誰が代行入力し、
+      # 誰が承認したか」を本体と一緒に引く。targets に挙げた型だけが逆引きの対象になる
+      # (挙げ忘れると静かに 0 件になるので、来歴を残したい型はここに足す)。
+      "Provenance" => {
+        "target" => { multiple: true, jsonb_key: "target", ref_path: %w[reference],
+                       targets: %w[ServiceRequest MedicationRequest Task Procedure
+                                   MedicationAdministration Observation Condition Composition
+                                   QuestionnaireResponse DiagnosticReport Specimen Encounter
+                                   AllergyIntolerance Appointment Patient] },
+        "patient" => { multiple: true, jsonb_key: "target", ref_path: %w[reference], targets: %w[Patient] },
+        "agent" => { multiple: true, jsonb_key: "agent", ref_path: %w[who reference],
+                      targets: %w[Practitioner PractitionerRole Organization Device RelatedPerson Patient] }
+      },
       # 予約画面は Appointment を起点に「誰の・どの枠・何の依頼か」を 1 リクエストで
       # 揃えたい。participant[].actor は 1 つの配列に患者も担当医も診察室も並ぶので、
       # patient / actor / location は同じ jsonb_key を参照先の型で切り分けている。

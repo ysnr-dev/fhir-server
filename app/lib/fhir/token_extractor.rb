@@ -12,6 +12,7 @@ module Fhir
   #   :codeable_concept_list   0..* CodeableConcept      -> one row per coding, all concepts
   #   :coding                  0..1 bare Coding          -> [(system, code)]
   #   :coding_list             0..* bare Coding          -> one row per coding
+  #   :coding_list_nested      0..* of (1..* bare Coding) -> one row per coding, all lists
   #   :identifier              0..1 Identifier           -> [(identifier.system, identifier.value)]
   module TokenExtractor
     module_function
@@ -54,6 +55,9 @@ module Fhir
       when :codeable_concept_list then Array(node).flat_map { |cc| concept_codings(cc) }
       when :coding                then coding_pair(node)
       when :coding_list           then Array(node).flat_map { |c| coding_pair(c) }
+      # dig_path が配列を 1 段しか踏み越えないので、配列の中の Coding 配列
+      # (Provenance.signature[].type)はここでもう 1 段ほどく。
+      when :coding_list_nested    then Array(node).flat_map { |list| Array(list).flat_map { |c| coding_pair(c) } }
       when :identifier            then node.is_a?(Hash) ? [[node["system"], node["value"]]] : []
       else []
       end

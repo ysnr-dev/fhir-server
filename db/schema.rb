@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_01_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_02_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -707,6 +707,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_01_000001) do
     t.index ["performed_time"], name: "index_procedures_on_performed_time"
     t.index ["status"], name: "index_procedures_on_status"
     t.index ["subject_reference"], name: "index_procedures_on_subject_reference"
+  end
+
+  create_table "provenances", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.datetime "recorded"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_provenances_on_content", using: :gin
+    t.index ["deleted"], name: "index_provenances_on_deleted"
+    t.index ["last_updated"], name: "index_provenances_on_last_updated"
+    t.index ["recorded"], name: "index_provenances_on_recorded"
   end
 
   create_table "questionnaire_responses", id: :string, force: :cascade do |t|

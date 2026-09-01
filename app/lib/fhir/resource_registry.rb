@@ -109,6 +109,20 @@ module Fhir
         token_extraction: ExtractionDefinitions::Task::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/Task"
       },
+      # 記録の来歴。誰が入力し(agent.type = enterer)、誰の指示によるもので
+      # (author + onBehalfOf)、誰が承認したか(verifier + signature)を、対象のリソースを
+      # 書き換えずに残す。Task / Group と同じく JP Core に該当プロファイルが無い。
+      # target が 0..* の異種参照なので患者コンパートメントには入らない
+      # (Fhir::PatientCompartment は単一値の Patient 参照列しか見ない) -- システム
+      # スコープ専用で、読み出しは主に _revinclude=Provenance:target。
+      "Provenance" => {
+        model: Provenance,
+        validator: ProvenanceValidator,
+        search_params: SearchDefinitions::Provenance::PARAMS,
+        extraction: ExtractionDefinitions::Provenance::FIELDS,
+        token_extraction: ExtractionDefinitions::Provenance::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Provenance"
+      },
       # 予約の 3 リソース。Schedule が「担当医・診察室ごとの枠表」、Slot がその中の
       # 個々の時間枠、Appointment が枠を押さえた予約そのもの。Task / Group /
       # Composition と同じく JP Core にプロファイルが無いので基底 HL7 定義に載り、
