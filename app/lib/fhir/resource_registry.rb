@@ -291,9 +291,9 @@ module Fhir
         token_extraction: ExtractionDefinitions::RelatedPerson::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_RelatedPerson"
       },
-      # JP Core defines no Group profile, so this is the one registered type left
-      # on a bare HL7 base definition and validated by its hand validator alone.
-      # It exists to give Group/$export a cohort to resolve.
+      # JP Core defines no Group profile, so this is one of the two registered types
+      # left on a bare HL7 base definition and validated by its hand validator alone
+      # (the other is Flag). It exists to give Group/$export a cohort to resolve.
       "Group" => {
         model: Group,
         validator: GroupValidator,
@@ -301,6 +301,16 @@ module Fhir
         extraction: ExtractionDefinitions::Group::FIELDS,
         token_extraction: ExtractionDefinitions::Group::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/Group"
+      },
+      # 診療上の注意(転倒リスク・体内金属・DNAR など)。Group と同じく JP Core が
+      # プロファイルしないため、HL7 の基本定義と FlagValidator だけで検証する。
+      "Flag" => {
+        model: Flag,
+        validator: FlagValidator,
+        search_params: SearchDefinitions::Flag::PARAMS,
+        extraction: ExtractionDefinitions::Flag::FIELDS,
+        token_extraction: ExtractionDefinitions::Flag::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Flag"
       }
     }.freeze
 

@@ -133,7 +133,7 @@ module Fhir
                        targets: %w[ServiceRequest MedicationRequest Task Procedure
                                    MedicationAdministration Observation Condition Composition
                                    QuestionnaireResponse DiagnosticReport Specimen Encounter
-                                   AllergyIntolerance Appointment Patient] },
+                                   AllergyIntolerance Appointment Patient Flag] },
         "patient" => { multiple: true, jsonb_key: "target", ref_path: %w[reference], targets: %w[Patient] },
         "agent" => { multiple: true, jsonb_key: "agent", ref_path: %w[who reference],
                       targets: %w[Practitioner PractitionerRole Organization Device RelatedPerson Patient] }
@@ -187,6 +187,14 @@ module Fhir
       },
       "AllergyIntolerance" => {
         "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" }
+      },
+      "Flag" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        "author" => { path: %w[author reference],
+                       targets: %w[Practitioner PractitionerRole Organization Patient Device],
+                       column: "author_reference" }
       },
       "Procedure" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },

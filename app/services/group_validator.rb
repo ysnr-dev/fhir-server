@@ -1,5 +1,5 @@
-# Group is the one registered type JP Core does not profile, so it is validated
-# against base FHIR R4 alone -- Fhir::Profile::Validator skips it (the registry
+# Group is one of the two registered types JP Core does not profile (the other is
+# Flag), so it is validated against base FHIR R4 alone -- Fhir::Profile::Validator skips it (the registry
 # points at the bare HL7 StructureDefinition, which is not vendored), making this
 # validator the only check that runs.
 class GroupValidator < ResourceValidator

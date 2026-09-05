@@ -53,7 +53,7 @@ Rails.application.routes.draw do
      Condition AllergyIntolerance Procedure Immunization Coverage
      Questionnaire QuestionnaireResponse
      Composition DocumentReference Binary
-     Device RelatedPerson Group].each do |type|
+     Device RelatedPerson Group Flag].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
       post   "/#{type}",                   to: "fhir_resources#create"

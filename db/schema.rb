@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_02_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_05_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -346,6 +346,33 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_02_000001) do
     t.index ["service_provider_reference"], name: "index_encounters_on_service_provider_reference"
     t.index ["status"], name: "index_encounters_on_status"
     t.index ["subject_reference"], name: "index_encounters_on_subject_reference"
+  end
+
+  create_table "flags", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "category_code"
+    t.string "code_value"
+    t.string "code_text"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.string "author_reference"
+    t.datetime "period_start"
+    t.datetime "period_end"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_flags_on_category_code"
+    t.index ["code_value"], name: "index_flags_on_code_value"
+    t.index ["content"], name: "index_flags_on_content", using: :gin
+    t.index ["deleted"], name: "index_flags_on_deleted"
+    t.index ["encounter_reference"], name: "index_flags_on_encounter_reference"
+    t.index ["last_updated"], name: "index_flags_on_last_updated"
+    t.index ["period_start"], name: "index_flags_on_period_start"
+    t.index ["status"], name: "index_flags_on_status"
+    t.index ["subject_reference"], name: "index_flags_on_subject_reference"
   end
 
   create_table "groups", id: :string, force: :cascade do |t|

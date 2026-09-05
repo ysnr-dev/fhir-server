@@ -116,6 +116,9 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/group-type (required)
     GROUP_TYPE = %w[person animal practitioner device medication substance].freeze
 
+    # http://hl7.org/fhir/ValueSet/flag-status (required)
+    FLAG_STATUS = %w[active inactive entered-in-error].freeze
+
     # http://hl7.org/fhir/ValueSet/publication-status (required) -- Questionnaire.status
     QUESTIONNAIRE_STATUS = %w[draft active retired unknown].freeze
     # http://hl7.org/fhir/ValueSet/questionnaire-answers-status (required)

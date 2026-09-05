@@ -399,6 +399,13 @@ RSpec.describe Fhir::Repository do
               ] },
               "who" => { "reference" => "Practitioner/smoke" } }
           ] }
+      when "Flag"
+        { "resourceType" => "Flag",
+          "identifier" => [{ "system" => "http://example.org/flag", "value" => "smoke-flag" }],
+          "status" => "active",
+          "code" => { "coding" => [{ "system" => "http://fhir-client.local/CodeSystem/patient-caution",
+                                     "code" => "fall" }] },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end
