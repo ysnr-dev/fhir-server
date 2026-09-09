@@ -149,4 +149,47 @@ RSpec.describe Fhir::FieldExtractor do
       expect(described_class.address_text({})).to be_nil
     end
   end
+
+  describe ".extract with fallback / with" do
+    it "tries the fallback path only when the primary path yields nil" do
+      spec = { path: "performedDateTime", fallback: "performedPeriod.start", transform: :datetime }
+      point = { "performedDateTime" => "2026-08-28T09:00:00+09:00" }
+      period = { "performedPeriod" => { "start" => "2026-08-28T10:00:00+09:00", "end" => "2026-08-28T12:00:00+09:00" } }
+
+      expect(described_class.extract(point, spec)).to eq(Time.iso8601("2026-08-28T09:00:00+09:00"))
+      expect(described_class.extract(period, spec)).to eq(Time.iso8601("2026-08-28T10:00:00+09:00"))
+      expect(described_class.extract({}, spec)).to be_nil
+    end
+
+    it "hands the :with constant to the transform" do
+      urls = %w[http://example.org/order-end]
+      resource = { "extension" => [
+        { "url" => "http://example.org/other", "valueDate" => "2026-01-01" },
+        { "url" => "http://example.org/order-end", "valueDate" => "2026-09-30" }
+      ] }
+
+      expect(described_class.extract(resource, { path: "extension", transform: :extension_datetime, with: urls }))
+        .to eq(Time.utc(2026, 9, 30))
+    end
+  end
+
+  describe ".extension_datetime" do
+    let(:urls) { %w[http://example.org/a http://example.org/b] }
+
+    it "reads valueDateTime, valueDate or valueInstant from the first matching extension" do
+      expect(described_class.extension_datetime([{ "url" => "http://example.org/b", "valueDateTime" => "2026-09-30T18:00:00+09:00" }], urls))
+        .to eq(Time.iso8601("2026-09-30T18:00:00+09:00"))
+      expect(described_class.extension_datetime([{ "url" => "http://example.org/a", "valueDate" => "2026-09-30" }], urls))
+        .to eq(Time.utc(2026, 9, 30))
+      expect(described_class.extension_datetime([{ "url" => "http://example.org/a", "valueInstant" => "2026-09-30T00:00:00Z" }], urls))
+        .to eq(Time.utc(2026, 9, 30))
+    end
+
+    it "returns nil when no extension matches, or the match carries no date" do
+      expect(described_class.extension_datetime(nil, urls)).to be_nil
+      expect(described_class.extension_datetime([{ "url" => "http://example.org/c", "valueDate" => "2026-09-30" }], urls)).to be_nil
+      expect(described_class.extension_datetime([{ "url" => "http://example.org/a", "valueString" => "x" }], urls)).to be_nil
+      expect(described_class.extension_datetime(["not-a-hash"], urls)).to be_nil
+    end
+  end
 end

@@ -122,7 +122,9 @@ module Fhir
       list = [
         { "name" => "validate", "definition" => "http://hl7.org/fhir/OperationDefinition/Resource-validate" },
         # 独自 operation: date 検索パラメータの値の重複なし集合(Fhir::DistinctDates)。
-        { "name" => "distinct-dates", "definition" => "http://fhir-server.local/OperationDefinition/distinct-dates" }
+        { "name" => "distinct-dates", "definition" => "http://fhir-server.local/OperationDefinition/distinct-dates" },
+        # 独自 operation: identifier system ごとの次の番号(Fhir::NextIdentifier)。
+        { "name" => "next-identifier", "definition" => "http://fhir-server.local/OperationDefinition/next-identifier" }
       ]
       case resource_type
       when "Patient"

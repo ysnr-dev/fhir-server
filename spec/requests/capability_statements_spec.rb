@@ -66,6 +66,14 @@ RSpec.describe "CapabilityStatement", type: :request do
       expect(observation["operation"].map { |o| o["name"] }).not_to include("everything")
     end
 
+    it "advertises the local $distinct-dates and $next-identifier operations on every resource" do
+      get "/metadata"
+
+      registry_resources.each do |resource|
+        expect(resource["operation"].map { |o| o["name"] }).to include("distinct-dates", "next-identifier")
+      end
+    end
+
     it "advertises the Bulk Data $export operation system-wide and patient-export on Patient" do
       get "/metadata"
 

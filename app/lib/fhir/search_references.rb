@@ -101,6 +101,10 @@ module Fhir
         "patient" => { alias: "subject" },
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
         "requester" => { path: %w[requester reference], targets: %w[Practitioner PractitionerRole Organization], column: "requester_reference" },
+        # 依頼先(他科依頼の依頼先診療科・宛先の医師)。他科依頼一覧に
+        # _include=ServiceRequest:performer を添えると依頼先の名称まで同じ応答で揃う。
+        "performer" => { multiple: true, jsonb_key: "performer", ref_path: %w[reference],
+                         targets: %w[Organization Practitioner PractitionerRole] },
         # ServiceRequest が別の ServiceRequest にぶら下がる形(オーダーのヘッダと明細)。
         # 親から子を引く _revinclude=ServiceRequest:based-on と、:iterate による
         # 2 段目(パネルの構成項目)の展開に使う。CarePlan は未実装なので載せない。

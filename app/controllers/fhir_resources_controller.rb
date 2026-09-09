@@ -10,7 +10,9 @@ class FhirResourcesController < ApplicationController
 
   # $validate computes without persisting and reveals nothing stored, so it
   # rides on the read scope alongside the other non-mutating interactions.
-  WRITE_ACTIONS = %w[create update conditional_update patch_update destroy conditional_destroy].freeze
+  # $next-identifier は登録の一部(番号を消費する)なので write スコープで守る。
+  WRITE_ACTIONS = %w[create update conditional_update patch_update destroy conditional_destroy
+                     next_identifier].freeze
 
   # action_name -> restful-interaction code for the audit trail.
   AUDIT_INTERACTIONS = {
@@ -27,7 +29,8 @@ class FhirResourcesController < ApplicationController
     "conditional_destroy" => "delete",
     "everything" => "operation",
     "validate" => "operation",
-    "distinct_dates" => "operation"
+    "distinct_dates" => "operation",
+    "next_identifier" => "operation"
   }.freeze
 
   def index
@@ -147,6 +150,11 @@ class FhirResourcesController < ApplicationController
       resource_type, request.query_string, context: access_context, handling: preferred_handling
     )
     render_operation_result(result)
+  end
+
+  # GET /{type}/$next-identifier?system=... -- その identifier system で次に使える番号。
+  def next_identifier
+    render_operation_result(Fhir::NextIdentifier.call(resource_type, params[:system]))
   end
 
   def destroy

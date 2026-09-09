@@ -21,13 +21,29 @@ module Fhir
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
         "requester"  => { type: :reference, column: :requester_reference, target_type: "Practitioner" },
+        # ServiceRequest.performer(0..*)は依頼先。他科依頼では依頼先の診療科
+        # (Organization)、医師宛ての依頼なら Practitioner が入る。型を省いた id は
+        # Organization とみなす(他科依頼一覧が「◯◯科宛て」で絞る用途が主なため)。
+        "performer"  => { type: :reference, multiple: true, jsonb_key: "performer",
+                           ref_path: %w[reference], target_type: "Organization" },
         "code"       => { type: :token_or_text, token_column: :code,
                            text_column: :code_text },
+        # ServiceRequest.requisition は「1 回の発行でまとめて出したオーダー」を束ねる
+        # 識別子(オーダーセット・レジメン適用)。同じ requisition を持つオーダーを
+        # 1 検索で引ける。Identifier なので system|value の token として索引する。
+        "requisition" => { type: :token },
         "authoredon" => { type: :datetime, column: :authored_on },
         # ServiceRequest.occurrenceDateTime(実施予定日時: 撮影日・採取日)。R4 標準の
         # occurrence 検索パラメータ。これまでクライアントは authoredOn に実施日を
         # 重複記載して代用していた。
         "occurrence" => { type: :datetime, column: :occurrence_date_time },
+        # 標準外: オーダーの有効期間。開始は occurrenceDateTime、終了は fhir-client の
+        # ローカル拡張 *-order-end(ExtractionDefinitions::ServiceRequest::ORDER_END_EXTENSION_URLS)。
+        # 終了を持たないオーダーは継続中(開いた区間)として扱うので、
+        # `order-period=ge{日}&order-period=le{日}` で「その日に効いている指示」を引ける
+        # (Encounter.date と同じ期間検索の意味論)。看護指示・食事・リハビリ・栄養指導の
+        # ように「始まっていて、まだ終わっていない」ものを一覧する用途。
+        "order-period" => { type: :datetime, column: :occurrence_date_time, end_column: :order_end },
         # 標準外のローカル検索パラメータ(extension[] は他の拡張と配列を共有する
         # ので url も一致条件に入れる)。
         "department" => { type: :reference, multiple: true, jsonb_key: "extension",

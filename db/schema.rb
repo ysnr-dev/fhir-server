@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_05_000001) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_09_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -725,12 +725,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_000001) do
     t.datetime "performed_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "performed_end"
     t.index ["category_code"], name: "index_procedures_on_category_code"
     t.index ["code_value"], name: "index_procedures_on_code_value"
     t.index ["content"], name: "index_procedures_on_content", using: :gin
     t.index ["deleted"], name: "index_procedures_on_deleted"
     t.index ["encounter_reference"], name: "index_procedures_on_encounter_reference"
     t.index ["last_updated"], name: "index_procedures_on_last_updated"
+    t.index ["performed_end"], name: "index_procedures_on_performed_end"
     t.index ["performed_time"], name: "index_procedures_on_performed_time"
     t.index ["status"], name: "index_procedures_on_status"
     t.index ["subject_reference"], name: "index_procedures_on_subject_reference"
@@ -923,6 +925,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_000001) do
     t.string "encounter_reference"
     t.string "requester_reference"
     t.datetime "occurrence_date_time"
+    t.datetime "order_end"
     t.index ["authored_on"], name: "index_service_requests_on_authored_on"
     t.index ["code"], name: "index_service_requests_on_code"
     t.index ["code_text"], name: "index_service_requests_on_code_text"
@@ -932,6 +935,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_000001) do
     t.index ["intent"], name: "index_service_requests_on_intent"
     t.index ["last_updated"], name: "index_service_requests_on_last_updated"
     t.index ["occurrence_date_time"], name: "index_service_requests_on_occurrence_date_time"
+    t.index ["order_end"], name: "index_service_requests_on_order_end"
     t.index ["requester_reference"], name: "index_service_requests_on_requester_reference"
     t.index ["status"], name: "index_service_requests_on_status"
     t.index ["subject_reference"], name: "index_service_requests_on_subject_reference"

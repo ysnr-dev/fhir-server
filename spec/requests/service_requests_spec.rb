@@ -510,4 +510,137 @@ RSpec.describe "ServiceRequests", type: :request do
       expect(bundle["entry"].first["resource"]["id"]).to eq(target)
     end
   end
+
+  # 他科依頼・オーダーセット・継続的な指示のための検索パラメータ。
+  describe "GET /ServiceRequest (search) performer / requisition / order-period" do
+    def create_order(subject_id, **overrides)
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id, **overrides), as: :json
+      expect(response).to have_http_status(:created)
+      JSON.parse(response.body)["id"]
+    end
+
+    def ids_of(body)
+      JSON.parse(body)["entry"].to_a.reject { |e| e.dig("search", "mode") == "include" }.map { |e| e["resource"]["id"] }
+    end
+
+    it "finds by performer (typed reference, bare id as Organization) and includes it" do
+      subject_id = create_patient
+      post "/Organization", params: { "resourceType" => "Organization", "name" => "循環器内科" }, as: :json
+      dept_id = JSON.parse(response.body)["id"]
+      target = create_order(subject_id, "performer" => [{ "reference" => "Organization/#{dept_id}" }])
+      create_order(subject_id, "performer" => [{ "reference" => "Organization/other-dept" }])
+      create_order(subject_id)
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", performer: "Organization/#{dept_id}" }
+      expect(ids_of(response.body)).to eq([target])
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", performer: dept_id }
+      expect(ids_of(response.body)).to eq([target])
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", performer: "Organization/#{dept_id}",
+                                        _include: "ServiceRequest:performer" }
+      included = JSON.parse(response.body)["entry"].select { |e| e.dig("search", "mode") == "include" }
+      expect(included.map { |e| e["resource"]["id"] }).to eq([dept_id])
+    end
+
+    it "matches any performer of a multi-performer order and supports comma OR" do
+      subject_id = create_patient
+      both = create_order(subject_id, "performer" => [
+        { "reference" => "Organization/dept-a" }, { "reference" => "Practitioner/dr-1" }
+      ])
+      only_b = create_order(subject_id, "performer" => [{ "reference" => "Organization/dept-b" }])
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", performer: "Practitioner/dr-1" }
+      expect(ids_of(response.body)).to eq([both])
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", performer: "dept-a,dept-b", _sort: "_id" }
+      expect(ids_of(response.body)).to match_array([both, only_b])
+    end
+
+    it "finds by requisition (system|value, value only) and treats :missing" do
+      subject_id = create_patient
+      system = "urn:ietf:rfc:3986"
+      a1 = create_order(subject_id, "requisition" => { "system" => system, "value" => "urn:uuid:set-1" })
+      a2 = create_order(subject_id, "requisition" => { "system" => system, "value" => "urn:uuid:set-1" })
+      create_order(subject_id, "requisition" => { "system" => system, "value" => "urn:uuid:set-2" })
+      loose = create_order(subject_id)
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", requisition: "#{system}|urn:uuid:set-1" }
+      expect(ids_of(response.body)).to match_array([a1, a2])
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", requisition: "urn:uuid:set-1" }
+      expect(ids_of(response.body)).to match_array([a1, a2])
+
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", "requisition:missing" => "true" }
+      expect(ids_of(response.body)).to eq([loose])
+    end
+
+    it "is advertised as supported under strict handling" do
+      subject_id = create_patient
+      get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", performer: "x", requisition: "y",
+                                        "order-period" => "ge2026-01-01" },
+                             headers: { "Prefer" => "handling=strict" }
+      expect(response).to have_http_status(:ok)
+    end
+
+    describe "order-period (occurrence start + *-order-end extension)" do
+      let(:nursing_end_url) { "http://fhir-client.local/StructureDefinition/nursing-order-end" }
+      let(:meal_end_url) { "http://fhir-client.local/StructureDefinition/meal-order-end" }
+
+      it "returns orders in effect on a day: started on or before it and not yet ended (open end included)" do
+        subject_id = create_patient
+        ended_before = create_order(subject_id, "occurrenceDateTime" => "2026-09-01",
+                                                "extension" => [{ "url" => nursing_end_url, "valueDate" => "2026-09-05" }])
+        ends_that_day = create_order(subject_id, "occurrenceDateTime" => "2026-09-01",
+                                                 "extension" => [{ "url" => nursing_end_url, "valueDate" => "2026-09-09" }])
+        open_ended = create_order(subject_id, "occurrenceDateTime" => "2026-09-03")
+        starts_later = create_order(subject_id, "occurrenceDateTime" => "2026-09-10")
+        meal = create_order(subject_id, "occurrenceDateTime" => "2026-09-08T08:00:00+09:00",
+                                        "extension" => [{ "url" => meal_end_url, "valueDateTime" => "2026-09-12T18:00:00+09:00" }])
+
+        # 同じ名前を 2 回渡すと AND(重なり)。Rails の params ハッシュだと `[]` 付きになるので
+        # クエリ文字列で書く。
+        get "/ServiceRequest?subject=Patient/#{subject_id}&order-period=ge2026-09-09&order-period=le2026-09-09&_sort=_id"
+
+        expect(ids_of(response.body)).to match_array([ends_that_day, open_ended, meal])
+        expect(ids_of(response.body)).not_to include(ended_before, starts_later)
+      end
+
+      it "reads the end from the extension regardless of which order type wrote it" do
+        subject_id = create_patient
+        rehab = create_order(subject_id, "occurrenceDateTime" => "2026-09-01",
+                                         "extension" => [{ "url" => "http://fhir-client.local/StructureDefinition/rehab-order-end",
+                                                           "valueDate" => "2026-09-02" }])
+        nutrition = create_order(subject_id, "occurrenceDateTime" => "2026-09-01",
+                                             "extension" => [{ "url" => "http://fhir-client.local/StructureDefinition/nutrition-guidance-order-end",
+                                                               "valueDate" => "2026-09-30" }])
+
+        # 9/2 で終わったリハビリは 9/9 には効いていない。栄養指導は 9/30 まで。
+        get "/ServiceRequest?subject=Patient/#{subject_id}&order-period=ge2026-09-09&order-period=le2026-09-09"
+        expect(ids_of(response.body)).to eq([nutrition])
+
+        # `eb`(終了が検索日より前)で終わった指示だけを引ける。
+        get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", "order-period" => "eb2026-09-09" }
+        expect(ids_of(response.body)).to eq([rehab])
+      end
+
+      it "ignores extensions with other urls and refreshes the end on update" do
+        subject_id = create_patient
+        id = create_order(subject_id, "occurrenceDateTime" => "2026-09-01",
+                                      "extension" => [{ "url" => "http://example.org/not-an-end", "valueDate" => "2026-09-02" }])
+
+        get "/ServiceRequest?subject=Patient/#{subject_id}&order-period=ge2026-09-09&order-period=le2026-09-09"
+        expect(ids_of(response.body)).to eq([id]) # 終了なし = 継続中
+
+        put "/ServiceRequest/#{id}", params: valid_service_request_payload(
+          subject_id: subject_id, "occurrenceDateTime" => "2026-09-01",
+          "extension" => [{ "url" => nursing_end_url, "valueDate" => "2026-09-02" }]
+        ), as: :json
+        expect(response).to have_http_status(:ok)
+
+        get "/ServiceRequest?subject=Patient/#{subject_id}&order-period=ge2026-09-09&order-period=le2026-09-09"
+        expect(ids_of(response.body)).to be_empty
+      end
+    end
+  end
 end

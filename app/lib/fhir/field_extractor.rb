@@ -9,13 +9,21 @@ module Fhir
   # "class.code", "birthDate"); a nil/non-hash step yields nil. `transform` (optional)
   # names one of the methods below, applied to the value at `path`. With no transform,
   # the raw value at `path` is returned (scalars, references, plain digs).
+  #
+  # `fallback` (optional) is a second path tried only when `path` yields nil -- for a
+  # choice element whose two forms feed one column (performedDateTime / performedPeriod.start).
+  # `with` (optional) is a constant handed to the transform as its second argument
+  # (e.g. the extension URLs :extension_datetime should look for).
   module FieldExtractor
     module_function
 
     def extract(resource, spec)
       value = dig_path(resource, spec[:path])
+      value = dig_path(resource, spec[:fallback]) if value.nil? && spec[:fallback]
       transform = spec[:transform]
-      transform ? send(transform, value) : value
+      return value unless transform
+
+      spec.key?(:with) ? send(transform, value, spec[:with]) : send(transform, value)
     end
 
     def dig_path(resource, path)
@@ -55,6 +63,20 @@ module Fhir
       Time.iso8601(value)
     rescue ArgumentError, TypeError
       value.is_a?(String) ? partial_date(value)&.to_time(:utc) : nil
+    end
+
+    # The dateTime carried by the first extension (of a 0..* extension array) whose
+    # url is one of `urls`, as valueDateTime / valueDate / valueInstant. nil when no
+    # such extension exists or it carries no date value. Used for local extensions
+    # that hold a date the base resource has no element for (an order's end date).
+    def extension_datetime(extensions, urls)
+      extension = Array(extensions).find do |element|
+        element.is_a?(Hash) && urls.include?(element["url"])
+      end
+      return nil unless extension
+
+      value = extension["valueDateTime"] || extension["valueDate"] || extension["valueInstant"]
+      datetime(value)
     end
 
     # --- codings ------------------------------------------------------------

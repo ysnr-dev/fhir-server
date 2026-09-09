@@ -571,4 +571,13 @@ RSpec.describe Fhir::Search do
       expect(search("Patient", { "_total" => "estimate" }).total).to eq(2)
     end
   end
+
+  describe "_count clamping" do
+    it "defaults to 20, honors values up to 500 and clamps above" do
+      expect(described_class.call("Patient", Fhir::SearchParams.parse("")).count).to eq(20)
+      expect(described_class.call("Patient", Fhir::SearchParams.parse("_count=0")).count).to eq(20)
+      expect(described_class.call("Patient", Fhir::SearchParams.parse("_count=500")).count).to eq(500)
+      expect(described_class.call("Patient", Fhir::SearchParams.parse("_count=1000")).count).to eq(500)
+    end
+  end
 end

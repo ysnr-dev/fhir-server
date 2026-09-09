@@ -1,7 +1,10 @@
 module Fhir
   module SearchDefinitions
     module Procedure
-      # `date` searches performed[x]; only performedDateTime is extracted.
+      # `date` searches performed[x] as a period: performedDateTime is a point
+      # (start = end), performedPeriod is [start, end) with a nil end meaning
+      # "still in progress". `eq` is containment, ge/le combine for overlap
+      # (same rules as Encounter.date -- see Fhir::Search#period_fragment).
       PARAMS = {
         "identifier" => { type: :identifier },
         "status"     => { type: :token, column: :status },
@@ -11,7 +14,7 @@ module Fhir
         "subject"    => { type: :reference, column: :subject_reference,
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
-        "date"       => { type: :datetime, column: :performed_time },
+        "date"       => { type: :datetime, column: :performed_time, end_column: :performed_end },
         # 0..* references, so matched by jsonb containment rather than a column.
         # Procedure.basedOn は実施の元になった依頼(放射線検査オーダーのヘッダ)を指す。
         # カルテのオーダー表示が「その依頼の実施記録」を引くのに使う。CarePlan は

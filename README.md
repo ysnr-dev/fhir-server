@@ -387,8 +387,9 @@ curl -s "http://localhost:3000/ServiceRequest?reason-reference=Condition/{condit
 | `PATCH` | `/{Resource}/:id` | 部分更新（JSON Patch, RFC 6902。`Content-Type: application/json-patch+json`） |
 | `DELETE` | `/{Resource}/:id` | 削除（論理削除） |
 | `DELETE` | `/{Resource}?{criteria}` | 条件付き削除（該当全件を削除。`conditionalDelete: "multiple"`） |
-| `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索（3 セグメントまでの多段対応）・`_has`・`_include`/`_revinclude`・`_sort`・`_count`/`_offset`・`_summary`/`_elements`・`_total`・`:missing`・`:not`・`Prefer: handling=strict` 等に対応 |
+| `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索（3 セグメントまでの多段対応）・`_has`・`_include`/`_revinclude`・`_sort`・`_count`（上限 500）/`_offset`・`_summary`/`_elements`・`_total`・`:missing`・`:not`・`Prefer: handling=strict` 等に対応 |
 | `GET` | `/{Resource}/$distinct-dates` | 独自 operation: date 検索パラメータが取る値の重複なし集合（新しい順）。`date-param`（必須）・`precision=day\|full`・`timezone=±HH:MM`（既定はサーバーのローカルゾーン）・`limit`・`count=true`（日付ごとの件数） |
+| `GET` | `/{Resource}/$next-identifier` | 独自 operation: `system`（必須）の identifier で次に使える番号を払い出す（`Parameters` の `value`）。数字だけの値を数値として比べ、払い出し済み・登録済み（削除済み含む）の最大値 + 1 を返す。同時に呼んでも同じ番号は返らない。登録の一部なので write スコープ |
 | `GET` | `/{Resource}/_history` | タイプレベル履歴（`_count` / `_since` 対応） |
 | `GET` | `/{Resource}/:id/_history` | インスタンスのバージョン履歴（Bundle） |
 | `GET` | `/{Resource}/:id/_history/:vid` | 特定バージョンの参照（vread） |
@@ -617,11 +618,37 @@ curl -i -X POST http://localhost:3000/ServiceRequest \
 
 ```bash
 curl -s "http://localhost:3000/ServiceRequest?subject=Patient/{patientId}&status=active"
+
+# 依頼先で絞る（他科依頼の依頼先診療科。型を省いた id は Organization とみなす）
+curl -s "http://localhost:3000/ServiceRequest?performer=Organization/{deptId}&status=active&_include=ServiceRequest:performer"
+
+# 1 回の発行でまとめて出したオーダー（オーダーセット・レジメン適用）を requisition で束ねて引く
+curl -s "http://localhost:3000/ServiceRequest?requisition=urn:ietf:rfc:3986|urn:uuid:{requisitionId}"
+
+# ある日に効いている継続的な指示（看護指示・食事・リハビリ・栄養指導）。開始は occurrenceDateTime、
+# 終了は fhir-client のローカル拡張 *-order-end。終了の無い指示は継続中として掛かる
+curl -s "http://localhost:3000/ServiceRequest?patient={patientId}&order-period=ge2026-09-09&order-period=le2026-09-09"
 ```
+
+**主な検索パラメータ**: `identifier` / `status` / `intent` / `category` / `code` / `subject`（別名 `patient`）/
+`encounter` / `requester` / `performer` / `requisition` / `authoredon` / `occurrence`（`occurrenceDateTime`）/
+`based-on` / `reason-reference`、ローカル拡張を引く `department` / `ward`（`order-department` / `order-ward`）と
+`order-period`（開始 = `occurrenceDateTime`、終了 = `nursing-order-end` / `meal-order-end` / `rehab-order-end` /
+`nutrition-guidance-order-end` 拡張。期間検索の意味論は `Encounter.date` と同じで、`eq` は包含、
+`ge`+`le` で重なり、終了なしは開いた区間）。
 
 **必須項目（JP-Core）**: `status`（値セット `draft|active|on-hold|revoked|completed|entered-in-error|unknown`）、
 `intent`（値セット `proposal|plan|directive|order|original-order|reflex-order|filler-order|instance-order|option`）、
 `subject`。
+
+---
+
+### Procedure の `date` 検索
+
+`Procedure.performed[x]` は期間として索引します。`performedDateTime`（放射線・処置の実施記録）は
+開始 = 終了の点、`performedPeriod`（手術）は開始・終了（終了が無ければ進行中）です。
+意味論は `Encounter.date` と同じで、`date=2026-08-28` は包含（日をまたぐ手術はどちらの日にも含まれない）、
+その日に掛かる手術は `date=ge2026-08-28&date=le2026-08-28` で引きます。`_sort=date` は開始で並びます。
 
 ---
 

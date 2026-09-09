@@ -10,7 +10,10 @@ module Fhir
   # that both sides of an OR be structurally identical relations.
   class Search
     DEFAULT_COUNT = 20
-    MAX_COUNT = 100
+    # _count の上限。100 だと入院患者一覧・経過表・患者番号の採番のような「1 患者 /
+    # 1 病棟ぶんを読み切る」検索が何ページも往復することになるため 500 にしている。
+    # _include / _revinclude で添えるリソースはこの上限に数えない(IncludeResolver)。
+    MAX_COUNT = 500
 
     DATE_PREFIX_PATTERN = /\A(eq|ne|ge|le|gt|lt|sa|eb|ap)(\d.*)\z/.freeze
     SUPPORTED_DATE_PREFIXES = %w[eq ne ge le gt lt sa eb ap].freeze

@@ -209,4 +209,83 @@ RSpec.describe "Procedures", type: :request do
         .to eq([dose_id])
     end
   end
+
+  # `date` は performed[x] を期間として引く。放射線・処置の実施記録は performedDateTime
+  # (点)、手術は performedPeriod(開始・終了)。
+  describe "GET /Procedure (search) date over performedDateTime and performedPeriod" do
+    def create_procedure(subject_id, **overrides)
+      payload = valid_procedure_payload(subject_id: subject_id, **overrides)
+      payload.delete("performedDateTime") if overrides.key?("performedPeriod")
+      post "/Procedure", params: payload, as: :json
+      expect(response).to have_http_status(:created)
+      JSON.parse(response.body)["id"]
+    end
+
+    def ids_of(body)
+      JSON.parse(body)["entry"].to_a.map { |e| e["resource"]["id"] }
+    end
+
+    it "keeps point semantics for performedDateTime (eq / ge / le / gt / lt)" do
+      subject_id = create_patient
+      early = create_procedure(subject_id, "performedDateTime" => "2026-08-28T09:00:00+09:00")
+      late = create_procedure(subject_id, "performedDateTime" => "2026-08-29T09:00:00+09:00")
+
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", date: "2026-08-28" }
+      expect(ids_of(response.body)).to eq([early])
+
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", date: "ge2026-08-29" }
+      expect(ids_of(response.body)).to eq([late])
+
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", date: "le2026-08-28" }
+      expect(ids_of(response.body)).to eq([early])
+
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", date: "gt2026-08-28" }
+      expect(ids_of(response.body)).to eq([late])
+
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", date: "lt2026-08-29" }
+      expect(ids_of(response.body)).to eq([early])
+    end
+
+    it "finds a performedPeriod procedure by overlap (ge + le) and by containment (eq)" do
+      subject_id = create_patient
+      surgery = create_procedure(subject_id, "performedPeriod" => {
+        "start" => "2026-08-28T09:00:00+09:00", "end" => "2026-08-28T13:30:00+09:00"
+      })
+      overnight = create_procedure(subject_id, "performedPeriod" => {
+        "start" => "2026-08-30T22:00:00+09:00", "end" => "2026-08-31T02:00:00+09:00"
+      })
+      ongoing = create_procedure(subject_id, "performedPeriod" => { "start" => "2026-09-01T09:00:00+09:00" })
+
+      # その日に掛かる手術(日をまたぐものは両日で引ける)。
+      get "/Procedure?subject=Patient/#{subject_id}&date=ge2026-08-28&date=le2026-08-28"
+      expect(ids_of(response.body)).to eq([surgery])
+      get "/Procedure?subject=Patient/#{subject_id}&date=ge2026-08-31&date=le2026-08-31"
+      expect(ids_of(response.body)).to eq([overnight])
+
+      # eq は包含: 日をまたぐ手術はどちらの日にも含まれない。
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", date: "2026-08-28" }
+      expect(ids_of(response.body)).to eq([surgery])
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", date: "2026-08-30" }
+      expect(ids_of(response.body)).to be_empty
+
+      # 終了の無い(進行中の)手術は「その日以降」に常に掛かる。
+      get "/Procedure?subject=Patient/#{subject_id}&date=ge2026-09-15&date=le2026-09-15"
+      expect(ids_of(response.body)).to eq([ongoing])
+
+      # 期間の開始で並べ替えられる(performedPeriod.start も索引される)。
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", _sort: "-date" }
+      expect(ids_of(response.body)).to eq([ongoing, overnight, surgery])
+    end
+
+    it "treats a procedure without performed[x] as date:missing" do
+      subject_id = create_patient
+      payload = valid_procedure_payload(subject_id: subject_id).except("performedDateTime")
+      post "/Procedure", params: payload, as: :json
+      undated = JSON.parse(response.body)["id"]
+      create_procedure(subject_id, "performedDateTime" => "2026-08-28T09:00:00+09:00")
+
+      get "/Procedure", params: { subject: "Patient/#{subject_id}", "date:missing" => "true" }
+      expect(ids_of(response.body)).to eq([undated])
+    end
+  end
 end
