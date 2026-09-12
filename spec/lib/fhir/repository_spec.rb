@@ -406,6 +406,20 @@ RSpec.describe Fhir::Repository do
           "code" => { "coding" => [{ "system" => "http://fhir-client.local/CodeSystem/patient-caution",
                                      "code" => "fall" }] },
           "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "CarePlan"
+        { "resourceType" => "CarePlan",
+          "identifier" => [{ "system" => "http://example.org/care-plan", "value" => "smoke-cp" }],
+          "status" => "active",
+          "intent" => "plan",
+          "category" => [{ "coding" => [{ "system" => "http://example.org/CodeSystem/care-plan",
+                                          "code" => "pathway" }] }],
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "Goal"
+        { "resourceType" => "Goal",
+          "identifier" => [{ "system" => "http://example.org/goal", "value" => "smoke-goal" }],
+          "lifecycleStatus" => "active",
+          "description" => { "text" => "smoke goal" },
+          "subject" => { "reference" => "Patient/#{patient_id}" } }
       else
         raise "No smoke-test fixture defined for #{resource_type} -- add one when registering the type"
       end

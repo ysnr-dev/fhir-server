@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_09_000003) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_12_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -159,6 +159,33 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_09_000003) do
     t.index ["created_at"], name: "index_bulk_exports_on_created_at"
     t.index ["oauth_client_id"], name: "index_bulk_exports_on_oauth_client_id"
     t.index ["status"], name: "index_bulk_exports_on_status"
+  end
+
+  create_table "care_plans", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "intent"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.datetime "period_start"
+    t.datetime "period_end"
+    t.string "instantiates_canonical"
+    t.string "instantiates_uri"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["content"], name: "index_care_plans_on_content", using: :gin
+    t.index ["deleted"], name: "index_care_plans_on_deleted"
+    t.index ["encounter_reference"], name: "index_care_plans_on_encounter_reference"
+    t.index ["instantiates_canonical"], name: "index_care_plans_on_instantiates_canonical"
+    t.index ["instantiates_uri"], name: "index_care_plans_on_instantiates_uri"
+    t.index ["intent"], name: "index_care_plans_on_intent"
+    t.index ["last_updated"], name: "index_care_plans_on_last_updated"
+    t.index ["period_start"], name: "index_care_plans_on_period_start"
+    t.index ["status"], name: "index_care_plans_on_status"
+    t.index ["subject_reference"], name: "index_care_plans_on_subject_reference"
   end
 
   create_table "client_assertion_jtis", force: :cascade do |t|
@@ -373,6 +400,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_09_000003) do
     t.index ["period_start"], name: "index_flags_on_period_start"
     t.index ["status"], name: "index_flags_on_status"
     t.index ["subject_reference"], name: "index_flags_on_subject_reference"
+  end
+
+  create_table "goals", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "lifecycle_status"
+    t.string "achievement_status"
+    t.string "subject_reference"
+    t.date "start_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["achievement_status"], name: "index_goals_on_achievement_status"
+    t.index ["content"], name: "index_goals_on_content", using: :gin
+    t.index ["deleted"], name: "index_goals_on_deleted"
+    t.index ["last_updated"], name: "index_goals_on_last_updated"
+    t.index ["lifecycle_status"], name: "index_goals_on_lifecycle_status"
+    t.index ["start_date"], name: "index_goals_on_start_date"
+    t.index ["subject_reference"], name: "index_goals_on_subject_reference"
   end
 
   create_table "groups", id: :string, force: :cascade do |t|

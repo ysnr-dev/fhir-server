@@ -119,6 +119,17 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/flag-status (required)
     FLAG_STATUS = %w[active inactive entered-in-error].freeze
 
+    # http://hl7.org/fhir/ValueSet/request-status (required) -- CarePlan.status
+    CARE_PLAN_STATUS = %w[draft active on-hold revoked completed entered-in-error unknown].freeze
+    # http://hl7.org/fhir/ValueSet/care-plan-intent (required)
+    CARE_PLAN_INTENT = %w[proposal plan order option].freeze
+
+    # http://hl7.org/fhir/ValueSet/goal-status (required) -- Goal.lifecycleStatus。
+    # 一方 Goal.achievementStatus の束縛は preferred なので、施設やガイドが独自の
+    # コード体系(ePath の達成状態など)を使ってよい -- バリデータで縛らない。
+    GOAL_LIFECYCLE_STATUS = %w[proposed planned accepted active on-hold completed
+                               cancelled entered-in-error rejected].freeze
+
     # http://hl7.org/fhir/ValueSet/publication-status (required) -- Questionnaire.status
     QUESTIONNAIRE_STATUS = %w[draft active retired unknown].freeze
     # http://hl7.org/fhir/ValueSet/questionnaire-answers-status (required)

@@ -27,7 +27,7 @@ RSpec.describe "Groups", type: :request do
 
       body = JSON.parse(response.body)
       expect(body["resourceType"]).to eq("Group")
-      # Group is one of the two registered types JP Core does not profile (with Flag).
+      # Group is one of the registered types JP Core does not profile.
       expect(body["meta"]["profile"]).to eq(["http://hl7.org/fhir/StructureDefinition/Group"])
     end
 

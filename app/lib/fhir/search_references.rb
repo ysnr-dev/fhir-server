@@ -137,7 +137,7 @@ module Fhir
                        targets: %w[ServiceRequest MedicationRequest Task Procedure
                                    MedicationAdministration Observation Condition Composition
                                    QuestionnaireResponse DiagnosticReport Specimen Encounter
-                                   AllergyIntolerance Appointment Patient Flag] },
+                                   AllergyIntolerance Appointment Patient Flag CarePlan Goal] },
         "patient" => { multiple: true, jsonb_key: "target", ref_path: %w[reference], targets: %w[Patient] },
         "agent" => { multiple: true, jsonb_key: "agent", ref_path: %w[who reference],
                       targets: %w[Practitioner PractitionerRole Organization Device RelatedPerson Patient] }
@@ -200,6 +200,21 @@ module Fhir
                        targets: %w[Practitioner PractitionerRole Organization Patient Device],
                        column: "author_reference" }
       },
+      "CarePlan" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        # 計画の入れ子(クリニカルパスの適用 → 病日 → OAT ユニット → 観察項目)。
+        # 子孫は祖先すべてを partOf に並べるので、適用を指す 1 回の検索で木全体が引ける。
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[CarePlan] },
+        # 計画の達成目標。計画の検索に _include=CarePlan:goal を添えると、目標と
+        # その評価まで同じ応答で揃う(Goal から計画への逆参照は R4 に無い)。
+        "goal" => { multiple: true, jsonb_key: "goal", ref_path: %w[reference], targets: %w[Goal] }
+      },
+      "Goal" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" }
+      },
       "Procedure" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
@@ -207,7 +222,9 @@ module Fhir
         # 実施の元になった依頼。オーダーの検索に _revinclude=Procedure:based-on を
         # 添えると「そのオーダーが実施済みか、何を使ったか」を 1 リクエストで引ける。
         # 2 件目以降の手技(partOf でぶら下がる子)も basedOn を持つので同時に付いてくる。
-        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
+        # クリニカルパスのタスクは依頼を経ずに計画から直に実施されるので CarePlan も指す。
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference],
+                         targets: %w[ServiceRequest CarePlan] },
         "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] }
       },
       "Immunization" => {

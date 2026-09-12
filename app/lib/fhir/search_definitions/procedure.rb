@@ -17,8 +17,9 @@ module Fhir
         "date"       => { type: :datetime, column: :performed_time, end_column: :performed_end },
         # 0..* references, so matched by jsonb containment rather than a column.
         # Procedure.basedOn は実施の元になった依頼(放射線検査オーダーのヘッダ)を指す。
-        # カルテのオーダー表示が「その依頼の実施記録」を引くのに使う。CarePlan は
-        # 未実装なので参照先には載せない。
+        # カルテのオーダー表示が「その依頼の実施記録」を引くのに使う。型を省いた id は
+        # 依頼とみなす(大半がそちらで、クリニカルパスのタスクが指す CarePlan は
+        # 型付きの参照で書かれる)。
         "based-on"   => { type: :reference, multiple: true, jsonb_key: "basedOn",
                            ref_path: %w[reference], target_type: "ServiceRequest" },
         # Procedure.partOf は 1 回の実施に手技が複数付くとき、2 件目以降を 1 件目

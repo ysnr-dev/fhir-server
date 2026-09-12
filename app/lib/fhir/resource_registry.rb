@@ -291,9 +291,10 @@ module Fhir
         token_extraction: ExtractionDefinitions::RelatedPerson::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_RelatedPerson"
       },
-      # JP Core defines no Group profile, so this is one of the two registered types
-      # left on a bare HL7 base definition and validated by its hand validator alone
-      # (the other is Flag). It exists to give Group/$export a cohort to resolve.
+      # JP Core defines no Group profile, so it stays on a bare HL7 base definition and
+      # is validated by its hand validator alone (as Task / Composition / Appointment /
+      # Schedule / Slot / Provenance / Flag / CarePlan / Goal are). It exists to give
+      # Group/$export a cohort to resolve.
       "Group" => {
         model: Group,
         validator: GroupValidator,
@@ -311,6 +312,25 @@ module Fhir
         extraction: ExtractionDefinitions::Flag::FIELDS,
         token_extraction: ExtractionDefinitions::Flag::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/Flag"
+      },
+      # 診療計画。クリニカルパス(ePath)は 1 回の適用を CarePlan の木で表し、Goal が
+      # その達成目標と評価を持つ。どちらも JP Core がプロファイルしないため、HL7 の
+      # 基本定義と手書きバリデータだけで検証する。
+      "CarePlan" => {
+        model: CarePlan,
+        validator: CarePlanValidator,
+        search_params: SearchDefinitions::CarePlan::PARAMS,
+        extraction: ExtractionDefinitions::CarePlan::FIELDS,
+        token_extraction: ExtractionDefinitions::CarePlan::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/CarePlan"
+      },
+      "Goal" => {
+        model: Goal,
+        validator: GoalValidator,
+        search_params: SearchDefinitions::Goal::PARAMS,
+        extraction: ExtractionDefinitions::Goal::FIELDS,
+        token_extraction: ExtractionDefinitions::Goal::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/Goal"
       }
     }.freeze
 

@@ -333,7 +333,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 
 ### 対応リソース
 
-全 34 リソースが同一のエンドポイント群（後述）を持ちます。
+全 37 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
@@ -343,7 +343,8 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 | ワークフロー | Task |
 | 来歴 | Provenance |
 | 予約 | Appointment / Schedule / Slot |
-| 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization |
+| 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization / Flag |
+| 診療計画 | CarePlan / Goal |
 | 保険 | Coverage |
 | 問診 | Questionnaire / QuestionnaireResponse |
 | 文書 | Composition / DocumentReference / Binary |
@@ -433,8 +434,9 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
    | [JASPEHR v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html) | `vendor/jaspehr/` | `Questionnaire` / `QuestionnaireResponse` |
 
    検証の対象になるかは「そのプロファイル URL が vendor 済みか」だけで決まります
-   （`Composition` / `Group` / `Task` / `Provenance` / `Appointment` / `Schedule` / `Slot` は JP Core に
-   該当プロファイルが無く基底 HL7 プロファイルのため対象外で、手書きバリデータのみが働きます）。
+   （`Composition` / `Group` / `Task` / `Provenance` / `Appointment` / `Schedule` / `Slot` / `Flag` /
+   `CarePlan` / `Goal` は JP Core に該当プロファイルが無く基底 HL7 プロファイルのため対象外で、
+   手書きバリデータのみが働きます）。
    `ImagingStudy` は JP Core が Radiology / Endoscopy の 2 プロファイルに分けていますが、レジストリの
    `profile:` は 1 リソース 1 プロファイルなので、汎用側の `JP_ImagingStudy_Radiology` を採用しています
    （2 つは検証の厳密さは同一で、Endoscopy は参照先の型をより狭めるだけです）。
@@ -909,6 +911,75 @@ R4 が `Slot.end` / `Appointment.end` に検索パラメータを定めていな
   `actor` のいずれかが必要）、`app-2`（`start` と `end` は両方あるか両方無いか）、`app-3`（`start` /
   `end` を省略できるのは `proposed` / `cancelled` / `waitlist` のみ）、`app-4`（`cancelationReason` は
   `cancelled` / `noshow` のときだけ）を検証します。
+
+---
+
+### CarePlan / Goal の例（診療計画・クリニカルパス）
+
+`CarePlan` が「何をする計画か」、`Goal` が「その計画で何を達成したいか（と達成できたか）」を表します。
+JP Core はどちらもプロファイルしていないため、基底の FHIR R4 定義に対する手書きバリデータのみが働きます
+（`Composition` / `Group` / `Task` と同じ扱い）。
+
+**計画の入れ子**: クリニカルパス（[ePath](https://e-path.jp/fhir/ePath/)）のように段階のある計画は、
+`CarePlan` の木で表します。`partOf` に**祖先すべて**を並べる約束にすると、次の 2 つの検索だけで
+木を出し入れできます。
+
+| 引きたいもの | 検索 |
+|---|---|
+| 木の根（適用そのもの）だけ | `part-of:missing=true` |
+| ある根の子孫すべて | `part-of=CarePlan/{根の id}` |
+
+`ServiceRequest` のヘッダを `based-on:missing=true` で引くのと同じ形です。
+
+```bash
+# 適用（木の根）
+curl -i -X POST http://localhost:3000/CarePlan   -H 'Content-Type: application/fhir+json'   -d '{
+    "resourceType": "CarePlan",
+    "identifier": [{ "system": "http://example.org/pathway-apply", "value": "1311234567.ap-001" }],
+    "status": "active",
+    "intent": "plan",
+    "title": "腹腔鏡下胆嚢摘出術（4泊5日）",
+    "subject": { "reference": "Patient/{patientId}" },
+    "encounter": { "reference": "Encounter/{encounterId}" },
+    "instantiatesUri": ["http://fhir-client.local/pathway/900001"],
+    "period": { "start": "2026-09-01" }
+  }'
+
+# 病日（子）。partOf に根を並べる
+curl -i -X POST http://localhost:3000/CarePlan   -H 'Content-Type: application/fhir+json'   -d '{
+    "resourceType": "CarePlan", "status": "active", "intent": "plan", "title": "入院日",
+    "subject": { "reference": "Patient/{patientId}" },
+    "partOf": [{ "reference": "CarePlan/{applyId}" }],
+    "goal": [{ "reference": "Goal/{goalId}" }]
+  }'
+```
+
+**主な検索パラメータ**
+
+| リソース | パラメータ | 対象 |
+|---|---|---|
+| `CarePlan` | `identifier` / `status` / `intent` / `category` | `category` は 0..* なので全 coding を索引（先頭に依存しない） |
+| | `subject`（別名 `patient`） / `encounter` | |
+| | `date` | `CarePlan.period`。`eq` は包含で、`end` が無ければ継続中 |
+| | `part-of` / `goal` | 0..* 参照。`_include=CarePlan:goal` で目標まで 1 リクエスト |
+| | `instantiates-canonical` / `instantiates-uri` | 元にした定義（このサーバーの外にある定義は uri） |
+| `Goal` | `identifier` / `lifecycle-status` / `achievement-status` / `category` | |
+| | `subject`（別名 `patient`） / `start-date` | |
+
+`Goal` から `CarePlan` への逆参照は R4 に無いので、辿る向きは `CarePlan` → `Goal` だけです。
+実施記録（`Procedure`）は `basedOn` で計画を指せるので、`_revinclude=Procedure:based-on` を添えると
+「その計画が実施されたか」まで同じ応答で揃います。
+
+**必須項目（FHIR R4）**
+
+- `CarePlan`: `status`（値セット `draft|active|on-hold|revoked|completed|entered-in-error|unknown`）、
+  `intent`（値セット `proposal|plan|order|option`）、`subject`。`Patient/{id}` は実在を確認し、
+  `Group` を指す計画は患者コンパートメントに入りません。`partOf` / `goal` は配列であること
+  （jsonb 包含で引くため、配列でないと静かに引けなくなります）。
+- `Goal`: `lifecycleStatus`（値セット `proposed|planned|accepted|active|on-hold|completed|cancelled|
+  entered-in-error|rejected`）、`description`、`subject`。
+  `achievementStatus` の束縛は **preferred** なので、ePath の達成状態（`1` 達成 / `2` 未達成（バリアンス）/
+  `3` 未評価）のようにガイド独自のコード体系を使えます（形だけを検証し、値は縛りません）。
 
 ---
 
