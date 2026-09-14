@@ -171,6 +171,75 @@ RSpec.describe "Observations", type: :request do
       expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([derived_id])
     end
 
+    # 測定の元になった依頼・計画。看護指示の観察項目は指示を、パスの評価は計画を指す。
+    describe "based-on" do
+      def create_order(subject_id)
+        post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id), as: :json
+        JSON.parse(response.body)["id"]
+      end
+
+      def create_care_plan(subject_id, **overrides)
+        post "/CarePlan", params: valid_care_plan_payload(subject_id: subject_id, **overrides), as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      def create_observation(subject_id, based_on)
+        post "/Observation",
+             params: valid_observation_payload(subject_id: subject_id, basedOn: based_on.map { |r| { "reference" => r } }),
+             as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      it "finds by based-on for an order and for a care plan" do
+        subject_id = create_patient
+        order_id = create_order(subject_id)
+        other_order_id = create_order(subject_id)
+        plan_id = create_care_plan(subject_id)
+        by_order = create_observation(subject_id, ["ServiceRequest/#{order_id}"])
+        by_plan = create_observation(subject_id, ["CarePlan/#{plan_id}"])
+        create_observation(subject_id, ["ServiceRequest/#{other_order_id}"])
+        post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json
+
+        get "/Observation", params: { "based-on" => "ServiceRequest/#{order_id}" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([by_order])
+
+        # 型を省いた id は依頼とみなす。
+        get "/Observation", params: { "based-on" => order_id }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([by_order])
+
+        get "/Observation", params: { "based-on" => "CarePlan/#{plan_id},ServiceRequest/#{order_id}" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to match_array([by_order, by_plan])
+      end
+
+      it "adds the observations of an order with _revinclude=Observation:based-on" do
+        subject_id = create_patient
+        order_id = create_order(subject_id)
+        other_order_id = create_order(subject_id)
+        observation_id = create_observation(subject_id, ["ServiceRequest/#{order_id}"])
+        create_observation(subject_id, ["ServiceRequest/#{other_order_id}"])
+
+        get "/ServiceRequest", params: { _id: order_id, "_revinclude" => "Observation:based-on" }
+
+        included = JSON.parse(response.body)["entry"].select { |e| e.dig("search", "mode") == "include" }
+        expect(included.map { |e| [e["resource"]["resourceType"], e["resource"]["id"]] })
+          .to eq([["Observation", observation_id]])
+      end
+
+      it "adds the evaluated care plan and its ancestors with _include=Observation:based-on" do
+        subject_id = create_patient
+        root_id = create_care_plan(subject_id)
+        unit_id = create_care_plan(subject_id, partOf: [{ "reference" => "CarePlan/#{root_id}" }])
+        observation_id = create_observation(subject_id, ["CarePlan/#{unit_id}"])
+
+        get "/Observation?_id=#{observation_id}&_include=Observation:based-on&_include:iterate=CarePlan:part-of"
+
+        included = JSON.parse(response.body)["entry"].select { |e| e.dig("search", "mode") == "include" }
+        expect(included.map { |e| e["resource"]["id"] }).to match_array([unit_id, root_id])
+      end
+    end
+
     # バイタルなど、対象プロブレムを持つ測定値の絞り込み。Composition:problem と同じ
     # ローカル拡張の読み方(url も一致条件に入れる)。
     describe "problem" do

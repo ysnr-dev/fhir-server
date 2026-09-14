@@ -66,6 +66,11 @@ module Fhir
         "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
         # 実施記録に伴って測った値(放射線検査の被曝線量)。
         "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] },
+        # 測定の元になった依頼・計画。指示の検索に _revinclude=Observation:based-on を添えると
+        # 観察項目の実施記録が、評価の検索に _include=Observation:based-on を添えると評価した
+        # 計画が同じ応答で揃う。
+        "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference],
+                         targets: %w[ServiceRequest CarePlan] },
         # 抽出元のテンプレート回答。回答の検索に
         # _revinclude=Observation:derived-from を添えると、その回答から作られた値まで
         # 同じ応答で揃う。

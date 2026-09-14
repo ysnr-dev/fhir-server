@@ -21,6 +21,11 @@ module Fhir
         # Procedure なので参照先を絞る。
         "part-of"    => { type: :reference, multiple: true, jsonb_key: "partOf",
                            ref_path: %w[reference], target_type: "Procedure" },
+        # Observation.basedOn は測定の元になった依頼。看護指示の観察項目の実施記録は
+        # 指示(ServiceRequest)を、クリニカルパスの評価は計画(CarePlan)を指す。
+        # 型を省いた id は依頼とみなす(Procedure.based-on と同じ)。
+        "based-on"   => { type: :reference, multiple: true, jsonb_key: "basedOn",
+                           ref_path: %w[reference], target_type: "ServiceRequest" },
         # Observation.derivedFrom は「この値の元になった記録」。テンプレート回答
         # (QuestionnaireResponse)から抽出した Observation が回答を指すので、回答を
         # 更新・削除する側が「前回この回答から作った Observation」を引くのに使う。
