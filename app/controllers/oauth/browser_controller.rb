@@ -17,12 +17,10 @@ class Oauth::BrowserController < ActionController::Base
 
   AUTHORIZE_PARAMS = %w[client_id redirect_uri scope state code_challenge code_challenge_method nonce].freeze
 
-  # GET /oauth/authorize
   def authorize
     current_user ? render(:consent) : render(:login)
   end
 
-  # POST /oauth/login
   def login
     user = User.authenticate(email: params[:email], password: params[:password])
     unless user
@@ -40,7 +38,6 @@ class Oauth::BrowserController < ActionController::Base
     render :consent
   end
 
-  # POST /oauth/consent
   def consent
     return render(:login, status: :unauthorized) unless current_user
     return redirect_with_error("access_denied", "The user denied the request") unless params[:decision] == "approve"

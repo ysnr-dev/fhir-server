@@ -202,8 +202,7 @@ module Fhir
       end
     end
 
-    # Builds the nested hash a jsonb containment query expects, e.g.
-    # nest(["individual", "reference"], "Practitioner/1") => {"individual"=>{"reference"=>"Practitioner/1"}}
+    # Same as Fhir::Search#nest.
     def nest(path, value)
       path.reverse.reduce(value) { |acc, key| { key => acc } }
     end

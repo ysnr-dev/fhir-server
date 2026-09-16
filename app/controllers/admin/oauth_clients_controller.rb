@@ -1,6 +1,5 @@
 module Admin
-  # OAuthクライアントの一覧・登録・削除。これまで rake fhir:register_client /
-  # fhir:register_launch_client でしか登録できず、削除の手段が存在しなかった。
+  # OAuthクライアントの一覧・登録・削除。
   #
   # 登録の実体は OauthClient.register で、そこがバックエンド用と対話型launch用の
   # 排他性(system/ と patient/ を混ぜない等)を担保している。このコントローラの
@@ -13,8 +12,7 @@ module Admin
       access_counts = active_token_counts(AccessToken, clients)
       refresh_counts = active_token_counts(RefreshToken, clients)
 
-      # 件数は数十のオーダーなのでページングは入れていない。必要になったら
-      # ここに Master::BaseController#paginate 相当を挟む(形は total/items で同じ)。
+      # 件数は数十のオーダーなのでページングは入れていない。
       render json: {
         total: clients.size,
         items: clients.map do |client|
@@ -61,8 +59,6 @@ module Admin
 
     private
 
-    # --- 監査 ----------------------------------------------------------------
-
     def audit_interaction
       case action_name
       when "index" then "search-type"
@@ -78,8 +74,6 @@ module Admin
     def audit_resource_id
       @created_client_id || @deleted_client_id || params[:id]
     end
-
-    # --- リクエストの解釈 ----------------------------------------------------
 
     # 形(バックエンド用 / 対話型launch用)は「存在するフィールド」から導出する。
     # OauthClient.register が既にそうしているので、kind のような判別フィールドを
@@ -150,8 +144,6 @@ module Admin
     rescue URI::InvalidURIError
       false
     end
-
-    # --- レスポンスの組み立て ------------------------------------------------
 
     # 「秘密を漏らさない」を一箇所に集約する。secret_digest と JWKS 本体は
     # どのレスポンスにも出さない(JWKSは公開鍵なので無害だが、UIが使わない)。

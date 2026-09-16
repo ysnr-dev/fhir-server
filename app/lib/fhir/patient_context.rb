@@ -18,8 +18,7 @@ module Fhir
     #
     # Binary is deliberately absent even though it has no Patient reference --
     # it holds document payloads, so treating it as "not patient data" would
-    # expose every patient's attachments. It stays denied until Phase 2 can
-    # authorise it through the DocumentReference that points at it.
+    # expose every patient's attachments.
     #
     # Questionnaire belongs here for the opposite reason: it is a blank form
     # (definitional, no Reference elements at all), and a patient cannot read

@@ -14,8 +14,6 @@ module Fhir
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
         "author"     => { type: :reference, column: :author_reference, target_type: "Practitioner" },
-        # eq は仕様どおりの包含(検索区間が period を完全に含む)。period.end が
-        # NULL なら「まだ継続中」を意味する(Encounter.date と同じ)。
         "date"       => { type: :datetime, column: :period_start, end_column: :period_end }
       }.freeze
     end

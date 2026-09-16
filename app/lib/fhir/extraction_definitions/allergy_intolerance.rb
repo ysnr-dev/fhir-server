@@ -15,7 +15,7 @@ module Fhir
         recorded_time: { path: "recordedDate", transform: :datetime },
         # R4 の `onset` 検索パラメータは onset[x](dateTime / Age / Period / Range /
         # String)の choice だが、索引するのは onsetDateTime だけ。ほかの型は
-        # 期間や年齢で、点の時刻として比べられない(必要になったら別途対応する)。
+        # 期間や年齢で、点の時刻として比べられない。
         onset_time: { path: "onsetDateTime", transform: :datetime }
       }.freeze
 

@@ -1,9 +1,7 @@
 module Fhir
   # Turns a declarative extraction spec ({ path:, transform: }) into the value that
-  # populates a resource's search column. Centralizes every extraction transform that
-  # used to be copy-pasted across the model `sync_search_fields!` methods, so a new
-  # resource declares its column mappings (see Fhir::ExtractionDefinitions) rather than
-  # hand-writing extraction code.
+  # populates a resource's search column. Every extraction transform lives here, so a
+  # resource only declares its column mappings (see Fhir::ExtractionDefinitions).
   #
   # `path` is a dot-separated route into the FHIR `content` hash ("subject.reference",
   # "class.code", "birthDate"); a nil/non-hash step yields nil. `transform` (optional)
@@ -31,8 +29,6 @@ module Fhir
         node.is_a?(Hash) ? node[key] : nil
       end
     end
-
-    # --- date / time --------------------------------------------------------
 
     # FHIR `date`, possibly partial: full ISO8601, then YYYY-MM (day -> 1), then
     # YYYY (month/day -> 1). Returns a Date, or nil when unparseable/blank.
@@ -79,8 +75,6 @@ module Fhir
       datetime(value)
     end
 
-    # --- codings ------------------------------------------------------------
-
     # First coding's code of a single (0..1) CodeableConcept, e.g.
     # medicationCodeableConcept: { coding: [{ code: "..." }] }.
     def coding_code(concept)
@@ -115,16 +109,12 @@ module Fhir
       [concept["text"], coding && coding["display"]].compact.join(" ").presence
     end
 
-    # --- identifiers --------------------------------------------------------
-
     # First identifier's value of a 0..* Identifier array. Matching goes through
     # resource_identifiers (all identifiers); this flat column exists for _sort
     # (e.g. Organization departments ordered by department code).
     def first_identifier_value(identifiers)
       Array.wrap(identifiers).filter_map { |i| i.is_a?(Hash) ? i["value"].presence : nil }.first
     end
-
-    # --- references ---------------------------------------------------------
 
     # First Patient reference among a 0..* backbone array whose elements each carry
     # a Reference at `actor` (Appointment.participant). Appointment has no
@@ -137,8 +127,6 @@ module Fhir
         participant["actor"]["reference"] if participant.is_a?(Hash) && participant["actor"].is_a?(Hash)
       end.find { |reference| reference.is_a?(String) && reference.start_with?("Patient/") }
     end
-
-    # --- HumanName ----------------------------------------------------------
 
     # family of the official name (or the first name when none is marked official).
     def official_family(names)
@@ -170,8 +158,6 @@ module Fhir
 
       names.find { |n| n["use"] == "official" } || names.first
     end
-
-    # --- Address ------------------------------------------------------------
 
     # Flattens a single Address into a searchable string in a fixed field order:
     # text, each line, city, state, postalCode. nil when empty.

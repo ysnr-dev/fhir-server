@@ -1,7 +1,7 @@
 module Fhir
   # Maps a FHIR resourceType string to the classes that implement it, so
   # Fhir::Operation (and Bundle transaction/batch processing) can dispatch
-  # generically instead of hard-coding a resourceType per call site.
+  # generically.
   module ResourceRegistry
     ENTRIES = {
       "Patient" => {

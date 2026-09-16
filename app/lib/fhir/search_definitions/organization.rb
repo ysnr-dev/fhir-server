@@ -7,8 +7,7 @@ module Fhir
         "identifier" => { type: :identifier, column: :identifier_value },
         "name"       => { type: :string, column: :name },
         "active"     => { type: :boolean, column: :active },
-        # Organization.type。診療科(dept)と施設(prov)を分けるのに使う
-        # (これまでは partof:missing で代用していた)。
+        # Organization.type。診療科(dept)と施設(prov)を分けるのに使う。
         "type"       => { type: :token },
         "partof"     => { type: :reference, column: :partof_reference, target_type: "Organization" }
       }.freeze

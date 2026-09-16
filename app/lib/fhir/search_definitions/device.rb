@@ -13,8 +13,6 @@ module Fhir
         "location"     => { type: :reference, column: :location_reference, target_type: "Location" },
         "manufacturer" => { type: :string, column: :manufacturer },
         "model"        => { type: :string, column: :model_number },
-        # device_name_text is a space-joined multi-token column, so a plain prefix
-        # match would only ever hit the first name (cf. Patient name / given).
         "device-name"  => { type: :string, column: :device_name_text, word_boundary: true },
         "url"          => { type: :uri, column: :url }
       }.freeze

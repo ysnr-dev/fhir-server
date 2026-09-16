@@ -20,7 +20,7 @@ module Fhir
         # DiagnosticReport.basedOn は結果の元になったオーダー(検体検査オーダーの
         # ヘッダ)を指す。オーダーから結果を引く `based-on=ServiceRequest/{id}` と、
         # 「まだ結果の付いていないオーダー」を選ばせるための
-        # `_revinclude=DiagnosticReport:based-on` に使う。CarePlan 等は未実装なので載せない。
+        # `_revinclude=DiagnosticReport:based-on` に使う。
         "based-on"   => { type: :reference, multiple: true, jsonb_key: "basedOn",
                            ref_path: %w[reference], target_type: "ServiceRequest" }
       }.freeze

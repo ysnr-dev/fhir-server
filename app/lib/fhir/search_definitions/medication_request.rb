@@ -12,7 +12,6 @@ module Fhir
         "code"       => { type: :token_or_text, token_column: :medication_code,
                            text_column: :medication_text },
         "authoredon" => { type: :datetime, column: :authored_on },
-        # 0..* references, so matched by jsonb containment rather than a column.
         # MedicationRequest.basedOn は処方オーダー(ServiceRequest ヘッダ)を指す。
         # 処方箋の明細取得やオーダー単位のカスケード削除が
         # `MedicationRequest?based-on=ServiceRequest/X` で 1 検索になる

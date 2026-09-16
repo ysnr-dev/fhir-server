@@ -15,7 +15,6 @@ module Fhir
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
         "date"       => { type: :datetime, column: :performed_time, end_column: :performed_end },
-        # 0..* references, so matched by jsonb containment rather than a column.
         # Procedure.basedOn は実施の元になった依頼(放射線検査オーダーのヘッダ)を指す。
         # カルテのオーダー表示が「その依頼の実施記録」を引くのに使う。型を省いた id は
         # 依頼とみなす(大半がそちらで、クリニカルパスのタスクが指す CarePlan は

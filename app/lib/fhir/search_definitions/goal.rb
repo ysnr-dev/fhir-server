@@ -6,7 +6,7 @@ module Fhir
       # Patient/$everything に載る。
       #
       # 標準の target-date(Goal.target.dueDate)は定義しない -- target は 0..* の
-      # backbone で、書き手も引く当ても無い。必要になったら nested_path で足す。
+      # backbone で、書き手も引く当ても無い。
       PARAMS = {
         "identifier"         => { type: :identifier },
         "lifecycle-status"   => { type: :token, column: :lifecycle_status },

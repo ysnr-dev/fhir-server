@@ -57,8 +57,6 @@ class ResourceValidator
     @warnings << { code: code, diagnostics: diagnostics, expression: Array(expression) }
   end
 
-  # --- reusable checks ----------------------------------------------------
-
   # The IG whose cardinalities #require_field cites, named in the diagnostics so
   # a client can tell which spec rejected the payload. Overridden by validators
   # written against a different IG (see QuestionnaireValidator).

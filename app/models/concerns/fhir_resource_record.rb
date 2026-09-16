@@ -35,8 +35,8 @@ module FhirResourceRecord
 
   # Populates the search-optimized columns from the FHIR `content` payload, driven by
   # the resource's declarative extraction map (Fhir::ExtractionDefinitions, wired in
-  # Fhir::ResourceRegistry) rather than a hand-written method per model. Called before
-  # every persist so the extracted columns never drift from content.
+  # Fhir::ResourceRegistry). Called before every persist so the extracted columns
+  # never drift from content.
   def sync_search_fields!
     resource = content || {}
 
@@ -50,7 +50,7 @@ module FhirResourceRecord
   # (not Array()) so a 0..1 single-Identifier element (e.g. Composition.identifier)
   # is wrapped as one row rather than being splatted into [key, value] pairs.
   # Deduped by (system, value) so the same identifier written in two locations
-  # (a transitional client habit) still yields a single searchable row.
+  # still yields a single searchable row.
   def sync_identifiers!
     resource_identifiers.destroy_all
 

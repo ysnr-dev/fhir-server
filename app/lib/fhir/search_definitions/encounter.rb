@@ -16,8 +16,6 @@ module Fhir
         "participant"      => { type: :reference, multiple: true, jsonb_key: "participant",
                                  ref_path: %w[individual reference], target_type: "Practitioner",
                                  aliases: %w[practitioner] },
-        # eq is spec-correct containment (the search interval must fully contain
-        # the period), not overlap; a NULL period.end means "still ongoing".
         "date"             => { type: :datetime, column: :period_start, end_column: :period_end }
       }.freeze
     end

@@ -8,7 +8,7 @@ module Admin
   # FHIRリソースを扱わないので、どちらも合わない。HealthController が同じ理由で
   # ApplicationController を迂回している既存の前例に倣う。
   #
-  # エラー表現は fhir-client 側の JSON 規約に合わせる(検証エラーの一覧は
+  # エラー表現は fhir-client 側の JSON 規約と同じ(検証エラーの一覧は
   # {errors: [...]}、単一のコードは {error:, error_description:})。
   # fhir-client の backend はこのボディをそのまま透過させるので、この形は
   # 中継の前提になっている -- 変えるなら両リポジトリを同時に直すこと。
@@ -53,8 +53,6 @@ module Admin
         request.authorization&.match(/\ABearer\s+(.+)\z/i)&.captures&.first
     end
 
-    # --- 監査(FhirAuditing のフック上書き) ---------------------------------
-
     # client_id は nil のまま残す: GET /AuditEvent?agent=<client_id> は
     # 「このFHIRクライアント」を意味する検索なので、そこに管理APIを混ぜない。
     def audit_client_id
@@ -64,8 +62,6 @@ module Admin
     def audit_client_name
       ACTOR_NAME
     end
-
-    # --- エラー表現 ----------------------------------------------------------
 
     def render_error(status, code, description)
       render json: { error: code, error_description: description }, status: status

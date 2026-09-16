@@ -33,9 +33,7 @@ module Fhir
         # 1 検索で引ける。Identifier なので system|value の token として索引する。
         "requisition" => { type: :token },
         "authoredon" => { type: :datetime, column: :authored_on },
-        # ServiceRequest.occurrenceDateTime(実施予定日時: 撮影日・採取日)。R4 標準の
-        # occurrence 検索パラメータ。これまでクライアントは authoredOn に実施日を
-        # 重複記載して代用していた。
+        # ServiceRequest.occurrenceDateTime(実施予定日時: 撮影日・採取日)。
         "occurrence" => { type: :datetime, column: :occurrence_date_time },
         # 標準外: オーダーの有効期間。開始は occurrenceDateTime、終了は fhir-client の
         # ローカル拡張 *-order-end(ExtractionDefinitions::ServiceRequest::ORDER_END_EXTENSION_URLS)。
@@ -52,7 +50,6 @@ module Fhir
         "ward"       => { type: :reference, multiple: true, jsonb_key: "extension",
                            ref_path: %w[valueReference reference], target_type: "Location",
                            element_match: { "url" => WARD_EXTENSION_URL } },
-        # 0..* references, so matched by jsonb containment rather than a column.
         # ServiceRequest.basedOn は親のオーダーを指す(検体検査オーダーの
         # ヘッダ → パネル → 構成項目)。`based-on:missing=true` で親だけを引ける。
         "based-on"   => { type: :reference, multiple: true, jsonb_key: "basedOn",

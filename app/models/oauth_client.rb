@@ -27,8 +27,8 @@ class OauthClient < ApplicationRecord
   has_many :authorization_codes, dependent: :delete_all
 
   # どちらもDBは null:false だが、presence 検証が無いと nil が
-  # ActiveRecord::NotNullViolation(=500)になる。管理APIから直接叩かれる
-  # ようになったので、検証エラー(422)として扱えるようにしておく。
+  # ActiveRecord::NotNullViolation(=500)になる。管理APIから直接叩かれるので、
+  # 検証エラー(422)として扱えるようにしておく。
   validates :name, presence: true
   validates :scopes, presence: true
   validates :client_type, inclusion: { in: CLIENT_TYPES }

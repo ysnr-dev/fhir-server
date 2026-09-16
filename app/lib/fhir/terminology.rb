@@ -2,11 +2,8 @@ module Fhir
   # Single source of truth for FHIR / JP Core terminology used during validation:
   # ValueSet enum bindings, identifier system URLs / OIDs, and type codes. Keyed by
   # the element (or system) they belong to, so the same ValueSet is never redefined
-  # per validator. As more JP Core resources are added, their bindings are declared
-  # here rather than inline in each validator.
+  # per validator.
   module Terminology
-    # --- ValueSets (enum bindings) -----------------------------------------
-
     # http://hl7.org/fhir/ValueSet/administrative-gender (required)
     GENDER = %w[male female other unknown].freeze
 
@@ -135,8 +132,6 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/questionnaire-answers-status (required)
     QUESTIONNAIRE_RESPONSE_STATUS = %w[in-progress completed amended entered-in-error stopped].freeze
 
-    # --- JASPEHR (the JApanese Standard Platform for EHRs) IG v1.0.0 ---------
-
     # .../ValueSet/questionnaire-item-type-Jaspehr (required) -- the base
     # http://hl7.org/fhir/item-type codes minus boolean / url / open-choice /
     # attachment / reference / quantity. Enumerated here rather than expanded
@@ -155,16 +150,12 @@ module Fhir
     # QuestionnaireResponse.identifier: 保険医療機関番号 ^ 患者ID ^ 報告単位ID.
     JASPEHR_QR_IDENTIFIER_PARTS = 3
 
-    # --- Identifier systems / OIDs (JP Core) --------------------------------
-
     # JP Core Patient medical record number (院内カルテ番号) identifier system.
     MEDICAL_RECORD_NUMBER_OID = "urn:oid:1.2.392.100495.20.3.51".freeze
     # JP Core MedicationRequest RP (処方) group number slice system.
     MEDICATION_RP_NUMBER_SYSTEM = "http://jpfhir.jp/fhir/core/mhlw/IdSystem/Medication-RPGroupNumber".freeze
     # JP Core MedicationRequest order-within-RP slice system.
     MEDICATION_ORDER_IN_RP_SYSTEM = "http://jpfhir.jp/fhir/core/mhlw/IdSystem/MedicationAdministrationIndex".freeze
-
-    # --- Type codes ---------------------------------------------------------
 
     # Identifier.type coding code for a medical record number (v2-0203).
     MEDICAL_RECORD_TYPE_CODE = "MR".freeze

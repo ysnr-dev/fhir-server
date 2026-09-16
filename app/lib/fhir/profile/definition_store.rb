@@ -53,8 +53,6 @@ module Fhir
         with_lock { fetch_expansion(canonical(value_set_url)) }
       end
 
-      # --- internals (assume the lock is already held) ------------------------
-
       def with_lock
         mutex.synchronize { yield }
       end
@@ -76,7 +74,7 @@ module Fhir
       private_class_method :index
 
       # Merges every vendor root's index into one map per kind, resolving each
-      # entry's root-relative path to an absolute one so lookups no longer care
+      # entry's root-relative path to an absolute one so lookups are independent of
       # which IG a canonical came from.
       def load_index
         merged = { structure_definitions: {}, value_sets: {}, code_systems: {} }

@@ -3,12 +3,8 @@ require "digest"
 module Fhir
   # GET /{Type}/$next-identifier?system={system} -- その identifier system で次に使える
   # 番号(数値)を払い出す型レベル operation。患者番号のように「連番で振るが、手入力で
-  # 飛ばすこともある」識別子のために用意した。
-  #
-  # クライアントは新規患者の番号を決めるのに、全患者の identifier を _elements 付きで
-  # 最後のページまで読んで最大値 + 1 を求め、さらに空き番号を確認する検索を繰り返して
-  # いた(最悪 80 往復。同時登録で重複もしうる)。この operation は 1 往復で、同時に
-  # 呼んでも同じ番号を 2 度返さない。
+  # 飛ばすこともある」識別子のために用意した。1 往復で済み、同時に呼んでも同じ番号を
+  # 2 度返さない。
   #
   # 払い出しの規則:
   #   - 対象は resource_identifiers の (resource_type, system) が一致する行のうち、値が

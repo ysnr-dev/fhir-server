@@ -30,7 +30,7 @@ module Fhir
   # The finer CRUDS distinctions and the v2 ?query search-parameter constraints
   # are not modelled: a constrained scope (patient/Observation.rs?category=x)
   # would have to be honoured by narrowing, and silently ignoring the constraint
-  # would over-grant, so such scopes are treated as invalid for now.
+  # would over-grant, so such scopes are treated as invalid.
   #
   # user/ scopes belong to the interactive provider-facing flows, which this
   # server does not implement -- such scopes are ignored if present.

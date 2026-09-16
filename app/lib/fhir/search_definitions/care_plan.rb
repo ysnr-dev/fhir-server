@@ -13,7 +13,7 @@ module Fhir
       # で引ける(ServiceRequest のヘッダを based-on:missing=true で引くのと同じ形)。
       #
       # 標準のうち care-team / performer / replaces / activity-* は書き手が無く、
-      # 引く当ても無いので定義しない(必要になったら 1 行足す)。
+      # 引く当ても無いので定義しない。
       PARAMS = {
         "identifier" => { type: :identifier },
         "status"     => { type: :token, column: :status },
@@ -25,10 +25,7 @@ module Fhir
         "subject"    => { type: :reference, column: :subject_reference,
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
-        # eq は仕様どおりの包含(検索区間が period を完全に含む)。period.end が
-        # NULL なら「まだ継続中」を意味する(Encounter.date と同じ)。
         "date"       => { type: :datetime, column: :period_start, end_column: :period_end },
-        # 0..* references, so matched by jsonb containment rather than a column.
         "part-of"    => { type: :reference, multiple: true, jsonb_key: "partOf",
                            ref_path: %w[reference], target_type: "CarePlan" },
         # CarePlan.goal は達成目標(Goal)への参照。計画の検索に

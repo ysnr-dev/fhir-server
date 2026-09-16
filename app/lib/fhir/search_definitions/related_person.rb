@@ -3,8 +3,6 @@ module Fhir
     module RelatedPerson
       PARAMS = {
         "identifier"   => { type: :identifier },
-        # name_text is a space-joined multi-token column (see the extraction
-        # definition), so a plain prefix match would only hit the first token.
         "name"         => { type: :string, column: :name_text, word_boundary: true },
         "gender"       => { type: :token, column: :gender },
         "birthdate"    => { type: :date, column: :birth_date },

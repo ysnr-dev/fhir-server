@@ -112,7 +112,7 @@ module Fhir
                          targets: %w[Organization Practitioner PractitionerRole] },
         # ServiceRequest が別の ServiceRequest にぶら下がる形(オーダーのヘッダと明細)。
         # 親から子を引く _revinclude=ServiceRequest:based-on と、:iterate による
-        # 2 段目(パネルの構成項目)の展開に使う。CarePlan は未実装なので載せない。
+        # 2 段目(パネルの構成項目)の展開に使う。
         "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
         # 依頼の理由(対象の病名)。オーダーの検索に _include=ServiceRequest:reason-reference を
         # 添えると、絞り込んだプロブレムの Condition まで同じ応答で揃う。

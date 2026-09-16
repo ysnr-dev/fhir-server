@@ -26,7 +26,6 @@ module Fhir
         # Task.focus は作業対象そのもの(ここでは実施中の ServiceRequest)。
         # basedOn(依頼元)と違い 0..1 なのでカラムで持つ。
         "focus"            => { type: :reference, column: :focus_reference, target_type: "ServiceRequest" },
-        # 0..* references, so matched by jsonb containment rather than a column.
         # Task.basedOn はこの Task を生んだ依頼(ServiceRequest)を指す。オーダー側から
         # _revinclude=Task:based-on を添えると進捗を 1 リクエストで取得できる。
         "based-on"         => { type: :reference, multiple: true, jsonb_key: "basedOn",

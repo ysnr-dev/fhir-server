@@ -25,7 +25,6 @@ module Fhir
         # of any type still match.
         "source"        => { type: :reference, column: :source_reference, target_type: "Practitioner" },
         "authored"      => { type: :datetime, column: :authored },
-        # 0..* references, so matched by jsonb containment rather than a column.
         "based-on"      => { type: :reference, multiple: true, jsonb_key: "basedOn",
                              ref_path: %w[reference], target_type: "ServiceRequest" },
         "part-of"       => { type: :reference, multiple: true, jsonb_key: "partOf",

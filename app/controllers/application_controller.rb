@@ -10,8 +10,6 @@ class ApplicationController < ActionController::API
 
   private
 
-  # --- SMART Backend Services enforcement ------------------------------------
-
   # checks: array of [resource_type, :read | :write] pairs the request needs.
   # Returns true when the request may proceed; renders 401/403 (and returns
   # false) otherwise. A no-op when auth is disabled (Fhir::Auth).

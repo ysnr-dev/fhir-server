@@ -1,7 +1,6 @@
 module Fhir
   # Executes a FHIR search against a single resource type, driven by the declarative
-  # parameter definitions registered per type (see Fhir::SearchDefinitions::*) instead
-  # of a hand-written search class per resource.
+  # parameter definitions registered per type (see Fhir::SearchDefinitions::*).
   #
   # Consumes a Fhir::SearchParams (normalized clauses) rather than a raw params Hash,
   # so repeated parameters (AND) and comma-joined values (OR) are both supported. Each
@@ -30,8 +29,7 @@ module Fhir
     # clause unsupported (rejected in conditional criteria, skipped in search).
     MISSING_VALUES = [%w[true], %w[false]].freeze
 
-    # _id and _lastUpdated behave like any other search param (comma-OR, repeat-AND)
-    # rather than being handled as special cases.
+    # _id and _lastUpdated behave like any other search param (comma-OR, repeat-AND).
     # _id is a token matched against the primary key column (backing: :column), never
     # via resource_tokens -- it has no coding and no token rows.
     SYSTEM_PARAMS = {
@@ -442,8 +440,8 @@ module Fhir
     # Token search matches (system, code) rows in resource_tokens (one row per coding,
     # all codings), so `system|code` is honored and multi-coded elements are found by
     # any of their codings. _id is the sole exception (backing: :column): it matches the
-    # primary-key column directly. The flat token columns (status, class_code, ...) are
-    # still populated for _sort but no longer used for matching.
+    # primary-key column directly. The flat token columns (status, class_code, ...)
+    # exist for _sort only and take no part in matching.
     def token_fragment(scope, definition, clause)
       negate = clause.modifier == "not"
       if definition[:backing] == :column

@@ -24,9 +24,6 @@ module Fhir
         "agent-type" => { type: :token },
         # signature.type(署名の目的コード)。承認の署名を種類で絞る。
         "signature-type" => { type: :token }
-        # entity / location / when / agent-role は当面の用途が無いので入れていない。
-        # agent-role を足すときは signature-type と同じく配列の中の配列になるので、
-        # TokenExtractor に :codeable_concept_list_nested を足す必要がある。
       }.freeze
     end
   end

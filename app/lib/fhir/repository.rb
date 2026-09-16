@@ -1,7 +1,7 @@
 module Fhir
   # Persists a single resource type's records/versions/identifiers, parameterized by
   # resource_type via Fhir::ResourceRegistry so every FHIR resource shares one
-  # implementation instead of a hand-written repository per type.
+  # implementation.
   class Repository
     class VersionConflict < StandardError
       attr_reader :current_version_id
