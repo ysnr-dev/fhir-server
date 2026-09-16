@@ -26,8 +26,7 @@ module Fhir
         # Organization とみなす(他科依頼一覧が「◯◯科宛て」で絞る用途が主なため)。
         "performer"  => { type: :reference, multiple: true, jsonb_key: "performer",
                            ref_path: %w[reference], target_type: "Organization" },
-        "code"       => { type: :token_or_text, token_column: :code,
-                           text_column: :code_text },
+        "code"       => { type: :token_or_text, text_column: :code_text },
         # ServiceRequest.requisition は「1 回の発行でまとめて出したオーダー」を束ねる
         # 識別子(オーダーセット・レジメン適用)。同じ requisition を持つオーダーを
         # 1 検索で引ける。Identifier なので system|value の token として索引する。

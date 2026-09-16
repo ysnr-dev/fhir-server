@@ -11,6 +11,10 @@ module Fhir
         # resolve through Rack's deprecation shim instead of silently mapping to 0.
         Rack::Utils.status_code(status) < 400
       end
+
+      def self.failure(status, outcome)
+        new(status: status, outcome: outcome)
+      end
     end
 
     def self.create(resource_type, payload, id: nil, if_none_exist: nil)
@@ -132,13 +136,9 @@ module Fhir
       rescue StandardError => e
         raise unless e.respond_to?(:current_version_id)
 
-        return Result.new(
-          status: :precondition_failed,
-          outcome: Fhir::OperationOutcome.single(
-            severity: "error",
-            code: "conflict",
-            diagnostics: "If-Match versionId does not match current versionId #{e.current_version_id}"
-          )
+        return Result.failure(
+          :precondition_failed,
+          Fhir::OperationOutcome.error("conflict", "If-Match versionId does not match current versionId #{e.current_version_id}")
         )
       end
 
@@ -161,13 +161,12 @@ module Fhir
       else
         # Per spec, a payload id that contradicts the matched resource is an error.
         if payload["id"].present? && payload["id"] != match.record.id
-          return Result.new(
-            status: :bad_request,
-            outcome: Fhir::OperationOutcome.single(
-              severity: "error",
-              code: "invalid",
-              diagnostics: "Resource id '#{payload['id']}' does not match the resource selected by the " \
-                           "conditional criteria (#{resource_type}/#{match.record.id})"
+          return Result.failure(
+            :bad_request,
+            Fhir::OperationOutcome.error(
+              "invalid",
+              "Resource id '#{payload['id']}' does not match the resource selected by the " \
+              "conditional criteria (#{resource_type}/#{match.record.id})"
             )
           )
         end
@@ -192,15 +191,9 @@ module Fhir
       patched = JsonPatch.apply(record.content, operations)
       update(id, patched, if_match: if_match)
     rescue JsonPatch::InvalidPatch => e
-      Result.new(
-        status: :bad_request,
-        outcome: Fhir::OperationOutcome.single(severity: "error", code: "structure", diagnostics: e.message)
-      )
+      Result.failure(:bad_request, Fhir::OperationOutcome.error("structure", e.message))
     rescue JsonPatch::ApplyFailure => e
-      Result.new(
-        status: :unprocessable_content,
-        outcome: Fhir::OperationOutcome.single(severity: "error", code: "processing", diagnostics: e.message)
-      )
+      Result.failure(:unprocessable_content, Fhir::OperationOutcome.error("processing", e.message))
     end
 
     def delete(id)
@@ -249,12 +242,7 @@ module Fhir
 
       unless resource_type_matches?(payload)
         return Result.new(
-          status: :ok,
-          outcome: Fhir::OperationOutcome.single(
-            severity: "error",
-            code: "invalid",
-            diagnostics: "resourceType must be '#{resource_type}', got '#{payload.is_a?(Hash) ? payload['resourceType'] : payload.inspect}'"
-          )
+          status: :ok, outcome: Fhir::OperationOutcome.resource_type_mismatch(resource_type, payload, code: "invalid")
         )
       end
 
@@ -332,44 +320,25 @@ module Fhir
     end
 
     def not_found_result(id)
-      Result.new(
-        status: :not_found,
-        outcome: Fhir::OperationOutcome.single(
-          severity: "error", code: "not-found", diagnostics: "#{resource_type}/#{id} not found"
-        )
-      )
+      Result.failure(:not_found, Fhir::OperationOutcome.not_found("#{resource_type}/#{id}"))
     end
 
     def gone_result(id)
-      Result.new(
-        status: :gone,
-        outcome: Fhir::OperationOutcome.single(
-          severity: "error", code: "deleted", diagnostics: "#{resource_type}/#{id} has been deleted"
-        )
-      )
+      Result.failure(:gone, Fhir::OperationOutcome.gone("#{resource_type}/#{id}"))
     end
 
     def record_not_unique_result
-      Result.new(
-        status: :unprocessable_content,
-        outcome: Fhir::OperationOutcome.single(
-          severity: "error",
-          code: "duplicate",
-          diagnostics: "The #{resource_type} violates a uniqueness constraint " \
-                       "(a concurrent write may have created a duplicate)"
+      Result.failure(
+        :unprocessable_content,
+        Fhir::OperationOutcome.error(
+          "duplicate",
+          "The #{resource_type} violates a uniqueness constraint (a concurrent write may have created a duplicate)"
         )
       )
     end
 
     def resource_type_mismatch_result(payload)
-      Result.new(
-        status: :bad_request,
-        outcome: Fhir::OperationOutcome.single(
-          severity: "error",
-          code: "structure",
-          diagnostics: "resourceType must be '#{resource_type}', got '#{payload.is_a?(Hash) ? payload['resourceType'] : payload.inspect}'"
-        )
-      )
+      Result.failure(:bad_request, Fhir::OperationOutcome.resource_type_mismatch(resource_type, payload))
     end
 
     # Returns the 422 Result to short-circuit create/update with, or nil when
@@ -385,8 +354,8 @@ module Fhir
       errors.concat(profile_errors) if Fhir::Profile.enforce?
       return nil if errors.empty?
 
-      issues = errors.map { |e| e.merge(severity: "error") } + validation.warnings.map { |w| w.merge(severity: "warning") }
-      Result.new(status: :unprocessable_content, outcome: Fhir::OperationOutcome.build(issues))
+      issues = Fhir::ValidationResult.new(errors, validation.warnings).issues
+      Result.failure(:unprocessable_content, Fhir::OperationOutcome.build(issues))
     end
 
     # Only registry entries whose profile was vendored by one of the IGs in
@@ -452,30 +421,21 @@ module Fhir
           expression: []
         }
       end
-      Result.new(status: :bad_request, outcome: Fhir::OperationOutcome.build(issues))
+      Result.failure(:bad_request, Fhir::OperationOutcome.build(issues))
     end
 
     # Maps a failed ConditionalMatch to its HTTP result: unusable criteria are
     # the client's error (400); ambiguous criteria are 412 Precondition Failed.
     def conditional_failure_result(match)
       invalid = match.outcome == :invalid
-      Result.new(
-        status: invalid ? :bad_request : :precondition_failed,
-        outcome: Fhir::OperationOutcome.single(
-          severity: "error",
-          code: invalid ? "invalid" : "multiple-matches",
-          diagnostics: match.diagnostics
-        )
+      Result.failure(
+        invalid ? :bad_request : :precondition_failed,
+        Fhir::OperationOutcome.error(invalid ? "invalid" : "multiple-matches", match.diagnostics)
       )
     end
 
     def unsupported_type_result
-      Result.new(
-        status: :bad_request,
-        outcome: Fhir::OperationOutcome.single(
-          severity: "error", code: "not-supported", diagnostics: "Unsupported resourceType '#{resource_type}'"
-        )
-      )
+      Result.failure(:bad_request, Fhir::OperationOutcome.unsupported_type(resource_type))
     end
   end
 end

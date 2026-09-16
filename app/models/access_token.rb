@@ -6,6 +6,8 @@
 # patient launch context; that context -- not the scope string alone -- is what
 # switches on compartment filtering (see Fhir::PatientContext).
 class AccessToken < ApplicationRecord
+  include DigestedToken
+
   TTL = 1.hour
 
   belongs_to :oauth_client
@@ -27,16 +29,6 @@ class AccessToken < ApplicationRecord
     [record, raw]
   end
 
-  def self.authenticate(raw)
-    return nil if raw.blank?
-
-    find_by(token_digest: OauthClient.digest(raw))
-  end
-
-  def expired?
-    expires_at <= Time.current
-  end
-
   def revoked?
     revoked_at.present?
   end
@@ -56,7 +48,7 @@ class AccessToken < ApplicationRecord
   # scope would grant unrestricted reads -- exactly backwards. Registration
   # already keeps the two client kinds disjoint; this is the second line.
   def effective_scopes
-    granted = scopes.split
+    granted = scope_list
     patient_context? ? granted : granted.grep_v(%r{\Apatient/})
   end
 end

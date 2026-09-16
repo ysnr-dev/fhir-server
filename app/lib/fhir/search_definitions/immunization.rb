@@ -5,8 +5,7 @@ module Fhir
       PARAMS = {
         "identifier"   => { type: :identifier },
         "status"       => { type: :token, column: :status },
-        "vaccine-code" => { type: :token_or_text, token_column: :vaccine_code,
-                             text_column: :vaccine_text },
+        "vaccine-code" => { type: :token_or_text, text_column: :vaccine_text },
         "patient"      => { type: :reference, column: :patient_reference, target_type: "Patient" },
         "date"         => { type: :datetime, column: :occurrence_time },
         "lot-number"   => { type: :string, column: :lot_number }

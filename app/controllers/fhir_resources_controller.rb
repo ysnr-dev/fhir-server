@@ -256,8 +256,7 @@ class FhirResourcesController < ApplicationController
   # anything other than handling=strict -- including the spec's explicit
   # handling=lenient -- selects the default lenient behavior.
   def preferred_handling
-    preferences = request.headers["Prefer"].to_s.split(",").map(&:strip)
-    preferences.include?("handling=strict") ? "strict" : nil
+    prefer_tokens.include?("handling=strict") ? "strict" : nil
   end
 
   # Absent or wildcard Accept defaults to the FHIR JSON representation.
@@ -328,35 +327,17 @@ class FhirResourcesController < ApplicationController
 
   # Returns a Time, nil (absent), or :invalid after rendering the 400.
   def parse_since_param
-    raw = params[:_since]
-    return nil if raw.blank?
-
-    Time.iso8601(raw)
-  rescue ArgumentError
-    render_operation_outcome_single(
-      status: :bad_request,
-      severity: "error",
-      code: "value",
-      diagnostics: "Invalid _since value #{raw.inspect}: must be an ISO 8601 instant"
-    )
+    Fhir::QueryParam.parse_instant(params[:_since], name: "_since")
+  rescue Fhir::QueryParam::InvalidInstant => e
+    render_outcome(Fhir::OperationOutcome.error("value", e.message), status: :bad_request)
     :invalid
   end
 
   def render_not_found
-    render_operation_outcome_single(
-      status: :not_found,
-      severity: "error",
-      code: "not-found",
-      diagnostics: "#{resource_type}/#{params[:id]} not found"
-    )
+    render_outcome(Fhir::OperationOutcome.not_found("#{resource_type}/#{params[:id]}"), status: :not_found)
   end
 
   def render_gone
-    render_operation_outcome_single(
-      status: :gone,
-      severity: "error",
-      code: "deleted",
-      diagnostics: "#{resource_type}/#{params[:id]} has been deleted"
-    )
+    render_outcome(Fhir::OperationOutcome.gone("#{resource_type}/#{params[:id]}"), status: :gone)
   end
 end

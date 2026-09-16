@@ -3,6 +3,11 @@
 # Stored as a digest only, like AccessToken: the raw value exists just long
 # enough to travel through the browser redirect.
 class AuthorizationCode < ApplicationRecord
+  include DigestedToken
+  include SingleUseToken
+
+  self.digest_attribute = :code_digest
+
   # Short by design -- the code only has to survive one redirect hop.
   TTL = 5.minutes
 
@@ -34,29 +39,6 @@ class AuthorizationCode < ApplicationRecord
     [record, raw]
   end
 
-  def self.authenticate(raw)
-    return nil if raw.blank?
-
-    find_by(code_digest: OauthClient.digest(raw))
-  end
-
-  def expired?
-    expires_at <= Time.current
-  end
-
-  def used?
-    used_at.present?
-  end
-
-  # Claims the code atomically: the UPDATE ... WHERE used_at IS NULL lets the
-  # database settle a race between concurrent redemptions, so exactly one caller
-  # sees true and the loser is treated as a replay.
-  def consume!
-    claimed = self.class.where(id: id, used_at: nil).update_all(used_at: Time.current) == 1
-    reload if claimed
-    claimed
-  end
-
   def pkce_valid?(verifier)
     return false unless VERIFIER_PATTERN.match?(verifier.to_s)
     return false unless code_challenge_method == "S256"
@@ -71,9 +53,5 @@ class AuthorizationCode < ApplicationRecord
   def revoke_issued_tokens!
     access_tokens.where(revoked_at: nil).update_all(revoked_at: Time.current)
     refresh_tokens.where(revoked_at: nil).update_all(revoked_at: Time.current)
-  end
-
-  def scope_list
-    scopes.split
   end
 end

@@ -49,26 +49,10 @@ class TaskValidator < ResourceValidator
   # (Task.for is Reference(Any)) are accepted without a lookup.
   def validate_for
     if payload.dig("for", "reference").blank?
-      add_warning(
-        code: "informational",
-        diagnostics: "Task.for is absent, so this Task belongs to no patient compartment " \
-                     "(excluded from Patient/$everything, Patient/$export, and patient-context reads)",
-        expression: "Task.for"
-      )
+      warn_no_patient_compartment("Task.for is absent", expression: "Task.for")
       return
     end
 
     validate_patient_reference("for", on_non_patient: :skip)
-  end
-
-  def validate_reference_array(field, param)
-    value = payload[field]
-    return if value.nil? || value.is_a?(Array)
-
-    add_error(
-      code: "structure",
-      diagnostics: "Task.#{field} must be an array of References (searched by `#{param}`)",
-      expression: "Task.#{field}"
-    )
   end
 end

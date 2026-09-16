@@ -9,8 +9,12 @@ module FhirResponse
     render json: resource, status: status, content_type: FHIR_CONTENT_TYPE
   end
 
+  def render_outcome(outcome, status:)
+    render json: outcome, status: status, content_type: FHIR_CONTENT_TYPE
+  end
+
   def render_operation_outcome(status:, issues:)
-    render json: Fhir::OperationOutcome.build(issues), status: status, content_type: FHIR_CONTENT_TYPE
+    render_outcome(Fhir::OperationOutcome.build(issues), status: status)
   end
 
   def render_operation_outcome_single(status:, severity:, code:, diagnostics:, expression: nil)
@@ -25,10 +29,7 @@ module FhirResponse
   def render_operation_result(result)
     return head :no_content if result.status == :no_content
 
-    if result.outcome
-      render json: result.outcome, status: result.status, content_type: FHIR_CONTENT_TYPE
-      return
-    end
+    return render_outcome(result.outcome, status: result.status) if result.outcome
 
     location = result.location_path ? "#{base_url}/#{result.location_path}" : nil
     render_fhir_resource(result.resource, status: result.status, location: location, version_id: result.version_id)

@@ -75,7 +75,7 @@ module Fhir
       # ANDed on afterwards, so it also governs the INNER query of a chain or
       # _has -- otherwise `?_has:Observation:performer:code=X` would leak which
       # other patients have a matching Observation.
-      scope = context&.base_scope_for(resource_type) || model.where(deleted: false)
+      scope = PatientContext.base_scope(resource_type, context)
 
       search_params.clauses.each do |clause|
         resolution = resolve_clause(clause)
@@ -119,8 +119,6 @@ module Fhir
     private
 
     attr_reader :resource_type, :model, :search_param_defs, :search_params, :context, :chain_depth
-
-    SORTABLE_META = { "_id" => :id, "_lastUpdated" => :last_updated }.freeze
 
     def definitions
       @definitions ||= SYSTEM_PARAMS.merge(search_param_defs)
@@ -253,7 +251,7 @@ module Fhir
       return scope.none if refs.empty?
 
       where_or(scope, refs.map do |ref|
-        ["content @> ?", [{ definition[:jsonb_key] => [containment_element(definition, ref)] }.to_json]]
+        ["content @> ?", [JsonbReference.containment(definition, ref)]]
       end)
     end
 
@@ -271,26 +269,11 @@ module Fhir
       # Multi-valued source references: extract refs in Ruby, mirroring
       # IncludeResolver#collect_forward_refs.
       prefix = "#{resource_type}/"
-      ids = inner_scope.pluck(:content).flat_map do |content|
-        Array(content[ref_definition[:jsonb_key]]).flat_map { |element| element_refs(element, ref_definition) }
-      end.filter_map { |ref| ref.delete_prefix(prefix) if ref.is_a?(String) && ref.start_with?(prefix) }
+      ids = inner_scope.pluck(:content)
+                       .flat_map { |content| JsonbReference.refs_in(content, ref_definition) }
+                       .filter_map { |ref| ref.delete_prefix(prefix) if ref.is_a?(String) && ref.start_with?(prefix) }
 
       scope.where(id: ids.uniq)
-    end
-
-    # The reference strings held by one element of the :jsonb_key array.
-    # :element_match filters the element (other extensions share the array, same
-    # reason as containment_element); :nested_path walks one array deeper first.
-    def element_refs(element, definition)
-      return [] unless element.is_a?(Hash)
-
-      match = definition[:element_match]
-      return [] if match && match.any? { |key, value| element[key] != value }
-
-      inner = Array(definition[:nested_path]).reduce([element]) do |acc, key|
-        acc.flat_map { |node| Array(node[key]) }
-      end
-      inner.filter_map { |node| node.dig(*definition[:ref_path]) if node.is_a?(Hash) }
     end
 
     # --- :missing -------------------------------------------------------------
@@ -315,8 +298,7 @@ module Fhir
           # The array holds other kinds of element too (extension[] is shared,
           # and only some sections carry entry[]), so presence has to be asked of
           # the matching element, not the key.
-          containment = element_presence_containment(definition)
-          scope.where("#{missing ? 'NOT ' : ''}(content @> ?)", containment)
+          scope.where("#{missing ? 'NOT ' : ''}(content @> ?)", JsonbReference.presence_containment(definition))
         elsif definition[:multiple]
           # jsonb_exists() instead of the `?` operator, whose literal form would
           # collide with bind placeholders. A present-but-empty array counts as
@@ -553,48 +535,11 @@ module Fhir
 
       # 0..* reference lives only in content; match array membership via jsonb
       # containment (GIN-indexed), mirroring Fhir::IncludeResolver#query_reverse.
-      fragments = refs.map do |ref|
-        containment = { definition[:jsonb_key] => [containment_element(definition, ref)] }
-        ["content @> ?", [containment.to_json]]
-      end
-      where_or(scope, fragments)
+      where_or(scope, refs.map { |ref| ["content @> ?", [JsonbReference.containment(definition, ref)]] })
     end
 
     def qualify_reference(value, target_type)
       value.include?("/") ? value : "#{target_type}/#{value}"
-    end
-
-    # Builds the nested hash a jsonb containment query expects, e.g.
-    # nest(["individual", "reference"], "Practitioner/1") => {"individual"=>{"reference"=>"Practitioner/1"}}
-    def nest(path, value)
-      path.reverse.reduce(value) { |acc, key| { key => acc } }
-    end
-
-    # One element of the 0..* array, as it appears in a containment query.
-    # :element_match pins additional constant keys on the same element -- an
-    # extension's `url`. Without it a parameter reading `extension[].valueReference`
-    # would also match a DIFFERENT extension that happens to carry the same
-    # reference, since containment only asks "is there an element like this".
-    # :nested_path names array keys INSIDE that element, for parameters whose
-    # target sits one array deeper (Composition.section[].entry[]); wrapping from
-    # the inside out yields {"entry"=>[{"reference"=>ref}]}. :element_match is
-    # merged onto the outermost element, so it still pins the outer array's element.
-    def containment_element(definition, ref)
-      element = Array(definition[:nested_path]).reverse.reduce(nest(definition[:ref_path], ref)) do |acc, key|
-        { key => [acc] }
-      end
-      definition[:element_match] ? element.merge(definition[:element_match]) : element
-    end
-
-    # The same element with the reference left out: "an element of this kind
-    # exists at all", used by :missing.
-    def element_presence_containment(definition)
-      element = definition[:element_match] || {}
-      # An empty array is contained in any array, so {"section":[{"entry":[]}]}
-      # reads as "is there a section that HAS an entry array" -- which is what
-      # :missing needs when the outer key alone (section) says nothing.
-      element = element.merge(definition[:nested_path].first => []) if definition[:nested_path]
-      { definition[:jsonb_key] => [element] }.to_json
     end
 
     # --- :date / :datetime -------------------------------------------------------
@@ -783,10 +728,9 @@ module Fhir
       end
     end
 
+    # Aliases sort like their canonical parameter (`_sort=patient` == `_sort=subject`).
     def sort_column(name)
-      return SORTABLE_META[name] if SORTABLE_META.key?(name)
-
-      definition = search_param_defs[name]
+      definition = definition_for(name)
       definition && definition[:column]&.to_sym
     end
 
@@ -808,16 +752,11 @@ module Fhir
     end
 
     def clamped_count
-      raw = search_params.count
-      count = raw.present? ? raw.to_i : DEFAULT_COUNT
-      count = DEFAULT_COUNT if count <= 0
-      [count, MAX_COUNT].min
+      QueryParam.clamp_count(search_params.count, default: DEFAULT_COUNT, max: MAX_COUNT)
     end
 
     def clamped_offset
-      raw = search_params.offset
-      offset = raw.present? ? raw.to_i : 0
-      offset.negative? ? 0 : offset
+      QueryParam.clamp_offset(search_params.offset)
     end
   end
 end

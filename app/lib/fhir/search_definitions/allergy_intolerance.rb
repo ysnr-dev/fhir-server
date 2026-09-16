@@ -10,8 +10,7 @@ module Fhir
         "type"                => { type: :token, column: :type_code },
         "category"            => { type: :token, column: :category_code },
         "criticality"         => { type: :token, column: :criticality },
-        "code"                => { type: :token_or_text, token_column: :code_value,
-                                    text_column: :code_text },
+        "code"                => { type: :token_or_text, text_column: :code_text },
         "patient"             => { type: :reference, column: :patient_reference, target_type: "Patient" },
         "date"                => { type: :datetime, column: :recorded_time },
         # onsetDateTime 以外の onset[x] は索引していない(ExtractionDefinitions を参照)。

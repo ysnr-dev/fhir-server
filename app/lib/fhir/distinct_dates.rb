@@ -96,10 +96,7 @@ module Fhir
     end
 
     def limit
-      raw = operation_param("limit")
-      value = raw ? raw.to_i : DEFAULT_LIMIT
-      value = DEFAULT_LIMIT if value <= 0
-      [value, MAX_LIMIT].min
+      QueryParam.clamp_count(operation_param("limit"), default: DEFAULT_LIMIT, max: MAX_LIMIT)
     end
 
     def parameters(definition)
@@ -161,10 +158,7 @@ module Fhir
     end
 
     def invalid(diagnostics)
-      Operation::Result.new(
-        status: :bad_request,
-        outcome: Fhir::OperationOutcome.single(severity: "error", code: "invalid", diagnostics: diagnostics)
-      )
+      Operation::Result.failure(:bad_request, Fhir::OperationOutcome.error("invalid", diagnostics))
     end
   end
 end

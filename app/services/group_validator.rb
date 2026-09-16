@@ -51,8 +51,7 @@ class GroupValidator < ResourceValidator
     patient_id = reference[%r{\APatient/(.+)\z}, 1]
     return if patient_id.nil?
 
-    patient = Patient.find_by(id: patient_id)
-    return if patient && !patient.deleted?
+    return if existing_patient?(patient_id)
 
     add_error(code: "invalid",
               diagnostics: "Group.member.entity.reference '#{reference}' does not reference an existing Patient",

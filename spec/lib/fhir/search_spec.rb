@@ -53,7 +53,16 @@ RSpec.describe Fhir::Search do
       ids = result.records.map(&:id)
       expect(ids).to eq(ids.sort)
     end
+
+  it "sorts by an alias of a mapped column (_sort=patient == _sort=subject)" do
+    create("ServiceRequest", { "status" => "active", "intent" => "order", "subject" => { "reference" => "Patient/b" } })
+    create("ServiceRequest", { "status" => "active", "intent" => "order", "subject" => { "reference" => "Patient/a" } })
+
+    result = search("ServiceRequest", { "_sort" => "patient" })
+
+    expect(result.records.map(&:subject_reference)).to eq(%w[Patient/a Patient/b])
   end
+end
 
   describe "reference search" do
     it "matches a single-valued reference via the extracted column" do

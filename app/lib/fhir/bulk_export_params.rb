@@ -57,12 +57,9 @@ module Fhir
     end
 
     def parse_since
-      raw = raw_params["_since"]
-      return nil if raw.blank?
-
-      Time.iso8601(raw)
-    rescue ArgumentError
-      raise InvalidParams, "Invalid _since value #{raw.inspect}: must be an ISO 8601 instant"
+      QueryParam.parse_instant(raw_params["_since"], name: "_since")
+    rescue QueryParam::InvalidInstant => e
+      raise InvalidParams, e.message
     end
 
     def parse_output_format

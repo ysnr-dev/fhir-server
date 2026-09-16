@@ -33,6 +33,12 @@ module Fhir
 
     attr_reader :patient_id
 
+    # The relation a query over `type` starts from: the caller's compartment when
+    # a context confines it, otherwise every live record of the type.
+    def self.base_scope(type, context)
+      context&.base_scope_for(type) || ResourceRegistry.entry_for(type).fetch(:model).where(deleted: false)
+    end
+
     def initialize(patient_id:, scope_set:)
       @patient_id = patient_id
       @scope_set = scope_set

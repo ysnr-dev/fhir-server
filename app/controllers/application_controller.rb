@@ -114,6 +114,12 @@ class ApplicationController < ActionController::API
     [nil, "Malformed JSON: #{e.message}"]
   end
 
+  # The comma-separated preferences of the Prefer header (RFC 7240), e.g.
+  # "return=minimal, handling=strict".
+  def prefer_tokens
+    request.headers["Prefer"].to_s.split(",").map(&:strip)
+  end
+
   # Returns Fhir::HistoryParams, or nil after rendering 400 for a bad _since.
   def parse_history_params
     Fhir::HistoryParams.parse(request.query_string)

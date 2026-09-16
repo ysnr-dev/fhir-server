@@ -11,7 +11,7 @@ class GoalValidator < ResourceValidator
       validate_binding("lifecycleStatus", Fhir::Terminology::GOAL_LIFECYCLE_STATUS)
     validate_description
     validate_achievement_status
-    validate_categories
+    validate_codeable_concept_array("category")
     validate_subject
     # start[x] は choice。日付で書かれたときだけ形を見る(契機コードは自由)。
     validate_date("startDate")
@@ -38,22 +38,6 @@ class GoalValidator < ResourceValidator
 
     add_error(code: "structure", diagnostics: "Goal.achievementStatus must be a CodeableConcept object",
               expression: "Goal.achievementStatus")
-  end
-
-  def validate_categories
-    categories = payload["category"]
-    return if categories.blank?
-
-    unless categories.is_a?(Array)
-      add_error(code: "structure", diagnostics: "Goal.category must be an array",
-                expression: "Goal.category")
-      return
-    end
-
-    return if categories.all? { |category| category.is_a?(Hash) }
-
-    add_error(code: "structure", diagnostics: "Goal.category entries must be CodeableConcept objects",
-              expression: "Goal.category")
   end
 
   # Goal.subject は 1..1。R4 の対象は Patient|Group|Organization で、Patient 以外を

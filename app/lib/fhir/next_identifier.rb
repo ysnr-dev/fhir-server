@@ -22,7 +22,8 @@ module Fhir
   #   { name: "system", valueUri: "..." }
   # value は Identifier.value に入れる文字列(先頭ゼロは付けない)。
   class NextIdentifier
-    NUMERIC_VALUE = /\A[0-9]{1,18}\z/.freeze
+    # Postgres regex for identifier values that count as numbers (bigint-safe).
+    NUMERIC_VALUE_SQL = "^[0-9]{1,18}$".freeze
 
     def self.call(resource_type, system)
       new(resource_type, system).call
@@ -64,7 +65,7 @@ module Fhir
     def registered_max
       ResourceIdentifier
         .where(resource_type: resource_type, system: system)
-        .where("value ~ ?", "^[0-9]{1,18}$")
+        .where("value ~ ?", NUMERIC_VALUE_SQL)
         .maximum(Arel.sql("value::bigint")).to_i
     end
 
@@ -105,17 +106,12 @@ module Fhir
     end
 
     def invalid(diagnostics)
-      Operation::Result.new(
-        status: :bad_request,
-        outcome: Fhir::OperationOutcome.single(severity: "error", code: "invalid", diagnostics: diagnostics)
-      )
+      Operation::Result.failure(:bad_request, Fhir::OperationOutcome.error("invalid", diagnostics))
     end
 
     def not_supported
-      Operation::Result.new(
-        status: :not_found,
-        outcome: Fhir::OperationOutcome.single(severity: "error", code: "not-supported",
-                                               diagnostics: "Resource type '#{resource_type}' is not supported")
+      Operation::Result.failure(
+        :not_found, Fhir::OperationOutcome.error("not-supported", "Resource type '#{resource_type}' is not supported")
       )
     end
   end

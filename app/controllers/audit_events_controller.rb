@@ -15,8 +15,8 @@ class AuditEventsController < ApplicationController
     return if scope.nil? # already rendered 400
 
     total = scope.count
-    count = clamped(params[:_count], default: DEFAULT_COUNT, max: MAX_COUNT)
-    offset = [params[:_offset].to_i, 0].max
+    count = Fhir::QueryParam.clamp_count(params[:_count], default: DEFAULT_COUNT, max: MAX_COUNT)
+    offset = Fhir::QueryParam.clamp_offset(params[:_offset])
     records = scope.order(occurred_at: :desc, id: :desc).limit(count).offset(offset)
 
     render_fhir_resource(searchset_bundle(records, total: total, count: count, offset: offset), status: :ok)
@@ -24,12 +24,7 @@ class AuditEventsController < ApplicationController
 
   def show
     record = AuditEvent.find_by(id: params[:id])
-    unless record
-      return render_operation_outcome_single(
-        status: :not_found, severity: "error", code: "not-found",
-        diagnostics: "AuditEvent/#{params[:id]} not found"
-      )
-    end
+    return render_outcome(Fhir::OperationOutcome.not_found("AuditEvent/#{params[:id]}"), status: :not_found) unless record
 
     render_fhir_resource(record.to_fhir, status: :ok)
   end
@@ -74,12 +69,6 @@ class AuditEventsController < ApplicationController
       else current.where("occurred_at >= ?", instant) # ge and bare values
       end
     end
-  end
-
-  def clamped(raw, default:, max:)
-    value = raw.present? ? raw.to_i : default
-    value = default if value <= 0
-    [value, max].min
   end
 
   def searchset_bundle(records, total:, count:, offset:)

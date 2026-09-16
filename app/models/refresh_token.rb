@@ -9,6 +9,9 @@
 # is handled like an authorization-code replay: the entire grant -- every
 # access and refresh token the code produced -- is revoked.
 class RefreshToken < ApplicationRecord
+  include DigestedToken
+  include SingleUseToken
+
   # offline_access outlives the user's session; online_access is supposed to
   # last only while the user remains signed in. Tokens are not linked to any
   # server-side session, so "online" is approximated by a much shorter
@@ -36,31 +39,8 @@ class RefreshToken < ApplicationRecord
     [record, raw]
   end
 
-  def self.authenticate(raw)
-    return nil if raw.blank?
-
-    find_by(token_digest: OauthClient.digest(raw))
-  end
-
-  def expired?
-    expires_at <= Time.current
-  end
-
-  def used?
-    used_at.present?
-  end
-
   def revoked?
     revoked_at.present?
-  end
-
-  # Claims the token atomically, exactly like AuthorizationCode#consume!: the
-  # UPDATE ... WHERE used_at IS NULL lets the database settle a race between
-  # concurrent redemptions, so the loser is treated as a replay.
-  def consume!
-    claimed = self.class.where(id: id, used_at: nil).update_all(used_at: Time.current) == 1
-    reload if claimed
-    claimed
   end
 
   # The rotation replacement: same grant, same scopes, fresh lifetime.
@@ -73,9 +53,5 @@ class RefreshToken < ApplicationRecord
       scopes: scope_list,
       authorization_code: authorization_code
     )
-  end
-
-  def scope_list
-    scopes.split
   end
 end

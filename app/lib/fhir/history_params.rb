@@ -5,7 +5,7 @@ module Fhir
   # clamping in Fhir::Search is private to searching.
   class HistoryParams
     # Raised for a `_since` value that is not a parseable instant (-> 400).
-    class InvalidSince < StandardError; end
+    InvalidSince = QueryParam::InvalidInstant
 
     DEFAULT_COUNT = Search::DEFAULT_COUNT
     MAX_COUNT = Search::MAX_COUNT
@@ -35,25 +35,17 @@ module Fhir
     private
 
     def clamp_count(raw)
-      count = raw.present? ? raw.to_i : DEFAULT_COUNT
-      count = DEFAULT_COUNT if count <= 0
-      [count, MAX_COUNT].min
+      QueryParam.clamp_count(raw, default: DEFAULT_COUNT, max: MAX_COUNT)
     end
 
     def clamp_offset(raw)
-      offset = raw.present? ? raw.to_i : 0
-      offset.negative? ? 0 : offset
+      QueryParam.clamp_offset(raw)
     end
 
+    # A repeated `_since` arrives as an Array from parse_query; take the last,
+    # matching SearchParams' last-value-wins behavior for meta params.
     def parse_since(raw)
-      # A repeated `_since` arrives as an Array from parse_query; take the last,
-      # matching SearchParams' last-value-wins behavior for meta params.
-      value = raw.is_a?(Array) ? raw.last : raw
-      return nil if value.blank?
-
-      Time.iso8601(value)
-    rescue ArgumentError
-      raise InvalidSince, "Invalid _since value #{value.inspect}: must be an ISO 8601 instant"
+      QueryParam.parse_instant(raw.is_a?(Array) ? raw.last : raw, name: "_since")
     end
   end
 end

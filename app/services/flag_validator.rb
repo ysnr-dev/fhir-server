@@ -10,27 +10,10 @@ class FlagValidator < ResourceValidator
     require_field("status", cardinality: "1..1") &&
       validate_binding("status", Fhir::Terminology::FLAG_STATUS)
     require_field("code", cardinality: "1..1")
-    validate_categories
+    # category は example 束縛なので、CodeableConcept の形だけを見る。
+    validate_codeable_concept_array("category")
     validate_subject
-    validate_period
-  end
-
-  # Flag.category は 0..* CodeableConcept。値集合は example 束縛なので、コード体系の
-  # 中身までは縛らず、CodeableConcept の形だけを見る。
-  def validate_categories
-    categories = payload["category"]
-    return if categories.blank?
-
-    unless categories.is_a?(Array)
-      add_error(code: "structure", diagnostics: "Flag.category must be an array",
-                expression: "Flag.category")
-      return
-    end
-
-    return if categories.all? { |category| category.is_a?(Hash) }
-
-    add_error(code: "structure", diagnostics: "Flag.category entries must be CodeableConcept objects",
-              expression: "Flag.category")
+    validate_period("period")
   end
 
   # Flag.subject は 1..1。R4 の対象は Patient に限らない(Location / Group /
@@ -40,19 +23,5 @@ class FlagValidator < ResourceValidator
     return unless require_field("subject", value: payload.dig("subject", "reference"), cardinality: "1..1")
 
     validate_patient_reference("subject", on_non_patient: :skip)
-  end
-
-  def validate_period
-    period = payload["period"]
-    return if period.blank?
-
-    unless period.is_a?(Hash)
-      add_error(code: "structure", diagnostics: "Flag.period must be a Period object",
-                expression: "Flag.period")
-      return
-    end
-
-    validate_datetime("period.start", value: period["start"], expression: "Flag.period.start")
-    validate_datetime("period.end", value: period["end"], expression: "Flag.period.end")
   end
 end

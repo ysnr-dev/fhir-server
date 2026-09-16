@@ -106,7 +106,7 @@ module Fhir
       return [] unless entry
       return [] if context && !context.readable_type?(type)
 
-      base = context&.base_scope_for(type) || entry[:model].where(deleted: false)
+      base = PatientContext.base_scope(type, context)
       versioned, bare = canonicals.partition { |canonical| canonical.include?("|") }
 
       scopes = versioned.map do |canonical|
@@ -122,9 +122,7 @@ module Fhir
         content = record.content || {}
 
         if definition[:multiple]
-          Array(content[definition[:jsonb_key]]).filter_map do |element|
-            element.dig(*definition[:ref_path]) if element.is_a?(Hash)
-          end.select(&:present?)
+          JsonbReference.refs_in(content, definition)
         else
           value = content.dig(*definition[:path])
           value.present? ? [value] : []
@@ -149,8 +147,7 @@ module Fhir
         next [] unless entry
         next [] if context && !context.readable_type?(type)
 
-        scope = context&.base_scope_for(type) || entry[:model].where(deleted: false)
-        scope.where(id: ids.uniq).to_a
+        PatientContext.base_scope(type, context).where(id: ids.uniq).to_a
       end
     end
 
@@ -176,35 +173,23 @@ module Fhir
         next [] if context && !context.readable_type?(source_type)
 
         refs = target_types.flat_map { |type| by_type[type].map { |record| "#{type}/#{record.id}" } }
-        query_reverse(reverse_base_scope(source_type, entry), definition, refs).to_a
+        # The reverse query starts from the source type at large, so without the
+        # compartment restriction `?_revinclude=Observation:performer` on a shared
+        # Practitioner would return every patient's Observations.
+        query_reverse(PatientContext.base_scope(source_type, context), definition, refs).to_a
       end
-    end
-
-    # The reverse query starts from the source type at large, so without the
-    # compartment restriction `?_revinclude=Observation:performer` on a shared
-    # Practitioner would return every patient's Observations.
-    def reverse_base_scope(source_type, entry)
-      context&.base_scope_for(source_type) || entry[:model].where(deleted: false)
     end
 
     def query_reverse(base_scope, definition, refs)
       if definition[:multiple]
         # Multi-valued reference lives only in `content`; match array membership
         # via jsonb containment (GIN-indexed). OR over each candidate reference.
-        scopes = refs.map do |ref|
-          containment = { definition[:jsonb_key] => [nest(definition[:ref_path], ref)] }
-          base_scope.where("content @> ?", containment.to_json)
-        end
+        scopes = refs.map { |ref| base_scope.where("content @> ?", JsonbReference.containment(definition, ref)) }
         scopes.reduce(:or)
       else
         # Single-valued reference is extracted to an indexed column.
         base_scope.where(definition[:column] => refs)
       end
-    end
-
-    # Same as Fhir::Search#nest.
-    def nest(path, value)
-      path.reverse.reduce(value) { |acc, key| { key => acc } }
     end
 
     def dedup(list)

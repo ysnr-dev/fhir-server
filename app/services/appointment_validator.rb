@@ -131,17 +131,11 @@ class AppointmentValidator < ResourceValidator
   def validate_patient_participant
     reference = Fhir::FieldExtractor.actor_patient_reference(payload["participant"])
     if reference.blank?
-      add_warning(
-        code: "informational",
-        diagnostics: "Appointment has no Patient participant, so it belongs to no patient compartment " \
-                     "(excluded from Patient/$everything, Patient/$export, and patient-context reads)",
-        expression: "Appointment.participant"
-      )
+      warn_no_patient_compartment("Appointment has no Patient participant", expression: "Appointment.participant")
       return
     end
 
-    patient = Patient.find_by(id: reference.delete_prefix("Patient/"))
-    return if patient && !patient.deleted?
+    return if existing_patient?(reference.delete_prefix("Patient/"))
 
     add_error(
       code: "invalid",

@@ -207,10 +207,7 @@ class BundleProcessor
   end
 
   def entry_error(status, code, diagnostics)
-    Fhir::Operation::Result.new(
-      status: status,
-      outcome: Fhir::OperationOutcome.single(severity: "error", code: code, diagnostics: diagnostics)
-    )
+    Fhir::Operation::Result.failure(status, Fhir::OperationOutcome.error(code, diagnostics))
   end
 
   def build_response_entry(entry, result)

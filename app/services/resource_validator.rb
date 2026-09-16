@@ -1,21 +1,9 @@
 # Base class for the per-resource FHIR validators. Subclasses implement #validate,
 # calling the shared check helpers (or appending bespoke issues via #add_error /
-# #add_warning). The invocation contract expected by Fhir::Operation is preserved:
-# `SomeValidator.call(payload)` returns an object responding to #valid? and #issues.
-#
-# Issues are accumulated as { code:, diagnostics:, expression: } hashes; severity is
-# attached by Result#issues, matching what Fhir::OperationOutcome.build reads.
+# #add_warning from Fhir::IssueCollector). `SomeValidator.call(payload)` returns a
+# Fhir::ValidationResult, which is what Fhir::Operation expects.
 class ResourceValidator
-  Result = Struct.new(:errors, :warnings) do
-    def valid?
-      errors.empty?
-    end
-
-    def issues
-      errors.map { |e| e.merge(severity: "error") } +
-        warnings.map { |w| w.merge(severity: "warning") }
-    end
-  end
+  include Fhir::IssueCollector
 
   # Accepted partial-date formats for FHIR `date` elements (YYYY, YYYY-MM, YYYY-MM-DD).
   DATE_FORMATS = [
@@ -30,13 +18,11 @@ class ResourceValidator
 
   def initialize(payload)
     @payload = payload
-    @errors = []
-    @warnings = []
   end
 
   def call
     validate
-    Result.new(@errors, @warnings)
+    validation_result
   end
 
   private
@@ -47,14 +33,6 @@ class ResourceValidator
   # (PatientValidator -> "Patient"), used to build expression paths.
   def resource_type
     @resource_type ||= self.class.name.sub(/Validator\z/, "")
-  end
-
-  def add_error(code:, diagnostics:, expression:)
-    @errors << { code: code, diagnostics: diagnostics, expression: Array(expression) }
-  end
-
-  def add_warning(code:, diagnostics:, expression:)
-    @warnings << { code: code, diagnostics: diagnostics, expression: Array(expression) }
   end
 
   # The IG whose cardinalities #require_field cites, named in the diagnostics so
@@ -207,13 +185,78 @@ class ResourceValidator
       return
     end
 
-    patient = Patient.find_by(id: match[1])
-    return if patient && !patient.deleted?
+    return if existing_patient?(match[1])
 
     add_error(
       code: "invalid",
       diagnostics: "#{resource_type}.#{field}.reference '#{reference}' does not reference an existing Patient",
       expression: "#{resource_type}.#{field}.reference"
+    )
+  end
+
+  # A Patient/{id} reference resolves only to a Patient that exists and is not
+  # logically deleted.
+  def existing_patient?(patient_id)
+    patient = Patient.find_by(id: patient_id)
+    patient.present? && !patient.deleted?
+  end
+
+  # Requires a 0..* Reference element, when present, to be an array -- the shape
+  # jsonb containment search (`param`) relies on. A bare object here would be
+  # silently unsearchable rather than obviously broken.
+  def validate_reference_array(field, param)
+    value = payload[field]
+    return if value.nil? || value.is_a?(Array)
+
+    add_error(
+      code: "structure",
+      diagnostics: "#{resource_type}.#{field} must be an array of References (searched by `#{param}`)",
+      expression: "#{resource_type}.#{field}"
+    )
+  end
+
+  # Checks the shape of a 0..* CodeableConcept element (an array of objects)
+  # without binding its codes -- for example-bound elements such as category.
+  def validate_codeable_concept_array(field)
+    values = payload[field]
+    return if values.blank?
+
+    unless values.is_a?(Array)
+      add_error(code: "structure", diagnostics: "#{resource_type}.#{field} must be an array",
+                expression: "#{resource_type}.#{field}")
+      return
+    end
+
+    return if values.all? { |value| value.is_a?(Hash) }
+
+    add_error(code: "structure", diagnostics: "#{resource_type}.#{field} entries must be CodeableConcept objects",
+              expression: "#{resource_type}.#{field}")
+  end
+
+  # Validates an optional Period element: object shape, then start/end as dateTimes.
+  def validate_period(field)
+    period = payload[field]
+    return if period.blank?
+
+    unless period.is_a?(Hash)
+      add_error(code: "structure", diagnostics: "#{resource_type}.#{field} must be a Period object",
+                expression: "#{resource_type}.#{field}")
+      return
+    end
+
+    validate_datetime("#{field}.start", value: period["start"], expression: "#{resource_type}.#{field}.start")
+    validate_datetime("#{field}.end", value: period["end"], expression: "#{resource_type}.#{field}.end")
+  end
+
+  # For types whose only tie to a patient compartment is an optional element:
+  # leaving it out is a decision (a staff meeting, a blocked-out slot) rather than
+  # an error, but it hides the resource from every patient-scoped read, so it warns.
+  def warn_no_patient_compartment(because, expression:)
+    add_warning(
+      code: "informational",
+      diagnostics: "#{because}, so this #{resource_type} belongs to no patient compartment " \
+                   "(excluded from Patient/$everything, Patient/$export, and patient-context reads)",
+      expression: expression
     )
   end
 

@@ -93,10 +93,6 @@ class BulkExportsController < ApplicationController
     prefer_tokens.include?("handling=lenient")
   end
 
-  def prefer_tokens
-    request.headers["Prefer"].to_s.split(",").map(&:strip)
-  end
-
   def parse_kickoff_params
     parameters_body = nil
     if request.post?
@@ -148,13 +144,11 @@ class BulkExportsController < ApplicationController
 
     group = Group.find_by(id: params[:group_id])
     if group.nil?
-      render_operation_outcome_single(status: :not_found, severity: "error", code: "not-found",
-                                      diagnostics: "Group/#{params[:group_id]} not found")
+      render_outcome(Fhir::OperationOutcome.not_found("Group/#{params[:group_id]}"), status: :not_found)
       return false
     end
     if group.deleted?
-      render_operation_outcome_single(status: :gone, severity: "error", code: "deleted",
-                                      diagnostics: "Group/#{params[:group_id]} has been deleted")
+      render_outcome(Fhir::OperationOutcome.gone("Group/#{params[:group_id]}"), status: :gone)
       return false
     end
 

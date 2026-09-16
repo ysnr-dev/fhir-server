@@ -13,8 +13,7 @@ module Fhir
         "group-identifier" => { type: :token, column: :group_identifier },
         # Task.performerType(担当者の職種)。担当者そのものは owner。
         "performer"        => { type: :token, column: :performer_type },
-        "code"             => { type: :token_or_text, token_column: :code,
-                                 text_column: :code_text },
+        "code"             => { type: :token_or_text, text_column: :code_text },
         # Task.for は「誰のための作業か」。FHIR の検索パラメータ名は subject で、
         # patient はその別名(Task.for が Patient を指す場合)。
         "subject"          => { type: :reference, column: :for_reference,

@@ -4,8 +4,7 @@ module Fhir
       PARAMS = {
         "identifier"  => { type: :identifier },
         "status"      => { type: :token, column: :status },
-        "type"        => { type: :token_or_text, token_column: :type_code,
-                            text_column: :type_text },
+        "type"        => { type: :token_or_text, text_column: :type_text },
         "beneficiary" => { type: :reference, column: :beneficiary_reference,
                             target_type: "Patient", aliases: %w[patient] },
         # payor is 1..* reference living only in content; matched via jsonb containment.

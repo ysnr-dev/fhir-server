@@ -15,10 +15,12 @@ module Fhir
     # `type[].profile`. FHIRPath invariants and Reference target resolution
     # are out of scope (existing hand validators cover reference existence).
     #
-    # Every issue is emitted as an error (Result#errors) -- Fhir::Profile.mode
+    # Every issue is emitted as an error (ValidationResult#errors) -- Fhir::Profile.mode
     # decides at the call site (Fhir::Operation) whether that blocks a write
     # or only surfaces via $validate / logs.
     class Validator
+      include IssueCollector
+
       def self.call(payload, profile_url:)
         new(payload, profile_url).call
       end
@@ -26,7 +28,6 @@ module Fhir
       def initialize(payload, profile_url)
         @payload = payload
         @profile_url = profile_url
-        @errors = []
         @visited_profiles = Set.new
       end
 
@@ -35,14 +36,10 @@ module Fhir
         tree = definition && ElementTree.build(definition)
         validate_value(tree, @payload, tree.path) if tree
 
-        ResourceValidator::Result.new(@errors, [])
+        validation_result
       end
 
       private
-
-      def add_error(code:, diagnostics:, expression:)
-        @errors << { code: code, diagnostics: diagnostics, expression: Array(expression) }
-      end
 
       # --- single-value dispatch --------------------------------------------
 

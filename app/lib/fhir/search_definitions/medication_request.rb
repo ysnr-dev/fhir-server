@@ -9,8 +9,7 @@ module Fhir
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
         "requester"  => { type: :reference, column: :requester_reference, target_type: "Practitioner" },
-        "code"       => { type: :token_or_text, token_column: :medication_code,
-                           text_column: :medication_text },
+        "code"       => { type: :token_or_text, text_column: :medication_text },
         "authoredon" => { type: :datetime, column: :authored_on },
         # MedicationRequest.basedOn は処方オーダー(ServiceRequest ヘッダ)を指す。
         # 処方箋の明細取得やオーダー単位のカスケード削除が

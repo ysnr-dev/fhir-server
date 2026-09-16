@@ -9,10 +9,6 @@ module Fhir
   # 管理APIは閉じたままにする -- ここが「開いていた」ときの被害は
   # FHIRデータの閲覧ではなく、資格情報の発行そのものになるため。
   module AdminAuth
-    # 32バイト = openssl rand -hex 32 の出力長。これ未満は本番で起動を止める
-    # (config/initializers/production_guardrails.rb)。
-    MIN_TOKEN_BYTES = 32
-
     module_function
 
     def token
