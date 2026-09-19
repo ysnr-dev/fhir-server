@@ -73,6 +73,38 @@ RSpec.describe "DocumentReference", type: :request do
       get "/DocumentReference?date=ge2026-07-01&date=le2026-08-01"
       expect(JSON.parse(response.body)["total"]).to eq(2)
     end
+
+    it "finds documents by category, including a concept beyond the first" do
+      patient_id = create_patient
+      system = "http://fhir-client.local/CodeSystem/file-category"
+      post "/DocumentReference",
+           params: valid_document_reference_payload(
+             subject_id: patient_id,
+             category: [{ "coding" => [{ "system" => system, "code" => "referral", "display" => "紹介状" }] }]
+           ), as: :json
+      post "/DocumentReference",
+           params: valid_document_reference_payload(
+             subject_id: patient_id,
+             category: [
+               { "coding" => [{ "system" => system, "code" => "consent", "display" => "同意書" }] },
+               { "coding" => [{ "system" => system, "code" => "scan", "display" => "スキャン" }] }
+             ]
+           ), as: :json
+
+      get "/DocumentReference?category=#{Rack::Utils.escape("#{system}|referral")}"
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      # 2 つ目以降の CodeableConcept も索引される
+      get "/DocumentReference?category=scan"
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      # カンマ区切りは OR
+      get "/DocumentReference?category=referral,consent"
+      expect(JSON.parse(response.body)["total"]).to eq(2)
+
+      get "/DocumentReference?category=unknown"
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
   end
 
   it "joins the patient compartment ($everything)" do

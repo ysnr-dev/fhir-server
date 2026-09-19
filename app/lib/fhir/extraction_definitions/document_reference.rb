@@ -11,8 +11,9 @@ module Fhir
       }.freeze
 
       TOKENS = {
-        "status" => { path: "status", kind: :code },
-        "type"   => { path: "type", kind: :codeable_concept }
+        "status"   => { path: "status", kind: :code },
+        "type"     => { path: "type", kind: :codeable_concept },
+        "category" => { path: "category", kind: :codeable_concept_list }
       }.freeze
     end
   end
