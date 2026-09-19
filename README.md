@@ -4,7 +4,7 @@ Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです�
 [JP Core Implementation Guide v1.2.0](https://jpfhir.jp/fhir/core/1.2.0/index.html) および
 問診票・診療テンプレートについては
 [JASPEHR 実装ガイド v1.0.0](https://jaspehr.jp/wp-content/docs/full-ig_v1.0.0/site/index.html)
-に準拠した 34 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
+に準拠した 37 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
 複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
