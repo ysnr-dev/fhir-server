@@ -16,7 +16,11 @@ module Fhir
         "participant"      => { type: :reference, multiple: true, jsonb_key: "participant",
                                  ref_path: %w[individual reference], target_type: "Practitioner",
                                  aliases: %w[practitioner] },
-        "date"             => { type: :datetime, column: :period_start, end_column: :period_end }
+        # Encounter.appointment[] は 0..* の参照。この受診を生んだ予約を引く。
+        # 予約側から見る場合は _revinclude=Encounter:appointment。
+        "appointment"      => { type: :reference, multiple: true, jsonb_key: "appointment",
+                                 ref_path: %w[reference], target_type: "Appointment" },
+        "date"           => { type: :datetime, column: :period_start, end_column: :period_end }
       }.freeze
     end
   end

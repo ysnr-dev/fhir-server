@@ -27,7 +27,10 @@ module Fhir
         "service-provider" => { path: %w[serviceProvider reference], targets: %w[Organization], column: "service_provider_reference" },
         "location" => { multiple: true, jsonb_key: "location", ref_path: %w[location reference], targets: %w[Location] },
         "participant" => { multiple: true, jsonb_key: "participant", ref_path: %w[individual reference], targets: %w[Practitioner PractitionerRole] },
-        "practitioner" => { alias: "participant" }
+        "practitioner" => { alias: "participant" },
+        # 受診を生んだ予約。予約の検索に _revinclude=Encounter:appointment を添えると
+        # 「その予約が受診(受付)まで進んだか」が 1 リクエストで引ける。
+        "appointment" => { multiple: true, jsonb_key: "appointment", ref_path: %w[reference], targets: %w[Appointment] }
       },
       "MedicationRequest" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
