@@ -40,7 +40,7 @@ RSpec.describe Fhir::CapabilityStatement do
 
   it "brackets the declared search params with _id and _lastUpdated" do
     expect(search_param_names("Patient")).to eq(
-      %w[_id identifier name family given gender birthdate active _lastUpdated]
+      %w[_id identifier name family given address phone gender birthdate active _lastUpdated]
     )
   end
 

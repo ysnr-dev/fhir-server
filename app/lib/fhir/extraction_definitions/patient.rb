@@ -10,7 +10,9 @@ module Fhir
         birth_date: { path: "birthDate", transform: :partial_date },
         family: { path: "name", transform: :official_family },
         given: { path: "name", transform: :official_given },
-        name_text: { path: "name", transform: :all_name_representations }
+        name_text: { path: "name", transform: :all_name_representations },
+        address_text: { path: "address", transform: :address_list_text },
+        phone_digits: { path: "telecom", transform: :phone_digits }
       }.freeze
 
       TOKENS = {

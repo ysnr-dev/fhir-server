@@ -262,6 +262,46 @@ RSpec.describe "Patients", type: :request do
       expect(bundle["total"]).to be >= 1
     end
 
+    it "finds a patient by any part of any address with :contains" do
+      post "/Patient", params: valid_patient_payload(
+        address: [{ "text" => "東京都千代田区千代田1-1-1", "state" => "東京都", "city" => "千代田区", "line" => ["千代田1-1-1"] }]
+      ), as: :json
+
+      get "/Patient", params: { "address:contains": "千代田区千代田" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Patient", params: { "address:contains": "新宿区" }
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+
+    it "finds a patient by home or mobile phone regardless of hyphens" do
+      post "/Patient", params: valid_patient_payload(
+        telecom: [
+          { "system" => "phone", "use" => "home", "value" => "03-1234-5678" },
+          { "system" => "phone", "use" => "mobile", "value" => "090-8765-4321" },
+          { "system" => "email", "value" => "0312345678@example.com" }
+        ]
+      ), as: :json
+
+      get "/Patient", params: { phone: "0312345678" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Patient", params: { phone: "090-8765-4321" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Patient", params: { "phone:contains": "4321" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+    end
+
+    it "matches nothing for a phone value without digits" do
+      post "/Patient", params: valid_patient_payload(
+        telecom: [{ "system" => "phone", "use" => "home", "value" => "03-1234-5678" }]
+      ), as: :json
+
+      get "/Patient", params: { "phone:contains": "-" }
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+
     it "filters by gender" do
       post "/Patient", params: valid_patient_payload(gender: "female"), as: :json
 

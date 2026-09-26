@@ -150,6 +150,33 @@ RSpec.describe Fhir::FieldExtractor do
     end
   end
 
+  describe ".address_list_text" do
+    it "joins every address" do
+      addresses = [{ "text" => "東京都千代田区" }, { "text" => "茨城県つくば市" }]
+      expect(described_class.address_list_text(addresses)).to eq("東京都千代田区 茨城県つくば市")
+    end
+
+    it "returns nil when there is no address" do
+      expect(described_class.address_list_text(nil)).to be_nil
+      expect(described_class.address_list_text([])).to be_nil
+    end
+  end
+
+  describe ".phone_digits" do
+    it "keeps the digits of every phone and skips other systems" do
+      telecoms = [
+        { "system" => "phone", "use" => "home", "value" => "03-1234-5678" },
+        { "system" => "phone", "use" => "mobile", "value" => "０９０−８７６５−４３２１" },
+        { "system" => "email", "value" => "a1@example.com" }
+      ]
+      expect(described_class.phone_digits(telecoms)).to eq("0312345678 09087654321")
+    end
+
+    it "returns nil when there is no phone" do
+      expect(described_class.phone_digits([{ "system" => "email", "value" => "a@example.com" }])).to be_nil
+    end
+  end
+
   describe ".extract with fallback / with" do
     it "tries the fallback path only when the primary path yields nil" do
       spec = { path: "performedDateTime", fallback: "performedPeriod.start", transform: :datetime }

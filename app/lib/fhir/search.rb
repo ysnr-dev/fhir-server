@@ -353,7 +353,9 @@ module Fhir
 
     def apply_clause(scope, definition, clause)
       case definition[:type]
-      when :string then string_fragment(scope, definition[:column], clause, word_boundary: definition[:word_boundary])
+      when :string
+        string_fragment(scope, definition[:column], clause,
+                        word_boundary: definition[:word_boundary], digits_only: definition[:digits_only])
       when :token then token_fragment(scope, definition, clause)
       when :boolean then boolean_fragment(scope, definition[:column], clause)
       when :date, :datetime then date_fragment(scope, definition, clause)
@@ -381,9 +383,16 @@ module Fhir
 
     # --- :string -----------------------------------------------------------
 
-    def string_fragment(scope, column, clause, word_boundary: false)
+    # digits_only columns (Patient#phone_digits) store digits alone, so the query
+    # value is reduced the same way; a value with no digits matches nothing.
+    def string_fragment(scope, column, clause, word_boundary: false, digits_only: false)
       mode = string_mode(clause.modifier)
-      where_or(scope, clause.values.map { |v| string_value_fragment(column, v, mode, word_boundary) })
+      where_or(scope, clause.values.map do |v|
+        next string_value_fragment(column, v, mode, word_boundary) unless digits_only
+
+        digits = FieldExtractor.digits(v)
+        digits.empty? ? ["FALSE", []] : string_value_fragment(column, digits, mode, word_boundary)
+      end)
     end
 
     def string_mode(modifier)

@@ -167,5 +167,29 @@ module Fhir
       [address["text"], *Array(address["line"]), address["city"], address["state"], address["postalCode"]]
         .compact.join(" ").presence
     end
+
+    # Every Address of a 0..* array (Patient.address), each flattened by address_text,
+    # space-joined. nil when none carries a value.
+    def address_list_text(addresses)
+      Array.wrap(addresses).filter_map { |address| address_text(address) if address.is_a?(Hash) }
+                           .join(" ").presence
+    end
+
+    # Digits of every phone ContactPoint (system=phone) in a 0..* telecom array,
+    # space-joined. Numbers are written with or without hyphens (and sometimes in
+    # full-width digits), so only the digits are kept and the search value is
+    # reduced the same way (see Search#string_fragment).
+    def phone_digits(telecoms)
+      Array.wrap(telecoms).filter_map do |telecom|
+        next unless telecom.is_a?(Hash) && telecom["system"] == "phone"
+
+        digits(telecom["value"]).presence
+      end.join(" ").presence
+    end
+
+    # ASCII digits of a string, full-width digits folded to ASCII first.
+    def digits(value)
+      value.to_s.tr("０-９", "0-9").gsub(/\D/, "")
+    end
   end
 end
