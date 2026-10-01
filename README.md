@@ -388,7 +388,7 @@ curl -s "http://localhost:3000/ServiceRequest?reason-reference=Condition/{condit
 | `PATCH` | `/{Resource}/:id` | 部分更新（JSON Patch, RFC 6902。`Content-Type: application/json-patch+json`） |
 | `DELETE` | `/{Resource}/:id` | 削除（論理削除） |
 | `DELETE` | `/{Resource}?{criteria}` | 条件付き削除（該当全件を削除。`conditionalDelete: "multiple"`） |
-| `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索（3 セグメントまでの多段対応）・`_has`・`_include`/`_revinclude`・`_sort`・`_count`（上限 500）/`_offset`・`_summary`/`_elements`・`_total`・`:missing`・`:not`・`Prefer: handling=strict` 等に対応 |
+| `GET` | `/{Resource}` | 検索（Bundle）。チェーン検索（3 セグメントまでの多段対応）・`_has`・`_include`/`_revinclude`・`_sort`・`_count`（上限 500）/`_offset`・`_summary`/`_elements`・`_total`・`:missing`・`:not`（token / uri 型）・`Prefer: handling=strict` 等に対応 |
 | `GET` | `/{Resource}/$distinct-dates` | 独自 operation: date 検索パラメータが取る値の重複なし集合（新しい順）。`date-param`（必須）・`precision=day\|full`・`timezone=±HH:MM`（既定はサーバーのローカルゾーン）・`limit`・`count=true`（日付ごとの件数） |
 | `GET` | `/{Resource}/$next-identifier` | 独自 operation: `system`（必須）の identifier で次に使える番号を払い出す（`Parameters` の `value`）。数字だけの値を数値として比べ、払い出し済み・登録済み（削除済み含む）の最大値 + 1 を返す。同時に呼んでも同じ番号は返らない。登録の一部なので write スコープ |
 | `GET` | `/{Resource}/_history` | タイプレベル履歴（`_count` / `_since` 対応） |

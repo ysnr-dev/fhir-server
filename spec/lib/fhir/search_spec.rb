@@ -293,6 +293,42 @@ end
       expect(search("Questionnaire", { "url:missing" => "true" }).total).to eq(1)
       expect(search("Questionnaire", { "url:missing" => "false" }).total).to eq(2)
     end
+
+    describe ":not" do
+      let(:first_url) { "http://example.org/Questionnaire/first" }
+      let(:extended_url) { "http://example.org/Questionnaire/first-extended" }
+
+      it "excludes the exact URI, keeping other values and resources without one" do
+        unnamed = create("Questionnaire", { "status" => "draft" })
+
+        result = search("Questionnaire", { "url:not" => first_url })
+
+        expect(result.records.map(&:url)).to contain_exactly(extended_url, nil)
+        expect(result.records.map(&:id)).to include(unnamed.id)
+      end
+
+      it "negates comma-joined values as a set (none of them)" do
+        create("Questionnaire", { "url" => "http://example.org/Questionnaire/other", "status" => "active" })
+
+        result = search("Questionnaire", { "url:not" => "#{first_url},#{extended_url}" })
+
+        expect(result.records.map(&:url)).to eq(["http://example.org/Questionnaire/other"])
+      end
+
+      it "compares the whole canonical, |version included" do
+        create("QuestionnaireResponse", { "questionnaire" => "#{first_url}|1.0.0" })
+
+        expect(search("QuestionnaireResponse", { "questionnaire:not" => "#{first_url}|1.0.0" }).total).to eq(0)
+        expect(search("QuestionnaireResponse", { "questionnaire:not" => first_url }).total).to eq(1)
+      end
+
+      it "leaves other modifiers unsupported" do
+        expect(described_class.new("Questionnaire", Fhir::SearchParams.from_hash({ "url:below" => first_url }))
+                              .unsupported_clause_names).to eq(["url"])
+        expect(described_class.new("Questionnaire", Fhir::SearchParams.from_hash({ "url:not" => first_url }))
+                              .unsupported_clause_names).to be_empty
+      end
+    end
   end
 
   describe "date interval precision" do

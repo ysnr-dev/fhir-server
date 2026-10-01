@@ -19,11 +19,12 @@ module Fhir
 
     STRING_MODIFIERS = %w[exact contains].freeze
 
-    # :not is supported on token params only (reference/date negation is not
-    # implemented). Comma values negate as a set: `status:not=a,b` matches
-    # resources whose value is neither a nor b -- including resources that
-    # have no value at all, per the spec's definition of :not.
+    # :not is supported on token and uri params only (reference/date negation
+    # is not implemented). Comma values negate as a set: `status:not=a,b`
+    # matches resources whose value is neither a nor b -- including resources
+    # that have no value at all, per the spec's definition of :not.
     TOKEN_MODIFIERS = %w[not].freeze
+    URI_MODIFIERS = %w[not].freeze
 
     # :missing accepts exactly one value, true or false; anything else makes the
     # clause unsupported (rejected in conditional criteria, skipped in search).
@@ -139,6 +140,7 @@ module Fhir
     def supported_modifier?(definition, modifier)
       return true if modifier.nil?
       return true if definition[:type] == :token && TOKEN_MODIFIERS.include?(modifier)
+      return true if definition[:type] == :uri && URI_MODIFIERS.include?(modifier)
 
       %i[string token_or_text].include?(definition[:type]) && STRING_MODIFIERS.include?(modifier)
     end
@@ -373,12 +375,16 @@ module Fhir
     # QuestionnaireResponse.questionnaire). Unlike :token the value is never
     # split on "|" -- a canonical carries its version that way
     # ("http://example.org/Questionnaire/q|1.0.0"), and that whole string is
-    # what's stored. The :above / :below modifiers are not implemented, so a
-    # modified clause is rejected by #supported_modifier? before reaching here.
+    # what's stored. :not negates the same exact comparison. The :above / :below
+    # modifiers are not implemented, so such a clause is rejected by
+    # #supported_modifier? before reaching here.
     def uri_fragment(scope, column, clause)
       return scope if clause.values.empty?
+      return scope.where(column => clause.values) unless clause.modifier == "not"
 
-      scope.where(column => clause.values)
+      # NOT IN alone would also drop NULL rows (NULL <> x is NULL); :not must
+      # keep resources that have no value.
+      scope.where("#{column} IS NULL OR #{column} NOT IN (?)", clause.values)
     end
 
     # --- :string -----------------------------------------------------------

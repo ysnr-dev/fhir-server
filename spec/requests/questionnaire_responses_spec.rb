@@ -130,6 +130,31 @@ RSpec.describe "QuestionnaireResponse", type: :request do
       expect(total).to eq(0)
     end
 
+    it "excludes questionnaires with questionnaire:not (comma = none of them)" do
+      form_url = "http://fhir-client.local/Questionnaire/dpc-form1"
+      other_url = "http://example.org/Questionnaire/other"
+      patient_id = create_patient
+      post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+      kept_id = JSON.parse(response.body)["id"]
+      post "/QuestionnaireResponse",
+           params: valid_questionnaire_response_payload(subject_id: patient_id, "questionnaire" => form_url), as: :json
+      post "/QuestionnaireResponse",
+           params: valid_questionnaire_response_payload(subject_id: patient_id, "questionnaire" => other_url), as: :json
+      other_id = JSON.parse(response.body)["id"]
+      strict = { "Prefer" => "handling=strict" }
+
+      get "/QuestionnaireResponse", params: { patient: patient_id, "questionnaire:not" => form_url }, headers: strict
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to contain_exactly(kept_id, other_id)
+
+      get "/QuestionnaireResponse",
+          params: { patient: patient_id, "questionnaire:not" => "#{form_url},#{other_url}" }, headers: strict
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([kept_id])
+
+      get "/QuestionnaireResponse", params: { patient: patient_id, questionnaire: form_url }
+      expect(total).to eq(1)
+    end
+
     it "finds responses by identifier" do
       patient_id = create_patient
       post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
