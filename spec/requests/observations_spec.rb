@@ -276,6 +276,56 @@ RSpec.describe "Observations", type: :request do
       end
     end
 
+    # 記録した診療科。オーダーの依頼科と同じローカル拡張(order-department)を引く。
+    describe "department" do
+      let(:department_url) { "http://fhir-client.local/StructureDefinition/order-department" }
+      let(:other_url) { "http://fhir-client.local/StructureDefinition/some-other-reference" }
+
+      def create_with_extension(subject_id, extension)
+        post "/Observation",
+             params: valid_observation_payload(subject_id: subject_id).merge("extension" => extension),
+             as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      it "finds the measurements recorded by one department (typed and bare id)" do
+        subject_id = create_patient
+        target_id = create_with_extension(
+          subject_id,
+          [{ "url" => department_url, "valueReference" => { "reference" => "Organization/dept-1" } }]
+        )
+        create_with_extension(
+          subject_id,
+          [{ "url" => department_url, "valueReference" => { "reference" => "Organization/dept-2" } }]
+        )
+        create_with_extension(
+          subject_id,
+          [{ "url" => other_url, "valueReference" => { "reference" => "Organization/dept-1" } }]
+        )
+
+        get "/Observation", params: { department: "Organization/dept-1" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+
+        get "/Observation", params: { department: "dept-1" }
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+
+      it "narrows $distinct-dates" do
+        subject_id = create_patient
+        create_with_extension(
+          subject_id,
+          [{ "url" => department_url, "valueReference" => { "reference" => "Organization/dept-1" } }]
+        )
+
+        get "/Observation/$distinct-dates?patient=Patient/#{subject_id}&date-param=date&department=Organization/dept-1"
+        expect(JSON.parse(response.body)["parameter"].count { |p| p["name"] == "date" }).to eq(1)
+
+        get "/Observation/$distinct-dates?patient=Patient/#{subject_id}&date-param=date&department=Organization/dept-2"
+        expect(JSON.parse(response.body)["parameter"].to_a.count { |p| p["name"] == "date" }).to eq(0)
+      end
+    end
+
     it "finds by date (effective time)" do
       subject_id = create_patient
       post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json

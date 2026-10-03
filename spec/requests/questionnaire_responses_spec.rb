@@ -246,6 +246,30 @@ RSpec.describe "QuestionnaireResponse", type: :request do
 
     # questionnaire は canonical("url|version" 文字列)。Reference の traverse では
     # なく Questionnaire の url(+version) 検索で解決される専用の _include。
+    # 記録した診療科。オーダーの依頼科と同じローカル拡張(order-department)を引く。
+    describe "department" do
+      let(:department_url) { "http://fhir-client.local/StructureDefinition/order-department" }
+
+      def create_with_department(patient_id, organization_ref)
+        payload = valid_questionnaire_response_payload(subject_id: patient_id)
+        payload["extension"] += [{ "url" => department_url, "valueReference" => { "reference" => organization_ref } }]
+        post "/QuestionnaireResponse", params: payload, as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      it "finds the answers recorded by one department" do
+        patient_id = create_patient
+        target_id = create_with_department(patient_id, "Organization/dept-1")
+        create_with_department(patient_id, "Organization/dept-2")
+        post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+
+        get "/QuestionnaireResponse", params: { department: "Organization/dept-1" }
+
+        expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+      end
+    end
+
     describe "_include=QuestionnaireResponse:questionnaire (canonical)" do
       def included_entries
         JSON.parse(response.body)["entry"].to_a.select { |e| e.dig("search", "mode") == "include" }

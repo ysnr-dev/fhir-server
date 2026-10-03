@@ -36,7 +36,11 @@ module Fhir
         # 同じ絞り込みでもこちらだけがローカルのままになっている。
         "problem"    => { type: :reference, multiple: true, jsonb_key: "extension",
                            ref_path: %w[valueReference reference], target_type: "Condition",
-                           element_match: { "url" => PROBLEM_EXTENSION_URL } }
+                           element_match: { "url" => PROBLEM_EXTENSION_URL } },
+        # 記録した診療科。オーダーの依頼科と同じローカル拡張(order-department)を引く。
+        "department" => { type: :reference, multiple: true, jsonb_key: "extension",
+                           ref_path: %w[valueReference reference], target_type: "Organization",
+                           element_match: { "url" => ServiceRequest::DEPARTMENT_EXTENSION_URL } }
       }.freeze
     end
   end

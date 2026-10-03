@@ -179,7 +179,7 @@ class BundleProcessor
       operations, patch_error = decode_patch_document(resource)
       return entry_error(:bad_request, "structure", patch_error) if patch_error
 
-      Fhir::Operation.patch(resource_type, id, operations)
+      Fhir::Operation.patch(resource_type, id, operations, if_match: req["ifMatch"])
     else
       entry_error(:bad_request, "not-supported", "Unsupported Bundle.entry.request.method '#{method}'")
     end

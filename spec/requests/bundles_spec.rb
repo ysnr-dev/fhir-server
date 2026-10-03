@@ -360,6 +360,45 @@ RSpec.describe "Bundles", type: :request do
       expect(JSON.parse(response.body)["meta"]["versionId"]).to eq("1")
     end
 
+    it "rejects a PATCH entry whose ifMatch is stale" do
+      post "/Patient", params: valid_patient_payload, as: :json
+      patient_id = JSON.parse(response.body)["id"]
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          {
+            "resource" => patch_binary([{ "op" => "replace", "path" => "/gender", "value" => "female" }]),
+            "request" => { "method" => "PATCH", "url" => "Patient/#{patient_id}", "ifMatch" => 'W/"99"' }
+          }
+        ]
+      }, as: :json
+
+      expect(response).to have_http_status(:precondition_failed)
+      get "/Patient/#{patient_id}"
+      expect(JSON.parse(response.body)["meta"]["versionId"]).to eq("1")
+    end
+
+    it "applies a PATCH entry whose ifMatch matches the current version" do
+      post "/Patient", params: valid_patient_payload, as: :json
+      patient_id = JSON.parse(response.body)["id"]
+
+      post "/", params: {
+        "resourceType" => "Bundle",
+        "type" => "transaction",
+        "entry" => [
+          {
+            "resource" => patch_binary([{ "op" => "replace", "path" => "/gender", "value" => "female" }]),
+            "request" => { "method" => "PATCH", "url" => "Patient/#{patient_id}", "ifMatch" => 'W/"1"' }
+          }
+        ]
+      }, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["entry"].first["resource"]["meta"]["versionId"]).to eq("2")
+    end
+
     it "rolls back the whole transaction when a PATCH entry fails" do
       post "/Patient", params: valid_patient_payload, as: :json
       patient_id = JSON.parse(response.body)["id"]

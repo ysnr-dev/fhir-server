@@ -25,7 +25,11 @@ module Fhir
         # 参照先は Any だが実用上 Condition なので、素の id には Condition/ を補う。
         "entry"      => { type: :reference, multiple: true, jsonb_key: "section",
                            nested_path: %w[entry], ref_path: %w[reference],
-                           target_type: "Condition" }
+                           target_type: "Condition" },
+        # 記録した診療科。オーダーの依頼科と同じローカル拡張(order-department)を引く。
+        "department" => { type: :reference, multiple: true, jsonb_key: "extension",
+                           ref_path: %w[valueReference reference], target_type: "Organization",
+                           element_match: { "url" => ServiceRequest::DEPARTMENT_EXTENSION_URL } }
       }.freeze
     end
   end

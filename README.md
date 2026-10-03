@@ -364,6 +364,10 @@ FHIR R4 に無いローカルの検索パラメータです。POS/POMR のカル
 共有するので、参照だけでなく拡張の `url` も一致条件に含めています。`_include`/`_revinclude` では
 辿れません（`Fhir::SearchReferences` には登録していないため）。
 
+`Composition` / `QuestionnaireResponse` / `Observation` の `department` もローカルの検索パラメータです。
+記録した診療科を `ServiceRequest` の依頼科と同じ拡張（`…/order-department`）から引くので、カルテを
+診療科で絞り込むときにオーダーと記録を同じ値で検索できます。
+
 診療記録は標準の `Composition?entry=` で引けます。対象のプロブレムは C-CDA on FHIR
 Progress Note の problems_section（LOINC 11450-4）の `section.entry` に入るためです。
 `Composition.section[].entry[]` は配列の二重ネストなので、検索定義は `jsonb_key` に加えて
@@ -1166,6 +1170,9 @@ curl -i -X POST http://localhost:3000/ -H 'Content-Type: application/fhir+json' 
 
 いずれかのエントリが失敗（400/404/422等）すると、**それまでに成功した操作も含めて全てロールバック**され、
 失敗したエントリの `OperationOutcome`（`expression` に `Bundle.entry[N]` を含む）が単一で返されます。
+
+`PUT` / `PATCH` のエントリは `request.ifMatch`（`W/"3"` の形の ETag）で楽観ロックできます。版が合わなければ
+そのエントリが 412 になり、transaction 全体がロールバックされます。
 
 **batch: 複数操作を独立実行（部分成功あり）**
 
