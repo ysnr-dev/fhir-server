@@ -6,8 +6,8 @@ MCP サーバー（TypeScript / Go）が、同じ FHIR REST + SMART Backend Serv
 
 | リポジトリ | 役割 | 主なスタック |
 |---|---|---|
-| `fhir-server` | FHIR R4 サーバー本体（JP-Core IG v1.2.0 / JASPEHR IG v1.0.0 準拠） | Ruby 3.4 / Rails 8（API 専用）/ PostgreSQL 18 |
-| `fhir-client` | 電子カルテ UI ＋ プロキシ backend（診療記録・部門オーダー・マスタ・帳票・DICOM） | Rails 7（API 専用）/ Vite + React + TypeScript |
+| `fhir-server` | FHIR R4 サーバー本体（JP-Core IG v1.2.0 / JASPEHR IG v1.0.0 準拠） | Ruby 4.0 / Rails 8（API 専用）/ PostgreSQL 18 |
+| `fhir-client` | 電子カルテ UI ＋ プロキシ backend（診療記録・部門オーダー・マスタ・帳票・DICOM） | Rails 8（API 専用）/ Vite + React + TypeScript |
 | `fhir-mcp-server` | MCP サーバー（stdio ＋ リモート HTTP） | Node.js 20+ / TypeScript / MCP TypeScript SDK |
 | `fhir-mcp-agent` | MCP サーバーの Go 移植（stdio 専用） | Go 1.26+ / 公式 MCP Go SDK |
 
@@ -118,7 +118,7 @@ flowchart TB
 
 `fhir-server` の唯一の対話型クライアントで、外来・入院の診療業務をひと通り扱います。
 
-- **backend（Rails 7 API 専用, `:3001`）**
+- **backend（Rails 8 API 専用, `:3001`）**
   - `/fhir/*` を fhir-server へ中継。**FHIR リソースは自 DB に永続化しない**
   - `/master/*` で国内マスタと施設マスタを自 DB 管理（`master_*` 約 90 テーブル。医薬品 / HOT / 用法、
     検体検査 / 放射線 / 生理 / 内視鏡 / 処置 / 手術 / 輸血 / 食事 / 細菌 / 病理の各オーダーマスタ、

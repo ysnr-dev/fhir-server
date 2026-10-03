@@ -2,7 +2,7 @@
 #   dev        — 開発用(docker-compose.yml が target: dev で使用。ソースはbind mount)
 #   build      — 本番用gemのビルド(development/test除外)
 #   production — 実行専用(コンパイラなし・非rootユーザー)。デフォルトターゲット。
-FROM ruby:3.4.10-slim AS base
+FROM ruby:4.0.7-slim AS base
 
 WORKDIR /app
 
