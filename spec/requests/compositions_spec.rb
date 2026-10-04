@@ -115,6 +115,28 @@ RSpec.describe "Composition", type: :request do
       expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
     end
 
+    # 記録した病棟。オーダーの入院病棟と同じローカル拡張(order-ward)を引く。
+    it "finds compositions by the order-ward extension" do
+      patient_id = create_patient
+      ward_url = "http://fhir-client.local/StructureDefinition/order-ward"
+      post "/Composition",
+           params: valid_composition_payload(subject_id: patient_id).merge(
+             "extension" => [{ "url" => ward_url, "valueReference" => { "reference" => "Location/ward-1" } }]
+           ),
+           as: :json
+      expect(response).to have_http_status(:created)
+      target_id = JSON.parse(response.body)["id"]
+      post "/Composition",
+           params: valid_composition_payload(subject_id: patient_id).merge(
+             "extension" => [{ "url" => ward_url, "valueReference" => { "reference" => "Location/ward-2" } }]
+           ),
+           as: :json
+      post "/Composition", params: valid_composition_payload(subject_id: patient_id), as: :json
+
+      get "/Composition", params: { patient: patient_id, ward: "Location/ward-1" }
+      expect(JSON.parse(response.body)["entry"].map { |e| e["resource"]["id"] }).to eq([target_id])
+    end
+
     # POS/POMR のカルテを 1 つのプロブレムで縦に読むための絞り込み。対象疾患は
     # C-CDA on FHIR Progress Note の problems_section (LOINC 11450-4) の entry に
     # 入るので、R4 標準の entry で引く。section[] の中の entry[] という配列の二重

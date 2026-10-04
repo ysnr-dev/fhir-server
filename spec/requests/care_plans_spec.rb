@@ -193,6 +193,23 @@ RSpec.describe "CarePlans", type: :request do
       expect(included.map { |entry| entry["resource"]["resourceType"] }).to contain_exactly("Patient", "Goal")
     end
 
+    # 看護計画は看護問題(Condition)1 件に 1 本。addresses を condition で引き、_include で問題も揃える。
+    it "filters by the addressed condition and includes it" do
+      patient_id = create_patient
+      post "/Condition", params: valid_condition_payload(subject_id: patient_id), as: :json
+      expect(response).to have_http_status(:created), "setup failed: #{response.body}"
+      condition_id = JSON.parse(response.body)["id"]
+      id = create_care_plan(patient_id, addresses: [{ "reference" => "Condition/#{condition_id}" }])
+      create_care_plan(patient_id)
+
+      get "/CarePlan", params: { patient: "Patient/#{patient_id}", condition: "Condition/#{condition_id}" }
+      expect(ids_of(response.body)).to eq([id])
+
+      get "/CarePlan?patient=Patient/#{patient_id}&_include=CarePlan:condition"
+      included = JSON.parse(response.body)["entry"].select { |entry| entry.dig("search", "mode") == "include" }
+      expect(included.map { |entry| entry["resource"]["id"] }).to eq([condition_id])
+    end
+
     # パスのタスクは依頼を経ずに計画から直に実施されるので、実施記録は CarePlan を
     # basedOn で指す。計画の検索に _revinclude を添えると実施まで 1 リクエストで揃う。
     it "pulls the Procedures performed for the plan via _revinclude" do

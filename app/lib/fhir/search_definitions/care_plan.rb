@@ -33,6 +33,9 @@ module Fhir
         # (Goal から計画への逆参照は R4 に無いので、辿る向きはこちらだけ)。
         "goal"       => { type: :reference, multiple: true, jsonb_key: "goal",
                            ref_path: %w[reference], target_type: "Goal" },
+        # CarePlan.addresses(計画が扱う問題)。R4 標準の検索名は condition。
+        "condition"  => { type: :reference, multiple: true, jsonb_key: "addresses",
+                           ref_path: %w[reference], target_type: "Condition" },
         # 元にした定義。FHIR 上の PlanDefinition を指すなら canonical、FHIR の外の
         # 定義(このサーバーの外にあるパスマスタなど)を指すなら uri。
         "instantiates-canonical" => { type: :uri, column: :instantiates_canonical },

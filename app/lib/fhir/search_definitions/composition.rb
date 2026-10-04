@@ -29,7 +29,11 @@ module Fhir
         # 記録した診療科。オーダーの依頼科と同じローカル拡張(order-department)を引く。
         "department" => { type: :reference, multiple: true, jsonb_key: "extension",
                            ref_path: %w[valueReference reference], target_type: "Organization",
-                           element_match: { "url" => ServiceRequest::DEPARTMENT_EXTENSION_URL } }
+                           element_match: { "url" => ServiceRequest::DEPARTMENT_EXTENSION_URL } },
+        # 記録した病棟(看護サマリなど)。オーダーの入院病棟と同じローカル拡張(order-ward)を引く。
+        "ward"       => { type: :reference, multiple: true, jsonb_key: "extension",
+                           ref_path: %w[valueReference reference], target_type: "Location",
+                           element_match: { "url" => ServiceRequest::WARD_EXTENSION_URL } }
       }.freeze
     end
   end

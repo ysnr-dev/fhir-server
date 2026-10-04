@@ -217,7 +217,9 @@ module Fhir
         "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[CarePlan] },
         # 計画の達成目標。計画の検索に _include=CarePlan:goal を添えると、目標と
         # その評価まで同じ応答で揃う(Goal から計画への逆参照は R4 に無い)。
-        "goal" => { multiple: true, jsonb_key: "goal", ref_path: %w[reference], targets: %w[Goal] }
+        "goal" => { multiple: true, jsonb_key: "goal", ref_path: %w[reference], targets: %w[Goal] },
+        # 計画が扱う問題。看護計画の検索に _include=CarePlan:condition を添えると看護問題も揃う。
+        "condition" => { multiple: true, jsonb_key: "addresses", ref_path: %w[reference], targets: %w[Condition] }
       },
       "Goal" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },

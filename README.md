@@ -366,7 +366,8 @@ FHIR R4 に無いローカルの検索パラメータです。POS/POMR のカル
 
 `Composition` / `QuestionnaireResponse` / `Observation` の `department` もローカルの検索パラメータです。
 記録した診療科を `ServiceRequest` の依頼科と同じ拡張（`…/order-department`）から引くので、カルテを
-診療科で絞り込むときにオーダーと記録を同じ値で検索できます。
+診療科で絞り込むときにオーダーと記録を同じ値で検索できます。`Composition` の `ward` も同じ作りで、
+記録した病棟(看護サマリなど)をオーダーの入院病棟と同じ拡張（`…/order-ward`）から引きます。
 
 `QuestionnaireResponse` の `author-name` もローカルの検索パラメータです。JASPEHR の回答は記入者を
 contained の `Practitioner`（氏名だけ）で持ち、`author` は `#practitioner` を指すため、`author` では
@@ -972,6 +973,7 @@ curl -i -X POST http://localhost:3000/CarePlan   -H 'Content-Type: application/f
 | | `subject`（別名 `patient`） / `encounter` | |
 | | `date` | `CarePlan.period`。`eq` は包含で、`end` が無ければ継続中 |
 | | `part-of` / `goal` | 0..* 参照。`_include=CarePlan:goal` で目標まで 1 リクエスト |
+| | `condition` | `CarePlan.addresses`（扱う問題）。`_include=CarePlan:condition` で問題まで 1 リクエスト |
 | | `instantiates-canonical` / `instantiates-uri` | 元にした定義（このサーバーの外にある定義は uri） |
 | `Goal` | `identifier` / `lifecycle-status` / `achievement-status` / `category` | |
 | | `subject`（別名 `patient`） / `start-date` | |
