@@ -244,6 +244,58 @@ RSpec.describe "QuestionnaireResponse", type: :request do
       expect(types).to contain_exactly("QuestionnaireResponse", "Patient")
     end
 
+    # 記入者は contained の Practitioner(氏名だけ)なので、氏名で引く。空白の有無は問わない。
+    describe "author-name" do
+      def create_with_author_name(patient_id, name)
+        payload = valid_questionnaire_response_payload(subject_id: patient_id)
+        payload["contained"] = [{ "resourceType" => "Practitioner", "id" => "practitioner", "name" => [{ "text" => name }] }]
+        payload["author"] = { "reference" => "#practitioner" }
+        post "/QuestionnaireResponse", params: payload, as: :json
+        expect(response).to have_http_status(:created)
+        JSON.parse(response.body)["id"]
+      end
+
+      def found_ids
+        JSON.parse(response.body).fetch("entry", []).map { |e| e["resource"]["id"] }
+      end
+
+      it "finds the answers written by one person, with or without the space in the name" do
+        patient_id = create_patient
+        spaced_id = create_with_author_name(patient_id, "山田 太郎")
+        wide_id = create_with_author_name(patient_id, "山田　太郎")
+        create_with_author_name(patient_id, "山田 太郎丸")
+        post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+
+        get "/QuestionnaireResponse", params: { "author-name:exact" => "山田太郎" }
+        expect(found_ids).to match_array([spaced_id, wide_id])
+
+        get "/QuestionnaireResponse", params: { "author-name:exact" => "山田 太郎" }
+        expect(found_ids).to match_array([spaced_id, wide_id])
+      end
+
+      it "matches nothing for a blank name" do
+        patient_id = create_patient
+        create_with_author_name(patient_id, "山田 太郎")
+
+        get "/QuestionnaireResponse", params: { "author-name:exact" => " " }
+        expect(found_ids).to eq([])
+      end
+
+      it "follows the name when the answer is rewritten" do
+        patient_id = create_patient
+        id = create_with_author_name(patient_id, "山田 太郎")
+        payload = JSON.parse(response.body)
+        payload["contained"][0]["name"][0]["text"] = "佐藤 花子"
+        put "/QuestionnaireResponse/#{id}", params: payload, as: :json
+        expect(response).to have_http_status(:ok)
+
+        get "/QuestionnaireResponse", params: { "author-name:exact" => "山田太郎" }
+        expect(found_ids).to eq([])
+        get "/QuestionnaireResponse", params: { "author-name:exact" => "佐藤花子" }
+        expect(found_ids).to eq([id])
+      end
+    end
+
     # questionnaire は canonical("url|version" 文字列)。Reference の traverse では
     # なく Questionnaire の url(+version) 検索で解決される専用の _include。
     # 記録した診療科。オーダーの依頼科と同じローカル拡張(order-department)を引く。

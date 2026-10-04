@@ -11,6 +11,7 @@ module Fhir
         subject_reference: { path: "subject.reference" },
         encounter_reference: { path: "encounter.reference" },
         author_reference: { path: "author.reference" },
+        author_name_key: { path: "contained", transform: :contained_practitioner_name_key },
         source_reference: { path: "source.reference" },
         authored: { path: "authored", transform: :datetime }
       }.freeze

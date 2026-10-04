@@ -191,5 +191,22 @@ module Fhir
     def digits(value)
       value.to_s.tr("０-９", "0-9").gsub(/\D/, "")
     end
+
+    # Name (name[0].text) of the first contained Practitioner, whitespace removed.
+    # JASPEHR QuestionnaireResponses keep the author contained -- a name, not a
+    # reference to a registered Practitioner -- so "the answers this person wrote" can
+    # only be matched by name. The name is typed with or without a space between family
+    # and given name, so the spaces are dropped and the search value is reduced the same
+    # way (see Search#string_fragment). nil when there is no such name.
+    def contained_practitioner_name_key(contained)
+      practitioner = Array.wrap(contained).find { |r| r.is_a?(Hash) && r["resourceType"] == "Practitioner" }
+      name = Array.wrap(practitioner && practitioner["name"]).first
+      compact_text(name.is_a?(Hash) ? name["text"] : nil).presence
+    end
+
+    # A string with every whitespace character (full-width space included) removed.
+    def compact_text(value)
+      value.to_s.gsub(/[[:space:]]/, "")
+    end
   end
 end

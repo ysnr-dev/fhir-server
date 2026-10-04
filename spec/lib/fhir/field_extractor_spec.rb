@@ -200,6 +200,25 @@ RSpec.describe Fhir::FieldExtractor do
     end
   end
 
+  describe ".contained_practitioner_name_key" do
+    it "takes the contained practitioner's name without whitespace" do
+      contained = [
+        { "resourceType" => "Organization", "name" => "テスト病院" },
+        { "resourceType" => "Practitioner", "id" => "practitioner", "name" => [{ "text" => "山田　太郎" }] }
+      ]
+      expect(described_class.contained_practitioner_name_key(contained)).to eq("山田太郎")
+      expect(described_class.contained_practitioner_name_key([contained.last.merge("name" => [{ "text" => "山田 太郎" }])]))
+        .to eq("山田太郎")
+    end
+
+    it "returns nil when there is no contained practitioner name" do
+      expect(described_class.contained_practitioner_name_key(nil)).to be_nil
+      expect(described_class.contained_practitioner_name_key([{ "resourceType" => "Practitioner" }])).to be_nil
+      expect(described_class.contained_practitioner_name_key([{ "resourceType" => "Practitioner", "name" => [{ "text" => " " }] }]))
+        .to be_nil
+    end
+  end
+
   describe ".extension_datetime" do
     let(:urls) { %w[http://example.org/a http://example.org/b] }
 

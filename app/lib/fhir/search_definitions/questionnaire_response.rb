@@ -19,6 +19,11 @@ module Fhir
                              target_type: "Patient", aliases: %w[patient] },
         "encounter"     => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
         "author"        => { type: :reference, column: :author_reference, target_type: "Practitioner" },
+        # 標準外のローカル検索パラメータ。JASPEHR の回答は記入者を contained の Practitioner
+        # (氏名だけ)で持ち、author は "#practitioner" を指すので、author では「この人が書いた
+        # 回答」を引けない。氏名は姓名の間の空白の有無が揺れるので、空白を除いた列と比べる
+        # (検索値も同じく空白を除く)。同姓同名は区別できない。
+        "author-name"   => { type: :string, column: :author_name_key, compact: true },
         # source is Patient|Practitioner|PractitionerRole|RelatedPerson. target_type
         # only supplies the default type for a bare id (`?source=123`) and the chain
         # target, so Practitioner is the useful default; fully-qualified references

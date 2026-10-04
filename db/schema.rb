@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_26_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -815,6 +815,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_26_000001) do
     t.datetime "authored"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "author_name_key"
+    t.index ["author_name_key"], name: "index_questionnaire_responses_on_author_name_key"
     t.index ["author_reference"], name: "index_questionnaire_responses_on_author_reference"
     t.index ["authored"], name: "index_questionnaire_responses_on_authored"
     t.index ["content"], name: "index_questionnaire_responses_on_content", using: :gin

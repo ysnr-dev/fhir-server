@@ -368,6 +368,12 @@ FHIR R4 に無いローカルの検索パラメータです。POS/POMR のカル
 記録した診療科を `ServiceRequest` の依頼科と同じ拡張（`…/order-department`）から引くので、カルテを
 診療科で絞り込むときにオーダーと記録を同じ値で検索できます。
 
+`QuestionnaireResponse` の `author-name` もローカルの検索パラメータです。JASPEHR の回答は記入者を
+contained の `Practitioner`（氏名だけ）で持ち、`author` は `#practitioner` を指すため、`author` では
+「この人が書いた回答」を引けません。氏名（`name[0].text`）から空白を除いた値を列に持ち、検索値も
+同じく空白を除いて比べます（`author-name:exact=山田 太郎` は「山田太郎」「山田　太郎」にも一致）。
+同姓同名は区別できません。
+
 診療記録は標準の `Composition?entry=` で引けます。対象のプロブレムは C-CDA on FHIR
 Progress Note の problems_section（LOINC 11450-4）の `section.entry` に入るためです。
 `Composition.section[].entry[]` は配列の二重ネストなので、検索定義は `jsonb_key` に加えて

@@ -357,7 +357,7 @@ module Fhir
       case definition[:type]
       when :string
         string_fragment(scope, definition[:column], clause,
-                        word_boundary: definition[:word_boundary], digits_only: definition[:digits_only])
+                        word_boundary: definition[:word_boundary], reduce: string_reducer(definition))
       when :token then token_fragment(scope, definition, clause)
       when :boolean then boolean_fragment(scope, definition[:column], clause)
       when :date, :datetime then date_fragment(scope, definition, clause)
@@ -389,16 +389,24 @@ module Fhir
 
     # --- :string -----------------------------------------------------------
 
-    # digits_only columns (Patient#phone_digits) store digits alone, so the query
-    # value is reduced the same way; a value with no digits matches nothing.
-    def string_fragment(scope, column, clause, word_boundary: false, digits_only: false)
+    # Columns that store a reduced form of the value -- digits alone (digits_only:
+    # Patient#phone_digits) or whitespace removed (compact:
+    # QuestionnaireResponse#author_name_key) -- need the query value reduced the same
+    # way; a value that reduces to nothing matches nothing.
+    def string_fragment(scope, column, clause, word_boundary: false, reduce: nil)
       mode = string_mode(clause.modifier)
       where_or(scope, clause.values.map do |v|
-        next string_value_fragment(column, v, mode, word_boundary) unless digits_only
+        next string_value_fragment(column, v, mode, word_boundary) unless reduce
 
-        digits = FieldExtractor.digits(v)
-        digits.empty? ? ["FALSE", []] : string_value_fragment(column, digits, mode, word_boundary)
+        reduced = FieldExtractor.public_send(reduce, v)
+        reduced.empty? ? ["FALSE", []] : string_value_fragment(column, reduced, mode, word_boundary)
       end)
+    end
+
+    def string_reducer(definition)
+      return :digits if definition[:digits_only]
+
+      :compact_text if definition[:compact]
     end
 
     def string_mode(modifier)
