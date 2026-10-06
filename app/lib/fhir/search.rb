@@ -17,6 +17,10 @@ module Fhir
     DATE_PREFIX_PATTERN = /\A(eq|ne|ge|le|gt|lt|sa|eb|ap)(\d.*)\z/.freeze
     SUPPORTED_DATE_PREFIXES = %w[eq ne ge le gt lt sa eb ap].freeze
 
+    # quantity は数値の比較だけ(prefix eq ne ge le gt lt。省略は eq)。`5.4|system|unit` の単位は
+    # 読み捨てる: 単位は項目(code)で決まる前提で、単位換算はしない。
+    NUMBER_PREFIX_PATTERN = /\A(eq|ne|ge|le|gt|lt)?(-?\d+(?:\.\d+)?)(?:\|.*)?\z/.freeze
+
     STRING_MODIFIERS = %w[exact contains].freeze
 
     # :not is supported on token and uri params only (reference/date negation
@@ -365,6 +369,7 @@ module Fhir
       when :identifier then identifier_fragment(scope, clause)
       when :token_or_text then token_or_text_fragment(scope, definition, clause)
       when :uri then uri_fragment(scope, definition[:column], clause)
+      when :quantity then quantity_fragment(scope, definition[:column], clause)
       else raise ArgumentError, "Unknown search param type: #{definition[:type]}"
       end
     end
@@ -563,6 +568,32 @@ module Fhir
 
     def qualify_reference(value, target_type)
       value.include?("/") ? value : "#{target_type}/#{value}"
+    end
+
+    # --- :quantity ---------------------------------------------------------------
+
+    # Observation.value-quantity のような数値の比較。値はカンマで OR、繰り返しで AND。
+    # 読めない値はその値だけ捨てる(全部読めなければ絞り込み無しにはせず、何も当たらない)。
+    def quantity_fragment(scope, column, clause)
+      fragments = clause.values.filter_map { |value| quantity_value_fragment(column, value) }
+      return scope.none if fragments.empty?
+
+      where_or(scope, fragments)
+    end
+
+    def quantity_value_fragment(column, value)
+      match = value.match(NUMBER_PREFIX_PATTERN)
+      return nil unless match
+
+      number = BigDecimal(match[2])
+      case match[1] || "eq"
+      when "eq" then ["#{column} = ?", [number]]
+      when "ne" then ["#{column} <> ?", [number]]
+      when "ge" then ["#{column} >= ?", [number]]
+      when "gt" then ["#{column} > ?", [number]]
+      when "le" then ["#{column} <= ?", [number]]
+      when "lt" then ["#{column} < ?", [number]]
+      end
     end
 
     # --- :date / :datetime -------------------------------------------------------

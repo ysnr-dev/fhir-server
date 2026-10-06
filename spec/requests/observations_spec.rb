@@ -121,6 +121,31 @@ RSpec.describe "Observations", type: :request do
       expect(JSON.parse(response.body)["total"]).to be >= 1
     end
 
+    it "finds by value-quantity with comparison prefixes" do
+      subject_id = create_patient
+      [6.2, 7.0, 8.4].each do |value|
+        post "/Observation",
+             params: valid_observation_payload(subject_id: subject_id, valueQuantity: { value: value }), as: :json
+      end
+      total = lambda do |params|
+        get "/Observation", params: { subject: "Patient/#{subject_id}" }.merge(params)
+        JSON.parse(response.body)["total"]
+      end
+
+      expect(total.call("value-quantity" => "ge7")).to eq(2)
+      expect(total.call("value-quantity" => "gt7")).to eq(1)
+      expect(total.call("value-quantity" => "lt7")).to eq(1)
+      expect(total.call("value-quantity" => "7.0")).to eq(1)
+      expect(total.call("value-quantity" => "ne7")).to eq(2)
+      expect(total.call("value-quantity" => "le6.2|http://unitsofmeasure.org|%")).to eq(1)
+      # カンマは OR、繰り返しは AND。
+      expect(total.call("value-quantity" => "lt6.5,gt8")).to eq(2)
+      get "/Observation?subject=Patient/#{subject_id}&value-quantity=ge6.5&value-quantity=le8"
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+      # 読めない値は何にも当たらない(絞り込み無しにはしない)。
+      expect(total.call("value-quantity" => "abc")).to eq(0)
+    end
+
     it "finds by category" do
       subject_id = create_patient
       post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json

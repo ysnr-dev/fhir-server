@@ -17,7 +17,8 @@ module Fhir
       datetime: "date",
       reference: "reference",
       token_or_text: "token",
-      uri: "uri"
+      uri: "uri",
+      quantity: "quantity"
     }.freeze
 
     module_function

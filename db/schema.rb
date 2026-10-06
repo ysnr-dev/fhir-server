@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -662,6 +662,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_000001) do
     t.datetime "effective_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "value_quantity"
     t.index ["category_code"], name: "index_observations_on_category_code"
     t.index ["code_text"], name: "index_observations_on_code_text"
     t.index ["code_value"], name: "index_observations_on_code_value"
@@ -672,6 +673,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_000001) do
     t.index ["last_updated"], name: "index_observations_on_last_updated"
     t.index ["status"], name: "index_observations_on_status"
     t.index ["subject_reference"], name: "index_observations_on_subject_reference"
+    t.index ["value_quantity"], name: "index_observations_on_value_quantity"
   end
 
   create_table "organizations", id: :string, force: :cascade do |t|

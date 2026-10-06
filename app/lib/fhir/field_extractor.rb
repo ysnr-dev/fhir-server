@@ -53,6 +53,14 @@ module Fhir
     # values to [Date, Date+1) intervals compared in UTC (see Search#parse_date_interval),
     # so this makes stored partial values line up exactly with those searches.
     # Returns a Time, or nil when blank/invalid.
+    # 数値(Quantity.value)。JSON の数値か数字の文字列だけを受け、それ以外は nil。
+    def decimal(value)
+      case value
+      when Numeric then BigDecimal(value.to_s)
+      when String then value.match?(/\A-?\d+(\.\d+)?\z/) ? BigDecimal(value) : nil
+      end
+    end
+
     def datetime(value)
       return nil if value.blank?
 

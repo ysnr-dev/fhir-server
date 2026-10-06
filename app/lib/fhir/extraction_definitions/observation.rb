@@ -11,7 +11,8 @@ module Fhir
         code_text: { path: "code", transform: :concept_text },
         subject_reference: { path: "subject.reference" },
         encounter_reference: { path: "encounter.reference" },
-        effective_time: { path: "effectiveDateTime", transform: :datetime }
+        effective_time: { path: "effectiveDateTime", transform: :datetime },
+        value_quantity: { path: "valueQuantity.value", transform: :decimal }
       }.freeze
 
       TOKENS = {

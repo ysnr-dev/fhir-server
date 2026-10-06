@@ -14,6 +14,9 @@ module Fhir
                            target_type: "Patient", aliases: %w[patient] },
         "encounter"  => { type: :reference, column: :encounter_reference, target_type: "Encounter" },
         "date"       => { type: :datetime, column: :effective_time },
+        # 数値の測定値(valueQuantity.value)。データ抽出の「HbA1c 8 以上」のような条件に使う。
+        # component の値(血圧など)は対象外。
+        "value-quantity" => { type: :quantity, column: :value_quantity },
         # Observation.partOf は「どの実施に伴って測った値か」を指す(放射線検査の
         # 被曝線量)。R4 の参照先は投薬・撮影など複数あるが、実際に束ねているのは
         # Procedure なので参照先を絞る。
