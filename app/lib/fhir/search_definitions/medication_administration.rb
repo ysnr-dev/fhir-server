@@ -10,6 +10,8 @@ module Fhir
         "context"        => { type: :reference, column: :context_reference, target_type: "Encounter" },
         "request"        => { type: :reference, column: :request_reference, target_type: "MedicationRequest" },
         "effective-time" => { type: :datetime, column: :effective_time },
+        # ローカル拡張のロット番号(薬剤・輸血の製剤番号)。Immunization の lot-number と同じ。
+        "lot-number"     => { type: :string, column: :lot_number },
         # MedicationAdministration.partOf は「どの実施に伴う投与か」を指す
         # (放射線検査の造影剤)。参照先は Procedure に絞る(自身を束ねる用途は無い)。
         "part-of"        => { type: :reference, multiple: true, jsonb_key: "partOf",

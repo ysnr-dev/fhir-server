@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -525,11 +525,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_000002) do
     t.datetime "effective_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "lot_number"
     t.index ["content"], name: "index_medication_administrations_on_content", using: :gin
     t.index ["context_reference"], name: "index_medication_administrations_on_context_reference"
     t.index ["deleted"], name: "index_medication_administrations_on_deleted"
     t.index ["effective_time"], name: "index_medication_administrations_on_effective_time"
     t.index ["last_updated"], name: "index_medication_administrations_on_last_updated"
+    t.index ["lot_number"], name: "index_medication_administrations_on_lot_number"
     t.index ["medication_code"], name: "index_medication_administrations_on_medication_code"
     t.index ["medication_text"], name: "index_medication_administrations_on_medication_text"
     t.index ["request_reference"], name: "index_medication_administrations_on_request_reference"

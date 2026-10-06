@@ -75,6 +75,16 @@ module Fhir
       datetime(value)
     end
 
+    # valueString of the first extension whose url is one of `urls`. nil when no such
+    # extension exists or its value is blank. Used for local string extensions such as
+    # a medication's lot number.
+    def extension_string(extensions, urls)
+      extension = Array(extensions).find do |element|
+        element.is_a?(Hash) && urls.include?(element["url"])
+      end
+      extension && extension["valueString"].presence
+    end
+
     # First coding's code of a single (0..1) CodeableConcept, e.g.
     # medicationCodeableConcept: { coding: [{ code: "..." }] }.
     def coding_code(concept)

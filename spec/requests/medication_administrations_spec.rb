@@ -126,6 +126,34 @@ RSpec.describe "MedicationAdministrations", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
 
+    # ロット番号はローカル拡張に持つ。薬剤のロットと輸血の製剤番号のどちらも同じ検索で引く。
+    it "finds by lot-number from the medication and transfusion lot extensions" do
+      subject_id = create_patient
+      lot = lambda do |kind, value|
+        [{ "url" => "http://fhir-client.local/StructureDefinition/#{kind}-lot-number", "valueString" => value }]
+      end
+      post "/MedicationAdministration",
+           params: valid_medication_administration_payload(subject_id: subject_id,
+                                                           extension: lot.call("medication", "AB1234")),
+           as: :json
+      post "/MedicationAdministration",
+           params: valid_medication_administration_payload(subject_id: subject_id,
+                                                           extension: lot.call("transfusion", "AB1299")),
+           as: :json
+      post "/MedicationAdministration", params: valid_medication_administration_payload(subject_id: subject_id), as: :json
+
+      get "/MedicationAdministration", params: { "lot-number:exact" => "AB1234" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/MedicationAdministration", params: { "lot-number" => "AB12" }
+      expect(JSON.parse(response.body)["total"]).to eq(2)
+
+      get "/MedicationAdministration", params: { "lot-number:exact" => "AB1299" }
+      bundle = JSON.parse(response.body)
+      expect(bundle["entry"].map { |e| e.dig("resource", "extension", 0, "url") })
+        .to eq(["http://fhir-client.local/StructureDefinition/transfusion-lot-number"])
+    end
+
     it "includes the referenced Patient via MedicationAdministration:subject" do
       subject_id = create_patient
       post "/MedicationAdministration", params: valid_medication_administration_payload(subject_id: subject_id), as: :json
