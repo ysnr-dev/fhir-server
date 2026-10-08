@@ -360,6 +360,21 @@ RSpec.describe "Observations", type: :request do
       expect(JSON.parse(response.body)["total"]).to eq(1)
     end
 
+    it "finds a period-valued observation by date (effectivePeriod.start)" do
+      subject_id = create_patient
+      payload = valid_observation_payload(subject_id: subject_id)
+      payload.delete("effectiveDateTime")
+      payload["effectivePeriod"] = { "start" => "2026-09-06", "end" => "2026-09-20" }
+      post "/Observation", params: payload, as: :json
+      expect(response).to have_http_status(:created)
+
+      get "/Observation", params: { date: "ge2026-09-01", subject: "Patient/#{subject_id}" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Observation", params: { date: "ge2026-09-10", subject: "Patient/#{subject_id}" }
+      expect(JSON.parse(response.body)["total"]).to eq(0)
+    end
+
     it "excludes deleted resources from search results" do
       subject_id = create_patient
       post "/Observation", params: valid_observation_payload(subject_id: subject_id), as: :json
