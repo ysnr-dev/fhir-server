@@ -46,6 +46,7 @@ module Fhir
       "RelatedPerson" => "家族・関係者の情報",
       "Group" => "患者グループ(一括出力の対象集合)",
       "Flag" => "診療上の注意(転倒リスク・DNAR など)",
+      "CareTeam" => "チーム医療のチーム(NST・ICT など)",
       "CarePlan" => "診療計画(クリニカルパスの適用)",
       "Goal" => "診療計画の達成目標と評価"
     }.freeze

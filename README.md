@@ -344,7 +344,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 | 来歴 | Provenance |
 | 予約 | Appointment / Schedule / Slot |
 | 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization / Flag |
-| 診療計画 | CarePlan / Goal |
+| 診療計画 | CarePlan / Goal / CareTeam |
 | 保険 | Coverage |
 | 問診 | Questionnaire / QuestionnaireResponse |
 | 文書 | Composition / DocumentReference / Binary |
@@ -446,7 +446,7 @@ API からは読み取り専用です。認証有効時、監査ログの参照�
 
    検証の対象になるかは「そのプロファイル URL が vendor 済みか」だけで決まります
    （`Composition` / `Group` / `Task` / `Provenance` / `Appointment` / `Schedule` / `Slot` / `Flag` /
-   `CarePlan` / `Goal` は JP Core に該当プロファイルが無く基底 HL7 プロファイルのため対象外で、
+   `CarePlan` / `Goal` / `CareTeam` は JP Core に該当プロファイルが無く基底 HL7 プロファイルのため対象外で、
    手書きバリデータのみが働きます）。
    `ImagingStudy` は JP Core が Radiology / Endoscopy の 2 プロファイルに分けていますが、レジストリの
    `profile:` は 1 リソース 1 プロファイルなので、汎用側の `JP_ImagingStudy_Radiology` を採用しています

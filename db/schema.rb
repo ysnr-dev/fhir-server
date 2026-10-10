@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -186,6 +186,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000001) do
     t.index ["period_start"], name: "index_care_plans_on_period_start"
     t.index ["status"], name: "index_care_plans_on_status"
     t.index ["subject_reference"], name: "index_care_plans_on_subject_reference"
+  end
+
+  create_table "care_teams", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "category_code"
+    t.string "name"
+    t.string "subject_reference"
+    t.string "encounter_reference"
+    t.string "managing_organization_reference"
+    t.datetime "period_start"
+    t.datetime "period_end"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_code"], name: "index_care_teams_on_category_code"
+    t.index ["content"], name: "index_care_teams_on_content", using: :gin
+    t.index ["deleted"], name: "index_care_teams_on_deleted"
+    t.index ["encounter_reference"], name: "index_care_teams_on_encounter_reference"
+    t.index ["last_updated"], name: "index_care_teams_on_last_updated"
+    t.index ["name"], name: "index_care_teams_on_name"
+    t.index ["status"], name: "index_care_teams_on_status"
+    t.index ["subject_reference"], name: "index_care_teams_on_subject_reference"
   end
 
   create_table "client_assertion_jtis", force: :cascade do |t|

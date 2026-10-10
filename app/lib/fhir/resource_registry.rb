@@ -313,6 +313,17 @@ module Fhir
         token_extraction: ExtractionDefinitions::Flag::TOKENS,
         profile: "http://hl7.org/fhir/StructureDefinition/Flag"
       },
+      # チーム医療のチーム(NST・ICT・褥瘡対策・緩和ケアなど)。患者を持たない組織的な
+      # チームとして登録し、ServiceRequest.performer / Task.owner から参照する。JP Core が
+      # プロファイルしないため、HL7 の基本定義と CareTeamValidator だけで検証する。
+      "CareTeam" => {
+        model: CareTeam,
+        validator: CareTeamValidator,
+        search_params: SearchDefinitions::CareTeam::PARAMS,
+        extraction: ExtractionDefinitions::CareTeam::FIELDS,
+        token_extraction: ExtractionDefinitions::CareTeam::TOKENS,
+        profile: "http://hl7.org/fhir/StructureDefinition/CareTeam"
+      },
       # 診療計画。クリニカルパス(ePath)は 1 回の適用を CarePlan の木で表し、Goal が
       # その達成目標と評価を持つ。どちらも JP Core がプロファイルしないため、HL7 の
       # 基本定義と手書きバリデータだけで検証する。

@@ -116,6 +116,9 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/flag-status (required)
     FLAG_STATUS = %w[active inactive entered-in-error].freeze
 
+    # http://hl7.org/fhir/ValueSet/care-team-status (required)
+    CARE_TEAM_STATUS = %w[proposed active suspended inactive entered-in-error].freeze
+
     # http://hl7.org/fhir/ValueSet/request-status (required) -- CarePlan.status
     CARE_PLAN_STATUS = %w[draft active on-hold revoked completed entered-in-error unknown].freeze
     # http://hl7.org/fhir/ValueSet/care-plan-intent (required)

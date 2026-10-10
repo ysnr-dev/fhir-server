@@ -119,6 +119,11 @@ module Fhir
       Array(values).first
     end
 
+    # First reference of a 0..* array of References, e.g. CareTeam.managingOrganization.
+    def first_reference(references)
+      Array(references).first&.dig("reference")
+    end
+
     # Human-readable text of a single CodeableConcept: concept.text plus the first
     # coding's display, space-joined; nil when both are absent.
     def concept_text(concept)

@@ -414,6 +414,12 @@ RSpec.describe Fhir::Repository do
           "category" => [{ "coding" => [{ "system" => "http://example.org/CodeSystem/care-plan",
                                           "code" => "pathway" }] }],
           "subject" => { "reference" => "Patient/#{patient_id}" } }
+      when "CareTeam"
+        { "resourceType" => "CareTeam",
+          "identifier" => [{ "system" => "http://example.org/care-team", "value" => "smoke-team" }],
+          "status" => "active",
+          "name" => "smoke team",
+          "participant" => [{ "member" => { "reference" => "Practitioner/smoke" } }] }
       when "Goal"
         { "resourceType" => "Goal",
           "identifier" => [{ "system" => "http://example.org/goal", "value" => "smoke-goal" }],

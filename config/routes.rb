@@ -54,7 +54,7 @@ Rails.application.routes.draw do
      Questionnaire QuestionnaireResponse
      Composition DocumentReference Binary
      Device RelatedPerson Group Flag
-     CarePlan Goal].each do |type|
+     CarePlan Goal CareTeam].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
       post   "/#{type}",                   to: "fhir_resources#create"

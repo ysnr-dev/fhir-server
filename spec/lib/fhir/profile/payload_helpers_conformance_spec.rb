@@ -52,6 +52,7 @@ RSpec.describe "IG profile payload helper conformance", type: :request do
       "Binary" => valid_binary_payload,
       "Flag" => valid_flag_payload(subject_id: patient_id),
       "CarePlan" => valid_care_plan_payload(subject_id: patient_id),
+      "CareTeam" => valid_care_team_payload,
       "Goal" => valid_goal_payload(subject_id: patient_id)
     }
   end

@@ -112,7 +112,7 @@ module Fhir
         # 依頼先(他科依頼の依頼先診療科・宛先の医師)。他科依頼一覧に
         # _include=ServiceRequest:performer を添えると依頼先の名称まで同じ応答で揃う。
         "performer" => { multiple: true, jsonb_key: "performer", ref_path: %w[reference],
-                         targets: %w[Organization Practitioner PractitionerRole] },
+                         targets: %w[Organization Practitioner PractitionerRole CareTeam] },
         # ServiceRequest が別の ServiceRequest にぶら下がる形(オーダーのヘッダと明細)。
         # 親から子を引く _revinclude=ServiceRequest:based-on と、:iterate による
         # 2 段目(パネルの構成項目)の展開に使う。
@@ -130,7 +130,7 @@ module Fhir
         "requester" => { path: %w[requester reference], column: "requester_reference",
                           targets: %w[Practitioner PractitionerRole Organization Patient Device RelatedPerson] },
         "owner" => { path: %w[owner reference], column: "owner_reference",
-                      targets: %w[Practitioner PractitionerRole Organization Patient Device RelatedPerson] },
+                      targets: %w[Practitioner PractitionerRole Organization Patient Device RelatedPerson CareTeam] },
         # focus は作業対象そのもの、based-on は作業を生んだ依頼。オーダー画面は
         # _revinclude=Task:based-on で「そのオーダーが今どこまで進んだか」を引く。
         "focus" => { path: %w[focus reference], targets: %w[ServiceRequest], column: "focus_reference" },
@@ -207,6 +207,16 @@ module Fhir
         "author" => { path: %w[author reference],
                        targets: %w[Practitioner PractitionerRole Organization Patient Device],
                        column: "author_reference" }
+      },
+      "CareTeam" => {
+        "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
+        "patient" => { alias: "subject" },
+        "encounter" => { path: %w[encounter reference], targets: %w[Encounter], column: "encounter_reference" },
+        # 構成員。チームの一覧に _include=CareTeam:participant を添えると氏名まで同じ応答で揃う。
+        "participant" => { multiple: true, jsonb_key: "participant", ref_path: %w[member reference],
+                           targets: %w[Practitioner PractitionerRole Organization Patient RelatedPerson CareTeam] },
+        "managing-organization" => { multiple: true, jsonb_key: "managingOrganization", ref_path: %w[reference],
+                                     targets: %w[Organization] }
       },
       "CarePlan" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
