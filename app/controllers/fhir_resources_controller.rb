@@ -176,12 +176,38 @@ class FhirResourcesController < ApplicationController
   end
 
   # GET /{type}/_history -- history of every resource of this type, newest first.
+  #
+  # With search parameters (`/ServiceRequest/_history?based-on=ServiceRequest/X`)
+  # it narrows to the resources those criteria match, deleted ones included, and
+  # returns every version of them. This is how a client rebuilds what a
+  # multi-resource record (an order header and its item lines) looked like at
+  # each edit: an item deleted since then no longer turns up in a search, but
+  # its versions do here. Unlike plain search, an unsupported parameter is a 400
+  # -- silently dropping it would widen the result to the whole type.
   def type_history
     history_params = parse_history_params
     return if history_params.nil? # already rendered 400
 
+    resource_ids = nil
+    if history_params.criteria?
+      searcher = Fhir::Search.new(
+        resource_type, Fhir::SearchParams.parse(history_params.criteria),
+        context: access_context, include_deleted: true
+      )
+      unsupported = searcher.unsupported_clause_names
+      if unsupported.any?
+        return render_outcome(
+          Fhir::OperationOutcome.error("not-supported", "Unsupported search parameter(s) for history: #{unsupported.join(', ')}"),
+          status: :bad_request
+        )
+      end
+
+      resource_ids = searcher.filtered_scope.select(:id)
+    end
+
     page = Fhir::Repository.type_history(
-      resource_type, since: history_params.since, count: history_params.count, offset: history_params.offset
+      resource_type, since: history_params.since, count: history_params.count, offset: history_params.offset,
+                     resource_ids: resource_ids
     )
     render_fhir_resource(
       BundleBuilder.history_page(page: page, base_url: base_url, path: "#{resource_type}/_history", params: history_params),
@@ -213,10 +239,17 @@ class FhirResourcesController < ApplicationController
     return unless Fhir::Auth.enabled?
 
     access = WRITE_ACTIONS.include?(action_name) ? :write : :read
-    # Type-level history returns every version of every record of the type,
-    # across all patients, and there is no compartment-filtered form of it --
-    # so it is system-scope only.
-    authorize_fhir_request!([[resource_type, access]], require_system: action_name == "type_history")
+    # Unfiltered type-level history returns every version of every record of
+    # the type, across all patients -- so it is system-scope only. Narrowed by
+    # search parameters it goes through Fhir::Search like a search does
+    # (compartment included), so the ordinary read scope covers it.
+    authorize_fhir_request!([[resource_type, access]], require_system: unfiltered_type_history?)
+  end
+
+  def unfiltered_type_history?
+    action_name == "type_history" && Fhir::HistoryParams.parse(request.query_string).criteria.blank?
+  rescue Fhir::HistoryParams::InvalidSince
+    true
   end
 
   def audit_interaction

@@ -42,8 +42,12 @@ module Fhir
       # Type-/system-level history are class methods (not instance ones like
       # #history) because system-level history spans every resource type and so
       # has no single registry entry to construct a Repository around.
-      def type_history(resource_type, since: nil, count:, offset:)
-        history_page(ResourceVersion.where(resource_type: resource_type), since: since, count: count, offset: offset)
+      # resource_ids: narrows to these resources (an id relation or array) --
+      # the criteria-filtered form, where a search picked the resources.
+      def type_history(resource_type, since: nil, count:, offset:, resource_ids: nil)
+        scope = ResourceVersion.where(resource_type: resource_type)
+        scope = scope.where(resource_id: resource_ids) unless resource_ids.nil?
+        history_page(scope, since: since, count: count, offset: offset)
       end
 
       def system_history(since: nil, count:, offset:)

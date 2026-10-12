@@ -98,6 +98,88 @@ RSpec.describe "Type- and system-level history", type: :request do
     end
   end
 
+  describe "GET /{type}/_history with search parameters" do
+    def create_request(subject_id, overrides = {})
+      post "/ServiceRequest", params: valid_service_request_payload(subject_id: subject_id, **overrides), as: :json
+      JSON.parse(response.body)["id"]
+    end
+
+    def child_of(header_id)
+      { basedOn: [{ reference: "ServiceRequest/#{header_id}" }] }
+    end
+
+    it "returns every version of the matching resources, deleted ones included" do
+      patient_id = create_patient
+      header_id = create_request(patient_id)
+      kept_id = create_request(patient_id, child_of(header_id))
+      removed_id = create_request(patient_id, child_of(header_id))
+      create_request(patient_id) # another order: not a match
+      put "/ServiceRequest/#{kept_id}",
+          params: valid_service_request_payload(subject_id: patient_id, status: "on-hold", **child_of(header_id)), as: :json
+      delete "/ServiceRequest/#{removed_id}"
+
+      get "/ServiceRequest/_history?based-on=ServiceRequest/#{header_id}"
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body["total"]).to eq(4)
+      versions = body["entry"].map { |e| [e.dig("request", "url"), e.dig("request", "method")] }
+      expect(versions).to eq([
+        ["ServiceRequest/#{removed_id}", "DELETE"],
+        ["ServiceRequest/#{kept_id}", "PUT"],
+        ["ServiceRequest/#{removed_id}", "POST"],
+        ["ServiceRequest/#{kept_id}", "POST"]
+      ])
+    end
+
+    it "carries the criteria in the paging links" do
+      patient_id = create_patient
+      header_id = create_request(patient_id)
+      3.times { create_request(patient_id, child_of(header_id)) }
+
+      get "/ServiceRequest/_history?based-on=ServiceRequest/#{header_id}&_count=2"
+      links = JSON.parse(response.body)["link"].to_h { |l| [l["relation"], l["url"]] }
+      expect(links["next"]).to include("based-on=ServiceRequest/#{header_id}", "_offset=2")
+
+      get URI.parse(links.fetch("next")).request_uri
+      body = JSON.parse(response.body)
+      expect(body["total"]).to eq(3)
+      expect(body["entry"].size).to eq(1)
+    end
+
+    it "rejects an unsupported parameter instead of widening to the whole type" do
+      get "/ServiceRequest/_history?no-such-param=x"
+
+      expect(response).to have_http_status(:bad_request)
+      body = JSON.parse(response.body)
+      expect(body.dig("issue", 0, "code")).to eq("not-supported")
+    end
+
+    it "lets a patient token read it within its compartment, while unfiltered stays system-only" do
+      own_id = create_patient
+      other_id = create_patient
+      own_header = create_request(own_id)
+      create_request(own_id, child_of(own_header))
+      other_header = create_request(other_id)
+      create_request(other_id, child_of(other_header))
+
+      with_fhir_auth do
+        token = issue_patient_token(patient_id: own_id)
+
+        get "/ServiceRequest/_history?based-on=ServiceRequest/#{own_header}", headers: bearer_header(token)
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)["total"]).to eq(1)
+
+        get "/ServiceRequest/_history?based-on=ServiceRequest/#{other_header}", headers: bearer_header(token)
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)["total"]).to eq(0)
+
+        get "/ServiceRequest/_history", headers: bearer_header(token)
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
   describe "GET /_history" do
     it "mixes versions of every resource type, newest first" do
       patient_id = create_patient

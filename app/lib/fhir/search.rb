@@ -52,7 +52,11 @@ module Fhir
     # compartment, or nil for an unrestricted search.
     # chain_depth: how many chain hops led to this (inner) searcher -- guards
     # multi-level chains against unbounded recursion.
-    def initialize(resource_type, search_params, context: nil, chain_depth: 0)
+    # include_deleted: also match deleted records (their last content and
+    # search rows are kept). Only the criteria-filtered type history uses it, to
+    # find resources whose versions to return; chain/_has inner queries still
+    # see live records only.
+    def initialize(resource_type, search_params, context: nil, chain_depth: 0, include_deleted: false)
       entry = ResourceRegistry.entry_for(resource_type)
       @resource_type = resource_type
       @model = entry.fetch(:model)
@@ -60,6 +64,7 @@ module Fhir
       @search_params = search_params
       @context = context
       @chain_depth = chain_depth
+      @include_deleted = include_deleted
     end
 
     def call
@@ -81,6 +86,7 @@ module Fhir
       # _has -- otherwise `?_has:Observation:performer:code=X` would leak which
       # other patients have a matching Observation.
       scope = PatientContext.base_scope(resource_type, context)
+      scope = scope.unscope(where: :deleted) if include_deleted
 
       search_params.clauses.each do |clause|
         resolution = resolve_clause(clause)
@@ -123,7 +129,7 @@ module Fhir
 
     private
 
-    attr_reader :resource_type, :model, :search_param_defs, :search_params, :context, :chain_depth
+    attr_reader :resource_type, :model, :search_param_defs, :search_params, :context, :chain_depth, :include_deleted
 
     def definitions
       @definitions ||= SYSTEM_PARAMS.merge(search_param_defs)
