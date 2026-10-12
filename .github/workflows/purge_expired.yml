@@ -1,6 +1,6 @@
 # 期限切れトークン/JTI の日次 purge。
 # Render 無料枠には cron ジョブがないため、GitHub Actions から Neon に直結して
-# `rails fhir:purge_expired` を実行する(README「定期メンテナンス」参照)。
+# `rails fhir:purge_expired` を実行する(docs/operations.md「定期メンテナンス」参照)。
 name: purge-expired
 
 on:

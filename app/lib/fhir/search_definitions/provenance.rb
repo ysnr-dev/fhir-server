@@ -12,7 +12,7 @@ module Fhir
         # R4 の patient は target.where(resolve() is Patient)。target と同じ配列を
         # 参照先の型で切り分ける(Appointment の actor / location と同じ手)。
         # multiple なので Fhir::PatientCompartment の対象にはならない — Provenance は
-        # システムスコープのみで読む(Fhir::PatientContext と README を参照)。
+        # システムスコープのみで読む(Fhir::PatientContext と docs/api-examples.md「Provenance の例」を参照)。
         "patient" => { type: :reference, multiple: true, jsonb_key: "target",
                         ref_path: %w[reference], target_type: "Patient" },
         # Provenance.agent[].who。「この医療従事者が関わった記録」を引く。

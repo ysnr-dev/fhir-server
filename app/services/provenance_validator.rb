@@ -2,7 +2,7 @@
 # 基底 FHIR R4 だけで検証する(registry が指す HL7 の StructureDefinition は vendor に
 # 無いため Fhir::Profile::Validator は素通りし、このバリデータだけが働く)。
 #
-# 用途は代行入力と承認(README「Provenance の例」):
+# 用途は代行入力と承認(docs/api-examples.md「Provenance の例」):
 #   代行入力 … agent[] に author(指示した医師)と enterer(入力した本人、onBehalfOf で指示者を指す)
 #   承認     … agent[] に verifier を足し、signature[] に署名を残す
 class ProvenanceValidator < ResourceValidator
