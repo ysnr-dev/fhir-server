@@ -66,11 +66,29 @@ class OauthIntrospectionsController < ApplicationController
       client_id: token.oauth_client_id,
       exp: token.expires_at.to_i,
       iat: token.created_at.to_i,
-      sub: token.user_id,
+      sub: subject(token),
       aud: base_url,
       iss: base_url,
-      # SMART launch context: このトークンが紐づく患者。system トークンでは nil。
-      patient: token.patient_id
+      # SMART launch context: このトークンが紐づく患者・受診。system トークンでは nil。
+      patient: token.patient_id,
+      encounter: token.encounter_id,
+      fhirUser: fhir_user(token)
     }
+  end
+
+  # id_token の sub と同じ規則(Fhir::IdToken): 患者は User の行 id、医療者は
+  # "Practitioner/{id}"。
+  def subject(token)
+    return "Practitioner/#{token.practitioner_id}" if token.practitioner_id.present?
+
+    token.user_id
+  end
+
+  def fhir_user(token)
+    if token.practitioner_id.present?
+      "#{base_url}/Practitioner/#{token.practitioner_id}"
+    elsif token.user_id.present? && token.patient_id.present?
+      "#{base_url}/Patient/#{token.patient_id}"
+    end
   end
 end

@@ -231,6 +231,27 @@ sequenceDiagram
     Note over App,S: 必要に応じて /oauth/introspect・/oauth/revoke
 ```
 
+### 電子カルテからのアプリ起動（EHR launch）
+
+```mermaid
+sequenceDiagram
+    participant U as ブラウザ(カルテ)
+    participant C as fhir-client backend
+    participant S as fhir-server
+    participant App as 外部アプリ(iframe)
+
+    U->>C: POST /smart_apps/:id/launch(患者・受診)
+    C->>S: POST /admin/launch_contexts(管理トークン、医療者を名乗る)
+    S-->>C: launch トークン(5 分・単回)
+    C-->>U: 起動 URL(iss, launch)
+    U->>App: iframe で開く
+    App->>S: GET /oauth/authorize?launch&aud&scope=launch user/*.read ...
+    S-->>App: 画面を出さず 302(認可コード)
+    App->>S: POST /oauth/token(PKCE)
+    S-->>App: アクセストークン + patient/encounter + id_token(fhirUser=Practitioner)
+    App->>S: GET /Patient/{id} ...(CORS、Bearer)
+```
+
 ### 2 段構えのログイン（fhir-client）
 
 ブラウザの利用者と、上流に対するクライアント資格情報は別物です。

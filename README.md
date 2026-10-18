@@ -7,7 +7,7 @@ Ruby on Rails (API専用) + PostgreSQL で実装した FHIR サーバーです�
 に準拠した 37 リソース（`Patient` / `Observation` / `MedicationRequest` / `Questionnaire` など）の
 CRUD・検索（チェーン検索 / `_has` / `_include` 等）・バージョン管理・条件付き操作・JSON Patch・
 オペレーション（`$validate` / `Patient/$everything`）と、`Bundle`（transaction / batch）による
-複数リソースの一括処理、SMART Backend Services 認証（任意有効化）を提供します。
+複数リソースの一括処理、SMART 認証（Backend Services・患者向け standalone launch・電子カルテからの EHR launch、任意有効化）を提供します。
 
 ## クイックスタート
 

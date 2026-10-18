@@ -139,6 +139,46 @@ curl -s -X POST http://localhost:3000/oauth/token \
 > 未設定だとプロセス起動ごとに一時鍵が生成され、複数インスタンスや再起動をまたいだ id_token の検証が失敗します
 > （`openid` を使わない構成では不要）。
 
+## 認証（SMART EHR launch）
+
+電子カルテ（fhir-client）から、開いている患者・受診とログイン中の医療者の文脈つきで外部アプリを起動する
+フローです（SMART App Launch 2.2 の EHR launch）。医療者のアカウントはこのサーバーに無く、身元は
+EHR が管理 API で保証します。アプリ側の手順は standalone と同じ `authorization_code` + PKCE です。
+
+1. EHR が `POST /admin/launch_contexts`（管理トークン）で起動文脈を発行する
+
+   ```bash
+   curl -s -X POST http://localhost:3000/admin/launch_contexts \
+     -H "X-FHIR-Admin-Token: $ADMIN" -H "Content-Type: application/json" \
+     -d '{"client_id":"{client_id}","patient_id":"{patient_id}","encounter_id":"{encounter_id}",
+          "practitioner_id":"{practitioner_id}","need_patient_banner":false,"issued_by":"fhir-client"}'
+   # => {"launch":"<64 hex>","expires_in":300,...}
+   ```
+
+   クライアントは `launch` スコープを登録した launch クライアント（`user/` または `patient/`）に限ります。
+   患者・医療者・受診の実在と、受診がその患者のものであることを確認し、違えば 422 を返します。
+   トークンは 5 分・単回で、発行したクライアントにしか使えません。
+2. EHR はアプリの起動 URL に `?iss={FHIR base URL}&launch={launch}` を添えて開く
+3. アプリは `GET /oauth/authorize` に `launch={launch}`・`aud={iss}`・`scope=launch openid fhirUser user/*.read ...` を付けて遷移する。
+   サーバーは `aud` が自分の base URL と一致すること、`launch` スコープがあること、スコープが登録の範囲内であること、
+   起動文脈が有効・未使用・同じクライアントのものであることを確かめ、**ログイン・同意画面を出さずに**認可コードを付けて
+   `redirect_uri` へ 302 する（セッション Cookie も使わないので、iframe の中で動く）。`offline_access` は EHR launch では
+   `invalid_scope`（`online_access` は可）。
+4. トークン応答には `patient`・`encounter`・`need_patient_banner` と、`openid` を含めれば `id_token`
+   （`sub` = `Practitioner/{id}`、`fhirUser` = `{base_url}/Practitioner/{id}`）が入ります。refresh でも文脈を引き継ぎます。
+
+**`user/` スコープ**: 医療者の権限で、患者コンパートメントには閉じません（施設内の全患者）。書き込みは
+`user/Observation.cud` のように登録したときだけ。`GET /_history`・`GET /AuditEvent`・`$export` は `system/` 専用のままです。
+`patient/` と `user/` を同じクライアントに混ぜることはできず、launch クライアントは `client_credentials` を使えません。
+監査（`AuditEvent`）には `agent.who.identifier`（アプリ）に加えて `agent.who.reference`（`Practitioner/{id}`）が入ります。
+
+**CORS**: ブラウザ上の public client が直接呼ぶ `POST /oauth/token`・`/oauth/revoke`・`/.well-known/*`・`/metadata`・
+FHIR API は全オリジンに開いています（Bearer だけで守られ Cookie を使わないため）。`/oauth/authorize|login|consent`・
+`/admin/*`・`/oauth/introspect` は対象外です。
+
+discovery（`/.well-known/smart-configuration`）は `launch-ehr` `context-ehr-patient` `context-ehr-encounter`
+`permission-user` `context-banner` を宣言します。
+
 ## 管理 API（OAuth クライアントの登録・削除）
 
 クライアントの払い出しは上記の rake タスクでも行えますが、UI や運用ツールから扱えるように
@@ -172,6 +212,9 @@ curl -s -X DELETE http://localhost:3000/admin/oauth_clients/{client_id} \
 
 # UI 用のスコープ選択肢（対応リソース型と日本語ラベル）
 curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
+
+# EHR launch の起動文脈の発行（上の「認証（SMART EHR launch）」）
+curl -s -X POST http://localhost:3000/admin/launch_contexts -H "X-FHIR-Admin-Token: $ADMIN" ...
 ```
 
 `Authorization: Bearer {token}` でも同じトークンを渡せます。エラーは FHIR の OperationOutcome ではなく
@@ -184,6 +227,7 @@ curl -s http://localhost:3000/admin/scopes -H "X-FHIR-Admin-Token: $ADMIN"
 > 管理 API の 401 は `auth-failure-ban`（IP 単位の一時 BAN）には積みません。呼び出し元が単一 IP の
 > 中継サーバーになるため、トークンの打ち間違いで FHIR API 全体が遮断されるのを避けています。
 > ブルートフォース対策は専用のレート制限 `FHIR_RATE_ADMIN_IP`（既定 30/分）が担います。
+> 起動文脈の発行（`/admin/launch_contexts`）はカルテの操作ごとに飛ぶので別枠 `FHIR_RATE_LAUNCH_IP`（既定 120/分）です。
 
 ## バリデーション（プロファイル検証）
 

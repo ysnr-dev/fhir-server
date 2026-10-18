@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_18_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,6 +25,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
     t.bigint "user_id"
     t.string "patient_id"
     t.bigint "authorization_code_id"
+    t.string "practitioner_id"
+    t.string "encounter_id"
     t.index ["authorization_code_id"], name: "index_access_tokens_on_authorization_code_id"
     t.index ["expires_at"], name: "index_access_tokens_on_expires_at"
     t.index ["oauth_client_id"], name: "index_access_tokens_on_oauth_client_id"
@@ -94,6 +96,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
     t.integer "response_status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "agent_who_reference"
     t.index ["client_id"], name: "index_audit_events_on_client_id"
     t.index ["occurred_at"], name: "index_audit_events_on_occurred_at"
     t.index ["resource_type", "resource_id"], name: "index_audit_events_on_resource_type_and_resource_id"
@@ -102,7 +105,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
   create_table "authorization_codes", force: :cascade do |t|
     t.string "code_digest", null: false
     t.string "oauth_client_id", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.string "patient_id", null: false
     t.string "scopes", null: false
     t.string "redirect_uri", null: false
@@ -113,8 +116,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "nonce"
+    t.string "practitioner_id"
+    t.string "encounter_id"
+    t.bigint "launch_context_id"
     t.index ["code_digest"], name: "index_authorization_codes_on_code_digest", unique: true
     t.index ["expires_at"], name: "index_authorization_codes_on_expires_at"
+    t.index ["launch_context_id"], name: "index_authorization_codes_on_launch_context_id"
     t.index ["oauth_client_id"], name: "index_authorization_codes_on_oauth_client_id"
     t.index ["user_id"], name: "index_authorization_codes_on_user_id"
   end
@@ -512,6 +519,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
     t.index ["vaccine_code"], name: "index_immunizations_on_vaccine_code"
   end
 
+  create_table "launch_contexts", force: :cascade do |t|
+    t.string "token_digest", null: false
+    t.string "oauth_client_id", null: false
+    t.string "patient_id", null: false
+    t.string "encounter_id"
+    t.string "practitioner_id", null: false
+    t.boolean "need_patient_banner", default: false, null: false
+    t.string "issued_by"
+    t.datetime "expires_at", null: false
+    t.datetime "used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_launch_contexts_on_expires_at"
+    t.index ["oauth_client_id"], name: "index_launch_contexts_on_oauth_client_id"
+    t.index ["token_digest"], name: "index_launch_contexts_on_token_digest", unique: true
+  end
+
   create_table "locations", id: :string, force: :cascade do |t|
     t.integer "version_id", default: 1, null: false
     t.jsonb "content", null: false
@@ -892,7 +916,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
   create_table "refresh_tokens", force: :cascade do |t|
     t.string "token_digest", null: false
     t.string "oauth_client_id", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.string "patient_id", null: false
     t.string "scopes", null: false
     t.bigint "authorization_code_id", null: false
@@ -901,6 +925,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
     t.datetime "revoked_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "practitioner_id"
+    t.string "encounter_id"
     t.index ["authorization_code_id"], name: "index_refresh_tokens_on_authorization_code_id"
     t.index ["expires_at"], name: "index_refresh_tokens_on_expires_at"
     t.index ["oauth_client_id"], name: "index_refresh_tokens_on_oauth_client_id"
@@ -1125,11 +1151,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_190000) do
   add_foreign_key "access_tokens", "authorization_codes"
   add_foreign_key "access_tokens", "oauth_clients"
   add_foreign_key "access_tokens", "users"
+  add_foreign_key "authorization_codes", "launch_contexts", on_delete: :nullify
   add_foreign_key "authorization_codes", "oauth_clients"
   add_foreign_key "authorization_codes", "users"
   add_foreign_key "bulk_export_files", "bulk_exports", on_delete: :cascade
   add_foreign_key "bulk_exports", "oauth_clients"
   add_foreign_key "client_assertion_jtis", "oauth_clients"
+  add_foreign_key "launch_contexts", "oauth_clients"
   add_foreign_key "refresh_tokens", "authorization_codes"
   add_foreign_key "refresh_tokens", "oauth_clients"
   add_foreign_key "users", "patients"

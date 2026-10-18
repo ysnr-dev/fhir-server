@@ -74,8 +74,28 @@ RSpec.describe OauthClient do
     end
 
     it "rejects an unsupported scope" do
-      expect { described_class.register(name: "x", scopes: "user/*.read") }
+      expect { described_class.register(name: "x", scopes: "system/patient.read") }
         .to raise_error(ActiveRecord::RecordInvalid, /unsupported scope/)
+    end
+
+    it "rejects mixing patient/ and user/ scopes" do
+      expect { described_class.register(name: "x", scopes: "patient/*.read user/*.read launch",
+                                        redirect_uris: redirect_uri) }
+        .to raise_error(ActiveRecord::RecordInvalid, /cannot mix patient\/ and user\//)
+    end
+
+    it "requires redirect_uris for user/ scopes" do
+      expect { described_class.register(name: "x", scopes: "user/*.read launch") }
+        .to raise_error(ActiveRecord::RecordInvalid, /redirect/i)
+    end
+
+    it "is EHR-launchable only with the launch scope registered" do
+      plain, = described_class.register(name: "x", scopes: "user/*.read", redirect_uris: redirect_uri)
+      launchable, = described_class.register(name: "y", scopes: "user/*.read launch", redirect_uris: redirect_uri)
+
+      expect(plain.ehr_launchable?).to be(false)
+      expect(launchable.ehr_launchable?).to be(true)
+      expect(launchable.user_scoped?).to be(true)
     end
 
     it "rejects mixing system/ and patient/ scopes" do

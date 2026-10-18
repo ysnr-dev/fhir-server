@@ -50,6 +50,8 @@ class AuditEvent < ApplicationRecord
   def agent_component
     agent = { "requestor" => true, "who" => { "display" => client_name || "anonymous" } }
     agent["who"]["identifier"] = { "value" => client_id } if client_id
+    # 利用者の文脈を持つトークン(launch)では、アプリに加えて「誰として」を残す。
+    agent["who"]["reference"] = agent_who_reference if agent_who_reference.present?
     agent
   end
 

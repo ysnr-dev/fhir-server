@@ -25,6 +25,7 @@ module FhirAuditing
       occurred_at: Time.current,
       client_id: audit_client_id,
       client_name: audit_client_name,
+      agent_who_reference: audit_agent_who_reference,
       action: AuditEvent.action_for(interaction),
       interaction: interaction,
       resource_type: audit_resource_type,
@@ -50,6 +51,12 @@ module FhirAuditing
 
   def audit_client_name
     @current_access_token&.oauth_client&.name
+  end
+
+  # 「誰として」の方。アプリ(client)とは別に、launch で名乗った医療者か、
+  # ログインした患者を残す。Backend Services では nil。
+  def audit_agent_who_reference
+    @current_access_token&.fhir_user_reference
   end
 
   def audit_resource_type

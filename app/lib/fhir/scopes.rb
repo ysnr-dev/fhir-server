@@ -7,9 +7,23 @@ module Fhir
   #     Backend Services. Unrestricted across the whole server.
   #
   #   patient/Observation.read  patient/*.read  patient/Observation.rs
-  #     Interactive standalone launch. Read-only, and only meaningful on a token
-  #     that carries a patient launch context -- the context, not the scope, is
-  #     what confines reads to one compartment (Fhir::PatientContext).
+  #     Interactive launch on behalf of a patient. Read-only, and only
+  #     meaningful on a token that carries a patient launch context -- the
+  #     context, not the scope, is what confines reads to one compartment
+  #     (Fhir::PatientContext).
+  #
+  #   user/Observation.read  user/*.read  user/*.cud
+  #     EHR launch on behalf of a practitioner. "What the user may access" is,
+  #     in this facility-wide EHR, every patient, so user/ tokens are not
+  #     confined to a compartment. Writes are allowed when registered. Only
+  #     meaningful on a token that carries a practitioner context (AccessToken
+  #     drops user/ grants without one).
+  #
+  #   launch  launch/patient  launch/encounter
+  #     Launch context scopes (SMART App Launch EHR launch): `launch` says the
+  #     app is being opened from the EHR and expects the context bound to the
+  #     `launch` parameter; the other two name the context pieces wanted. They
+  #     grant no resource access.
   #
   #   offline_access  online_access
   #     Context scopes (SMART App Launch): they ask for a refresh token and
@@ -32,9 +46,6 @@ module Fhir
   # would have to be honoured by narrowing, and silently ignoring the constraint
   # would over-grant, so such scopes are treated as invalid.
   #
-  # user/ scopes belong to the interactive provider-facing flows, which this
-  # server does not implement -- such scopes are ignored if present.
-  #
   # Note the asymmetry in `allows?("*", :read)`: a wildcard-type check is how
   # server-wide endpoints (GET /_history) ask "may this token see everything?",
   # and `patient/*.read` satisfies it structurally without meaning it. Those
@@ -42,16 +53,19 @@ module Fhir
   class Scopes
     SYSTEM_PATTERN = %r{\Asystem/(\*|[A-Z][A-Za-z]*)\.([a-z*]+)\z}
     PATIENT_PATTERN = %r{\Apatient/(\*|[A-Z][A-Za-z]*)\.([a-z*]+)\z}
+    USER_PATTERN = %r{\Auser/(\*|[A-Z][A-Za-z]*)\.([a-z*]+)\z}
     # v2 access: the CRUDS letters in canonical order, no repeats, at least one
     # present. The lookahead rejects the empty string that c?r?u?d?s? would
     # otherwise match.
     V2_ACCESS = /\A(?=[cruds])c?r?u?d?s?\z/
     REFRESH_SCOPES = %w[offline_access online_access].freeze
     IDENTITY_SCOPES = %w[openid fhirUser profile].freeze
+    LAUNCH_SCOPES = %w[launch launch/patient launch/encounter].freeze
     # Context scopes carry no resource access; they request refresh/identity
-    # tokens instead. Grouped together for the "must accompany a patient/ scope"
-    # registration rule, split apart where behaviour differs (see the helpers).
-    CONTEXT_SCOPES = (REFRESH_SCOPES + IDENTITY_SCOPES).freeze
+    # tokens or launch context instead. Grouped together for the "must accompany
+    # an interactive resource scope" registration rule, split apart where
+    # behaviour differs (see the helpers).
+    CONTEXT_SCOPES = (REFRESH_SCOPES + IDENTITY_SCOPES + LAUNCH_SCOPES).freeze
 
     # Maps a v1 keyword or v2 CRUDS access string onto the coarse permissions
     # this server enforces. Returns an array of :read/:write, or nil if the
@@ -70,7 +84,7 @@ module Fhir
     end
 
     def self.valid?(scope)
-      valid_system?(scope) || valid_patient?(scope) || valid_context?(scope)
+      valid_system?(scope) || valid_patient?(scope) || valid_user?(scope) || valid_context?(scope)
     end
 
     def self.valid_system?(scope)
@@ -89,8 +103,25 @@ module Fhir
       access.present? && access.exclude?(:write)
     end
 
+    # A practitioner may write when the registration says so, so unlike patient/
+    # every recognised access form is valid here.
+    def self.valid_user?(scope)
+      return false unless (match = USER_PATTERN.match(scope))
+
+      !access_for(match[2]).nil?
+    end
+
     def self.valid_context?(scope)
       CONTEXT_SCOPES.include?(scope)
+    end
+
+    def self.valid_launch?(scope)
+      LAUNCH_SCOPES.include?(scope)
+    end
+
+    # Whether this scope list asks for the EHR launch context.
+    def self.launch_requested?(scopes)
+      scopes.include?("launch")
     end
 
     # Whether this scope list asks for a refresh token at all.
@@ -126,6 +157,10 @@ module Fhir
       @grants.any? { |grant| grant[0] == :patient }
     end
 
+    def user_grants?
+      @grants.any? { |grant| grant[0] == :user }
+    end
+
     private
 
     def parse(scope)
@@ -134,6 +169,8 @@ module Fhir
       elsif (match = PATIENT_PATTERN.match(scope)) &&
             (access = self.class.access_for(match[2])) && access.exclude?(:write)
         [:patient, match[1], access]
+      elsif (match = USER_PATTERN.match(scope)) && (access = self.class.access_for(match[2]))
+        [:user, match[1], access]
       end
     end
 

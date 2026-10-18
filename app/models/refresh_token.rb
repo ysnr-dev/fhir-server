@@ -20,17 +20,19 @@ class RefreshToken < ApplicationRecord
   ONLINE_TTL = 12.hours
 
   belongs_to :oauth_client
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :authorization_code
 
   # Returns [record, raw_token].
-  def self.issue(client:, user:, patient_id:, scopes:, authorization_code:)
+  def self.issue(client:, patient_id:, scopes:, authorization_code:, user: nil, practitioner_id: nil, encounter_id: nil)
     raw = SecureRandom.hex(32)
     ttl = scopes.include?("offline_access") ? OFFLINE_TTL : ONLINE_TTL
     record = create!(
       oauth_client: client,
       user: user,
       patient_id: patient_id,
+      practitioner_id: practitioner_id,
+      encounter_id: encounter_id,
       scopes: scopes.join(" "),
       authorization_code: authorization_code,
       token_digest: OauthClient.digest(raw),
@@ -50,6 +52,8 @@ class RefreshToken < ApplicationRecord
       client: oauth_client,
       user: user,
       patient_id: patient_id,
+      practitioner_id: practitioner_id,
+      encounter_id: encounter_id,
       scopes: scope_list,
       authorization_code: authorization_code
     )

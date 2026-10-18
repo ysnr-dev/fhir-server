@@ -80,6 +80,30 @@ RSpec.describe "Rate limiting (rack-attack)", type: :request do
       expect(JSON.parse(response.body)["issue"].first["code"]).to eq("throttled")
     end
 
+    it "counts launch issuance in its own, larger bucket" do
+      Rack::Attack::RATE_ADMIN_IP.times { wrong_token_request }
+      wrong_token_request
+      expect(response).to have_http_status(:too_many_requests)
+
+      post "/admin/launch_contexts", params: {}.to_json,
+                                     headers: { "X-FHIR-Admin-Token" => "a" * 64, "CONTENT_TYPE" => "application/json" }
+
+      expect(response).to have_http_status(:bad_request)
+      expect(request.env["rack.attack.matched"]).to be_nil
+    end
+
+    it "throttles launch issuance per IP at RATE_LAUNCH_IP" do
+      issue = lambda do
+        post "/admin/launch_contexts", params: {}.to_json,
+                                       headers: { "X-FHIR-Admin-Token" => "a" * 64, "CONTENT_TYPE" => "application/json" }
+      end
+      Rack::Attack::RATE_LAUNCH_IP.times { issue.call }
+      issue.call
+
+      expect(response).to have_http_status(:too_many_requests)
+      expect(request.env["rack.attack.matched"]).to eq("admin-launch/ip")
+    end
+
     it "does not ban the caller's IP after repeated 401s" do
       (Fhir::AuthThrottle.max_retries + 1).times { wrong_token_request }
 
@@ -94,6 +118,27 @@ RSpec.describe "Rate limiting (rack-attack)", type: :request do
     it "never throttles /up" do
       (Rack::Attack::RATE_API_IP + 5).times { get "/up" }
       expect(response).to have_http_status(:ok)
+    end
+  end
+
+  describe "EHR launch authorize throttle" do
+    # launch 付きの authorize は病院の NAT 配下で同一 IP から集中するので、
+    # ログイン画面向けの oauth-browser/ip ではなくクライアント単位で数える。
+    it "counts launch requests per client, outside the browser per-IP rule" do
+      Rack::Attack::RATE_AUTHORIZE_IP.times do
+        get "/oauth/authorize", params: { client_id: "none", launch: "x" }
+      end
+      get "/oauth/authorize", params: { client_id: "none", launch: "x" }
+      expect(response).to have_http_status(:bad_request)
+      expect(request.env["rack.attack.matched"]).to be_nil
+
+      (Rack::Attack::RATE_LAUNCH_CLIENT - Rack::Attack::RATE_AUTHORIZE_IP).times do
+        get "/oauth/authorize", params: { client_id: "none", launch: "x" }
+      end
+      get "/oauth/authorize", params: { client_id: "none", launch: "x" }
+
+      expect(response).to have_http_status(:too_many_requests)
+      expect(request.env["rack.attack.matched"]).to eq("oauth-launch/client")
     end
   end
 end

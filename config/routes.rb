@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   # 別アプリ(fhir-client)の backend がサーバー間で中継する。
   namespace :admin do
     resources :oauth_clients, only: %i[index create destroy]
+    # EHR launch の起動文脈の発行。カルテ(fhir-client)の backend が医療者の身元を
+    # 保証して呼ぶので、管理トークンの権限に載せる。
+    resources :launch_contexts, only: :create
     get "scopes", to: "scopes#show"
   end
 
@@ -18,8 +21,9 @@ Rails.application.routes.draw do
   post "/oauth/revoke", to: "oauth_revocations#create"
   post "/oauth/introspect", to: "oauth_introspections#create"
 
-  # Interactive SMART standalone launch. The only HTML in this app; everything
-  # under it renders login/consent and returns the user to the client app.
+  # Interactive SMART launches. The only HTML in this app: the standalone
+  # patient launch renders login/consent here; the EHR launch (launch param)
+  # redirects straight back to the client app without rendering anything.
   get  "/oauth/authorize", to: "oauth/browser#authorize", as: :oauth_authorize
   post "/oauth/login",     to: "oauth/browser#login",     as: :oauth_login
   post "/oauth/consent",   to: "oauth/browser#consent",   as: :oauth_consent

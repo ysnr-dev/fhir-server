@@ -40,15 +40,19 @@ class ApplicationController < ActionController::API
   end
 
   # The patient compartment this request is confined to, or nil when it is not
-  # confined at all (system token, or auth disabled). Everything downstream
-  # treats nil as "no filtering", which is what keeps the Backend Services path
-  # byte-for-byte unchanged.
+  # confined at all (system token, user/ token, or auth disabled). Everything
+  # downstream treats nil as "no filtering", which is what keeps the Backend
+  # Services path byte-for-byte unchanged.
+  #
+  # An EHR-launched user/ token also carries a patient (the launch context the
+  # app was opened with), but that is a hint to the app, not a boundary: the
+  # practitioner may look at any patient. Only patient/ grants confine.
   def access_context
     return @access_context if defined?(@access_context)
 
     token = @current_access_token
     @access_context =
-      if token&.patient_context?
+      if token&.patient_context? && token.scope_set.patient_grants?
         Fhir::PatientContext.new(patient_id: token.patient_id, scope_set: token.scope_set)
       end
   end
@@ -82,7 +86,10 @@ class ApplicationController < ActionController::API
   # token cannot obtain system/ scopes, so quoting them back would be a dead end
   # -- except on the system-only interactions, where that really is the answer.
   def required_scope(resource_type, access, require_system)
-    if !require_system && @current_access_token&.patient_context?
+    token = @current_access_token
+    if !require_system && token&.practitioner_context?
+      "user/#{resource_type}.#{access}"
+    elsif !require_system && token&.patient_context?
       "patient/#{resource_type}.#{access}"
     else
       "system/#{resource_type}.#{access}"

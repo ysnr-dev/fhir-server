@@ -155,6 +155,8 @@ module Admin
         scopes: client.allowed_scopes,
         redirect_uris: client.redirect_uri_list,
         kind: client.launch_client? ? "launch" : "backend",
+        # カルテから EHR launch で起動できる(launch スコープを登録した)クライアントか。
+        ehr_launchable: client.ehr_launchable?,
         auth_method: auth_method(client),
         jwks_key_count: client.jwks&.dig("keys")&.size.to_i,
         created_at: client.created_at.utc.iso8601,

@@ -1,13 +1,25 @@
-# The browser-facing half of the SMART standalone launch: the authorization
-# endpoint plus the login and consent steps behind it. Everything else in this
-# app is an API controller; this one inherits ActionController::Base because it
-# renders HTML, holds a session, and needs CSRF protection.
+# The browser-facing half of the SMART launches: the authorization endpoint
+# plus, for the standalone patient launch, the login and consent steps behind
+# it. Everything else in this app is an API controller; this one inherits
+# ActionController::Base because it renders HTML, holds a session, and needs
+# CSRF protection.
+#
+# The EHR launch (a `launch` parameter minted through /admin/launch_contexts)
+# takes a different path through the same endpoint: the EHR has already
+# authenticated the practitioner and the administrator consented when
+# registering the app, so nothing is rendered and no session is touched --
+# the request is validated and answered with a redirect carrying the code.
+# That is what lets it run inside an iframe where third-party cookies are
+# blocked.
 #
 # The authorization request itself is NOT kept in the session. Its parameters
 # ride along in hidden form fields and are re-validated in full on every POST,
 # so several launches can be in flight in different tabs, and tampering only
 # ever produces the same errors a fresh request would.
 class Oauth::BrowserController < ActionController::Base
+  # around_action + ensure なので、途中で止まった 400 やリダイレクトも監査に残る。
+  include FhirAuditing
+
   layout "oauth"
 
   protect_from_forgery with: :exception
@@ -15,9 +27,11 @@ class Oauth::BrowserController < ActionController::Base
   before_action { response.set_header("Cache-Control", "no-store") }
   before_action :load_authorize_request
 
-  AUTHORIZE_PARAMS = %w[client_id redirect_uri scope state code_challenge code_challenge_method nonce].freeze
+  AUTHORIZE_PARAMS = %w[client_id redirect_uri scope state code_challenge code_challenge_method nonce launch aud].freeze
 
   def authorize
+    return authorize_ehr_launch if ehr_launch?
+
     current_user ? render(:consent) : render(:login)
   end
 
@@ -45,6 +59,7 @@ class Oauth::BrowserController < ActionController::Base
     _code, raw = AuthorizationCode.issue(
       client: @client,
       user: current_user,
+      patient_id: current_user.patient_id,
       scopes: @scopes,
       redirect_uri: @redirect_uri,
       code_challenge: @code_challenge,
@@ -56,6 +71,38 @@ class Oauth::BrowserController < ActionController::Base
   end
 
   private
+
+  def ehr_launch?
+    params[:launch].present?
+  end
+
+  # The EHR launch: the `launch` token stands in for login and consent. Every
+  # failure past stage 1 is reported to the app over the verified redirect_uri,
+  # and the four ways a token can be unusable (unknown, expired, already
+  # consumed, minted for another client) are deliberately indistinguishable.
+  # consume! is the last check so a request that fails for another reason does
+  # not burn the token; the database settles a race between two redemptions.
+  def authorize_ehr_launch
+    context = LaunchContext.authenticate(params[:launch])
+    usable = context && !context.expired? && !context.used? && context.oauth_client_id == @client.id
+    return redirect_with_error("invalid_request", "launch token is invalid or expired") unless usable && context.consume!
+
+    @launch_context = context
+    _code, raw = AuthorizationCode.issue(
+      client: @client,
+      patient_id: context.patient_id,
+      practitioner_id: context.practitioner_id,
+      encounter_id: context.encounter_id,
+      launch_context: context,
+      scopes: @scopes,
+      redirect_uri: @redirect_uri,
+      code_challenge: @code_challenge,
+      code_challenge_method: @code_challenge_method,
+      nonce: @nonce
+    )
+
+    redirect_to_client(code: raw)
+  end
 
   # Validation happens in two stages, and the order matters.
   #
@@ -90,16 +137,79 @@ class Oauth::BrowserController < ActionController::Base
 
     @scopes = params[:scope].to_s.split
     return redirect_with_error("invalid_scope", "scope is required") if @scopes.empty?
-    return redirect_with_error("invalid_scope", "Only read-only patient/ scopes (e.g. patient/*.read or patient/*.rs) are supported") unless
-      @scopes.all? { |scope| Fhir::Scopes.valid_patient?(scope) || Fhir::Scopes.valid_context?(scope) }
-    # offline/online_access alone grants nothing to refresh -- there must be at
-    # least one resource scope for the refresh token to reproduce.
-    return redirect_with_error("invalid_scope", "offline_access/online_access require a patient/ scope") unless
-      @scopes.any? { |scope| Fhir::Scopes.valid_patient?(scope) }
+    return false unless ehr_launch? ? validate_ehr_launch_request : validate_standalone_scopes
     return redirect_with_error("invalid_scope", "Requested scope exceeds the client's registration") unless
       (@scopes - @client.allowed_scopes).empty?
 
     true
+  end
+
+  # Standalone: a patient logs in and consents, so only the read-only patient/
+  # family applies. user/ and launch have no meaning without an EHR behind them.
+  def validate_standalone_scopes
+    return redirect_with_error("invalid_scope", "Only read-only patient/ scopes (e.g. patient/*.read or patient/*.rs) are supported") unless
+      @scopes.all? { |scope| Fhir::Scopes.valid_patient?(scope) || (Fhir::Scopes.valid_context?(scope) && !Fhir::Scopes.valid_launch?(scope)) }
+    # offline/online_access alone grants nothing to refresh -- there must be at
+    # least one resource scope for the refresh token to reproduce.
+    return redirect_with_error("invalid_scope", "offline_access/online_access require a patient/ scope") unless
+      @scopes.any? { |scope| Fhir::Scopes.valid_patient?(scope) }
+
+    true
+  end
+
+  # EHR launch. The login and consent steps have no place here: a launch token
+  # presented to them would end in a code granted by whichever patient happens
+  # to be logged in, under scopes meant for a practitioner.
+  def validate_ehr_launch_request
+    return redirect_with_error("invalid_request", "launch is only accepted at the authorization endpoint") unless
+      action_name == "authorize"
+    # aud binds the request to this server: an app tricked into launching
+    # against another issuer must not hand that issuer's code to us.
+    return redirect_with_error("invalid_request", "aud must be this server's FHIR base URL") unless
+      params[:aud].to_s.chomp("/") == base_url
+    return redirect_with_error("invalid_scope", "The launch scope is required for an EHR launch") unless
+      Fhir::Scopes.launch_requested?(@scopes)
+    return redirect_with_error("invalid_scope", "Only user/, patient/ and context scopes are supported") unless
+      @scopes.all? { |scope| Fhir::Scopes.valid_user?(scope) || Fhir::Scopes.valid_patient?(scope) || Fhir::Scopes.valid_context?(scope) }
+    return redirect_with_error("invalid_scope", "A user/ or patient/ scope is required") unless
+      @scopes.any? { |scope| Fhir::Scopes.valid_user?(scope) || Fhir::Scopes.valid_patient?(scope) }
+    # The launch context is for this sitting: a 30-day grant the practitioner
+    # cannot see or revoke from the EHR is not something a launch should mint.
+    return redirect_with_error("invalid_scope", "offline_access is not available in an EHR launch") if
+      @scopes.include?("offline_access")
+
+    true
+  end
+
+  def base_url
+    "#{request.protocol}#{request.host_with_port}"
+  end
+
+  def audit_interaction
+    "operation"
+  end
+
+  def audit_client_id
+    @client&.id
+  end
+
+  def audit_client_name
+    @client&.name
+  end
+
+  def audit_agent_who_reference
+    return "Practitioner/#{@launch_context.practitioner_id}" if @launch_context
+    return "Patient/#{current_user.patient_id}" if current_user
+
+    nil
+  end
+
+  def audit_resource_type
+    "LaunchContext" if @launch_context
+  end
+
+  def audit_resource_id
+    @launch_context&.id&.to_s
   end
 
   def current_user

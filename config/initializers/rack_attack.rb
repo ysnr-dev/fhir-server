@@ -11,6 +11,9 @@ class Rack::Attack
   # 管理API。/admin/oauth_clients/:id のようにパスが可変なので、他と違って
   # 完全一致の定数では書けない(admin_path? を使う)。
   ADMIN_PATH_PREFIX = "/admin/".freeze
+  # EHR launch の発行はカルテの操作ごとに飛ぶ(1 画面 1 回)。管理トークンの
+  # ブルートフォース対策の枠に入れると起動回数の上限になるので別枠にする。
+  LAUNCH_ADMIN_PATH = "/admin/launch_contexts".freeze
 
   RATE_TOKEN_IP     = Integer(ENV.fetch("FHIR_RATE_TOKEN_IP", 10))      # /分
   RATE_TOKEN_CLIENT = Integer(ENV.fetch("FHIR_RATE_TOKEN_CLIENT", 30))  # /5分
@@ -19,9 +22,17 @@ class Rack::Attack
   RATE_AUTHORIZE_IP = Integer(ENV.fetch("FHIR_RATE_AUTHORIZE_IP", 30))  # /分
   RATE_LOGIN_IP     = Integer(ENV.fetch("FHIR_RATE_LOGIN_IP", 10))      # /分
   RATE_ADMIN_IP     = Integer(ENV.fetch("FHIR_RATE_ADMIN_IP", 30))      # /分
+  RATE_LAUNCH_IP    = Integer(ENV.fetch("FHIR_RATE_LAUNCH_IP", 120))    # /分
+  RATE_LAUNCH_CLIENT = Integer(ENV.fetch("FHIR_RATE_LAUNCH_CLIENT", 120)) # /分
 
   def self.admin_path?(req)
     req.path.start_with?(ADMIN_PATH_PREFIX)
+  end
+
+  # EHR launch の authorize(launch パラメータ付き GET)。病院の NAT では全医療者が
+  # 同一 IP になるため、ログイン画面を晒す standalone とは別にクライアント単位で数える。
+  def self.ehr_launch_request?(req)
+    req.get? && req.path == "/oauth/authorize" && req.GET["launch"].present?
   end
 
   self.cache.store = ActiveSupport::Cache::MemoryStore.new
@@ -61,7 +72,11 @@ class Rack::Attack
 
   # --- 対話型launchのブラウザ画面 --------------------------------------------
   throttle("oauth-browser/ip", limit: RATE_AUTHORIZE_IP, period: 1.minute) do |req|
-    req.ip if BROWSER_OAUTH_PATHS.include?(req.path)
+    req.ip if BROWSER_OAUTH_PATHS.include?(req.path) && !ehr_launch_request?(req)
+  end
+
+  throttle("oauth-launch/client", limit: RATE_LAUNCH_CLIENT, period: 1.minute) do |req|
+    "launch:#{req.GET['client_id']}" if ehr_launch_request?(req)
   end
 
   # ログイン試行はさらに厳しく。失敗は Fhir::AuthThrottle 経由で
@@ -75,7 +90,11 @@ class Rack::Attack
   # なので、積むと管理トークンの打ち間違いでFHIR API全体が遮断される)。
   # 共有トークンへのブルートフォースはこのスロットルだけが止める。
   throttle("admin/ip", limit: RATE_ADMIN_IP, period: 1.minute) do |req|
-    req.ip if admin_path?(req)
+    req.ip if admin_path?(req) && req.path != LAUNCH_ADMIN_PATH
+  end
+
+  throttle("admin-launch/ip", limit: RATE_LAUNCH_IP, period: 1.minute) do |req|
+    req.ip if req.path == LAUNCH_ADMIN_PATH
   end
 
   # --- FHIR API 全般 ---------------------------------------------------------

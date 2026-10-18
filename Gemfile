@@ -41,8 +41,9 @@ gem "sentry-rails"
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-# gem "rack-cors"
+# ブラウザ上の SMART アプリ(EHR launch の public client)がトークン交換と FHIR API を
+# 直接呼ぶための CORS。許可するパスは config/initializers/cors.rb。
+gem "rack-cors"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

@@ -6,13 +6,15 @@
 #     rake fhir:register_client) or with a registered JWKS via private_key_jwt
 #     client assertions (Fhir::ClientAssertion). A JWKS client has no secret.
 #
-#   * Interactive launch clients: patient/ scopes, authorization_code + PKCE,
-#     with one or more registered redirect URIs. Public ones (SPAs, native
-#     apps) hold no secret -- PKCE is the proof of possession instead.
+#   * Interactive launch clients: patient/ scopes (standalone patient launch)
+#     or user/ scopes (EHR launch on behalf of a practitioner), authorization_code
+#     + PKCE, with one or more registered redirect URIs. Public ones (SPAs,
+#     native apps) hold no secret -- PKCE is the proof of possession instead.
 #
-# The two are kept disjoint by validation: a client is either a system-scope
-# backend client or a patient-scope launch client, never both, so a compromised
-# launch client can never present a token that skips compartment filtering.
+# The kinds are kept disjoint by validation: a client is a system-scope backend
+# client, a patient-scope launch client or a user-scope launch client, never a
+# mix, so a compromised launch client can never present a token that skips
+# compartment filtering, and a token's confinement follows from its grants alone.
 class OauthClient < ApplicationRecord
   CLIENT_TYPES = %w[confidential public].freeze
 
@@ -24,6 +26,7 @@ class OauthClient < ApplicationRecord
   has_many :client_assertion_jtis, dependent: :delete_all
   # エクスポートの履歴自体は監査目的で残す(purge_bulk_exports が期限で回収する)。
   has_many :bulk_exports, dependent: :nullify
+  has_many :launch_contexts, dependent: :delete_all
   has_many :authorization_codes, dependent: :delete_all
 
   # どちらもDBは null:false だが、presence 検証が無いと nil が
@@ -78,6 +81,16 @@ class OauthClient < ApplicationRecord
     redirect_uri_list.any?
   end
 
+  # Registering `launch` is the administrator's explicit opt-in to EHR launch:
+  # only such a client can have a launch context minted for it.
+  def ehr_launchable?
+    launch_client? && allowed_scopes.include?("launch")
+  end
+
+  def user_scoped?
+    allowed_scopes.any? { |scope| Fhir::Scopes.valid_user?(scope) }
+  end
+
   def redirect_uri_list
     redirect_uris.to_s.split
   end
@@ -101,21 +114,27 @@ class OauthClient < ApplicationRecord
 
     system = granted.any? { |scope| Fhir::Scopes.valid_system?(scope) }
     patient = granted.any? { |scope| Fhir::Scopes.valid_patient?(scope) }
+    user = granted.any? { |scope| Fhir::Scopes.valid_user?(scope) }
     context = granted.any? { |scope| Fhir::Scopes.valid_context?(scope) }
     errors.add(:scopes, "cannot mix system/ and patient/ scopes") if system && patient
-    # The context scopes (offline/online_access, openid/fhirUser/profile) only
-    # mean anything in the interactive flow: a backend client mints its own
-    # access tokens and has no user to identify. So they require a patient/
-    # scope alongside them -- on a system registration they are a mistake.
-    errors.add(:scopes, "offline_access/openid style scopes require patient/ scopes") if context && !patient
+    errors.add(:scopes, "cannot mix system/ and user/ scopes") if system && user
+    # A token's confinement is decided by whether it holds patient/ grants
+    # (ApplicationController#access_context); a client holding both kinds would
+    # make that answer depend on which scopes the app happened to request.
+    errors.add(:scopes, "cannot mix patient/ and user/ scopes") if patient && user
+    # The context scopes (offline/online_access, openid/fhirUser/profile, launch)
+    # only mean anything in the interactive flow: a backend client mints its own
+    # access tokens and has no user to identify. So they require a patient/ or
+    # user/ scope alongside them -- on a system registration they are a mistake.
+    errors.add(:scopes, "offline_access/openid/launch style scopes require patient/ or user/ scopes") if context && !(patient || user)
   end
 
   def launch_clients_have_redirect_uris
     return if scopes.blank?
 
-    patient = allowed_scopes.any? { |scope| Fhir::Scopes.valid_patient?(scope) }
-    errors.add(:redirect_uris, "are required for patient/ scopes") if patient && redirect_uri_list.empty?
-    errors.add(:scopes, "must be patient/ scopes for a redirect-based client") if !patient && redirect_uri_list.any?
+    interactive = allowed_scopes.any? { |scope| Fhir::Scopes.valid_patient?(scope) || Fhir::Scopes.valid_user?(scope) }
+    errors.add(:redirect_uris, "are required for patient/ or user/ scopes") if interactive && redirect_uri_list.empty?
+    errors.add(:scopes, "must be patient/ or user/ scopes for a redirect-based client") if !interactive && redirect_uri_list.any?
   end
 
   def public_clients_hold_no_credentials

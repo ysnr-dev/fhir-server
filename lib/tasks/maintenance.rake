@@ -7,10 +7,13 @@ namespace :fhir do
     tokens = AccessToken.where("expires_at < ?", retention_days.days.ago).delete_all
     refresh_tokens = RefreshToken.where("expires_at < ?", retention_days.days.ago).delete_all
     jtis = ClientAssertionJti.where("expires_at < ?", Time.current).delete_all
+    # 起動文脈は 5 分で切れる。authorization_codes から参照されるので 1 日だけ残す。
+    launches = LaunchContext.where("expires_at < ?", 1.day.ago).delete_all
 
     puts "purged #{tokens} access token(s) expired more than #{retention_days} days ago"
     puts "purged #{refresh_tokens} refresh token(s) expired more than #{retention_days} days ago"
     puts "purged #{jtis} expired client assertion jti(s)"
+    puts "purged #{launches} launch context(s) expired more than a day ago"
   end
 
   desc "スタックしたBulk Data $exportを失敗扱いにし、期限切れのエクスポートを削除する(日次cron想定)"

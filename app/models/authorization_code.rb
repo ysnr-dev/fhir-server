@@ -1,5 +1,6 @@
 # A single-use OAuth2 authorization code (RFC 6749 section 4.1) carrying the
-# consented scopes and the patient launch context over to the token endpoint.
+# granted scopes and the launch context (patient, and either the consenting
+# User or the launching practitioner and encounter) over to the token endpoint.
 # Stored as a digest only, like AccessToken: the raw value exists just long
 # enough to travel through the browser redirect.
 class AuthorizationCode < ApplicationRecord
@@ -17,17 +18,27 @@ class AuthorizationCode < ApplicationRecord
   VERIFIER_PATTERN = /\A[A-Za-z0-9\-._~]{43,128}\z/
 
   belongs_to :oauth_client
-  belongs_to :user
+  # A standalone launch is granted by a patient User; an EHR launch by a
+  # practitioner the EHR vouched for, who has no User row here.
+  belongs_to :user, optional: true
+  belongs_to :launch_context, optional: true
   has_many :access_tokens, dependent: :nullify
   has_many :refresh_tokens, dependent: :destroy
 
-  # Returns [record, raw_code].
-  def self.issue(client:, user:, scopes:, redirect_uri:, code_challenge:, code_challenge_method: "S256", nonce: nil)
+  validate :granted_by_user_or_practitioner
+
+  # Returns [record, raw_code]. The patient defaults to the consenting User's
+  # own; an EHR launch names it (and the practitioner) explicitly.
+  def self.issue(client:, scopes:, redirect_uri:, code_challenge:, code_challenge_method: "S256", nonce: nil,
+                 user: nil, patient_id: nil, practitioner_id: nil, encounter_id: nil, launch_context: nil)
     raw = SecureRandom.urlsafe_base64(32)
     record = create!(
       oauth_client: client,
       user: user,
-      patient_id: user.patient_id,
+      patient_id: patient_id || user&.patient_id,
+      practitioner_id: practitioner_id,
+      encounter_id: encounter_id,
+      launch_context: launch_context,
       scopes: scopes.join(" "),
       redirect_uri: redirect_uri,
       code_challenge: code_challenge,
@@ -53,5 +64,11 @@ class AuthorizationCode < ApplicationRecord
   def revoke_issued_tokens!
     access_tokens.where(revoked_at: nil).update_all(revoked_at: Time.current)
     refresh_tokens.where(revoked_at: nil).update_all(revoked_at: Time.current)
+  end
+
+  private
+
+  def granted_by_user_or_practitioner
+    errors.add(:base, "must be granted by a user or a practitioner") if user.nil? && practitioner_id.blank?
   end
 end

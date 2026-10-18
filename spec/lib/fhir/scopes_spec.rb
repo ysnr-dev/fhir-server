@@ -27,8 +27,17 @@ RSpec.describe Fhir::Scopes do
       expect(described_class.valid?("profile")).to be(true)
     end
 
-    it "rejects unimplemented launch contexts and malformed scopes" do
-      expect(described_class.valid?("user/*.read")).to be(false)
+    it "accepts user/ scopes including writes, and the launch context scopes" do
+      expect(described_class.valid?("user/*.read")).to be(true)
+      expect(described_class.valid?("user/Observation.cud")).to be(true)
+      expect(described_class.valid?("user/*.*")).to be(true)
+      expect(described_class.valid?("launch")).to be(true)
+      expect(described_class.valid?("launch/patient")).to be(true)
+      expect(described_class.valid?("launch/encounter")).to be(true)
+    end
+
+    it "rejects malformed scopes" do
+      expect(described_class.valid?("user/patient.read")).to be(false)
       expect(described_class.valid?("system/patient.read")).to be(false)
       expect(described_class.valid?("system/Patient.delete")).to be(false)
       expect(described_class.valid?("email")).to be(false)
@@ -128,7 +137,18 @@ RSpec.describe Fhir::Scopes do
     end
 
     it "ignores unparseable scopes" do
-      expect(described_class.new(%w[user/Patient.read bogus]).allows?("Patient", :read)).to be(false)
+      expect(described_class.new(%w[launch bogus]).allows?("Patient", :read)).to be(false)
+    end
+
+    it "grants user scopes read and write as registered, never through system_allows?" do
+      scopes = described_class.new(%w[user/Observation.read user/Patient.cud])
+
+      expect(scopes.allows?("Observation", :read)).to be(true)
+      expect(scopes.allows?("Observation", :write)).to be(false)
+      expect(scopes.allows?("Patient", :write)).to be(true)
+      expect(scopes.user_grants?).to be(true)
+      expect(scopes.patient_grants?).to be(false)
+      expect(described_class.new(%w[user/*.read]).system_allows?("*", :read)).to be(false)
     end
 
     it "grants patient scopes read but never write" do

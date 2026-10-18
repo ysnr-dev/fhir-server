@@ -1,9 +1,10 @@
 # POST /oauth/token -- the token endpoint for the supported flows:
 #
 #   client_credentials  SMART Backend Services (machine-to-machine).
-#   authorization_code  Interactive standalone launch, PKCE required.
+#   authorization_code  Interactive launches (standalone patient launch and
+#                       EHR launch), PKCE required.
 #   refresh_token       Rotation of a refresh token obtained via
-#                       offline_access / online_access on the interactive flow.
+#                       offline_access / online_access on the interactive flows.
 #
 # Client authentication: private_key_jwt, HTTP Basic, or client_id /
 # client_secret body params -- except for public clients, where PKCE stands in
@@ -34,6 +35,12 @@ class OauthTokensController < ApplicationController
       response.set_header("WWW-Authenticate", %(Basic realm="fhir-server")) if basic_credentials
       return oauth_error(:unauthorized, "invalid_client", auth_error)
     end
+
+    # A launch client's scopes stand for a user who is not present in a
+    # machine-to-machine grant; AccessToken would drop them anyway, so refuse
+    # the grant outright rather than mint a token that can do nothing.
+    return oauth_error(:bad_request, "unauthorized_client", "Launch clients cannot use client_credentials") if
+      client.launch_client?
 
     scopes = granted_scopes(client)
     return oauth_error(:bad_request, "invalid_scope", "Requested scope exceeds the client's registration") unless scopes
@@ -70,15 +77,17 @@ class OauthTokensController < ApplicationController
     return revoke_and_reject(code, "Authorization code has already been used") unless code.consume!
 
     _record, raw_token = AccessToken.issue(
-      client, scopes: code.scope_list, user: code.user, patient_id: code.patient_id, authorization_code: code
+      client, scopes: code.scope_list, user: code.user, patient_id: code.patient_id,
+      practitioner_id: code.practitioner_id, encounter_id: code.encounter_id, authorization_code: code
     )
 
-    # offline_access / online_access in the consented scopes ask for a refresh
+    # offline_access / online_access in the granted scopes ask for a refresh
     # token (SMART App Launch). Backend Services never gets one.
     raw_refresh = nil
     if Fhir::Scopes.refresh_requested?(code.scope_list)
       _refresh, raw_refresh = RefreshToken.issue(
         client: client, user: code.user, patient_id: code.patient_id,
+        practitioner_id: code.practitioner_id, encounter_id: code.encounter_id,
         scopes: code.scope_list, authorization_code: code
       )
     end
@@ -90,7 +99,7 @@ class OauthTokensController < ApplicationController
     id_token = nil
     if Fhir::Scopes.identity_requested?(code.scope_list)
       id_token = Fhir::IdToken.issue(
-        user: code.user, patient_id: code.patient_id, client: client,
+        user: code.user, patient_id: code.patient_id, practitioner_id: code.practitioner_id, client: client,
         scopes: code.scope_list, issuer: base_url, nonce: code.nonce
       )
     end
@@ -102,9 +111,12 @@ class OauthTokensController < ApplicationController
       scope: code.scopes,
       refresh_token: raw_refresh,
       id_token: id_token,
-      # SMART launch context: tells the app which patient the token is for,
-      # so it does not have to guess or ask.
-      patient: code.patient_id
+      # SMART launch context: tells the app which patient (and encounter) the
+      # token is for, so it does not have to guess or ask. The EHR says whether
+      # the app is embedded under its own patient banner.
+      patient: code.patient_id,
+      encounter: code.encounter_id,
+      need_patient_banner: code.launch_context&.need_patient_banner
     }.compact
   end
 
@@ -134,6 +146,7 @@ class OauthTokensController < ApplicationController
 
     _record, raw_token = AccessToken.issue(
       client, scopes: scopes, user: refresh.user, patient_id: refresh.patient_id,
+      practitioner_id: refresh.practitioner_id, encounter_id: refresh.encounter_id,
       authorization_code: refresh.authorization_code
     )
     _rotated, raw_refresh = refresh.rotate!
@@ -144,8 +157,9 @@ class OauthTokensController < ApplicationController
       expires_in: AccessToken::TTL.to_i,
       scope: scopes.join(" "),
       refresh_token: raw_refresh,
-      patient: refresh.patient_id
-    }
+      patient: refresh.patient_id,
+      encounter: refresh.encounter_id
+    }.compact
   end
 
   # A public client has no secret to prove anything with -- PKCE already tied

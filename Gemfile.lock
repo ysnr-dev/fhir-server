@@ -158,6 +158,9 @@ GEM
     rack (3.2.7)
     rack-attack (6.8.0)
       rack (>= 1.0, < 4)
+    rack-cors (3.0.0)
+      logger
+      rack (>= 3.0.14)
     rack-session (2.1.2)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -260,6 +263,7 @@ DEPENDENCIES
   pg (~> 1.1)
   puma (~> 7.2, >= 7.2.1)
   rack-attack (~> 6.7)
+  rack-cors
   rails (~> 8.1.0)
   rspec-rails (~> 6.1)
   sentry-rails

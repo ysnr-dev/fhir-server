@@ -1,7 +1,6 @@
 # GET /.well-known/smart-configuration -- SMART discovery document, covering
-# both Backend Services (client_credentials) and the standalone patient launch
-# (authorization_code + PKCE). EHR launch is not implemented, so no launch
-# capabilities are advertised.
+# Backend Services (client_credentials), the standalone patient launch and the
+# EHR launch on behalf of a practitioner (both authorization_code + PKCE).
 class SmartConfigurationsController < ApplicationController
   def show
     render json: {
@@ -21,13 +20,20 @@ class SmartConfigurationsController < ApplicationController
       "scopes_supported" => %w[
         system/*.read system/*.write system/*.* system/*.rs system/*.cud system/*.cruds
         patient/*.read patient/*.rs
+        user/*.read user/*.write user/*.* user/*.rs user/*.cud user/*.cruds
+        launch launch/patient launch/encounter
         offline_access online_access openid fhirUser profile
       ],
       "capabilities" => %w[
+        launch-ehr
         launch-standalone
+        context-ehr-patient
+        context-ehr-encounter
         context-standalone-patient
+        context-banner
         sso-openid-connect
         permission-patient
+        permission-user
         permission-v1
         permission-v2
         permission-offline

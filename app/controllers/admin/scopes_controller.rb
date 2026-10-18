@@ -14,6 +14,8 @@ module Admin
         # 選択肢に出しても必ず422になるので出さない。
         system_access: access_options(%w[read write *]),
         patient_access: access_options(%w[read]),
+        # user/ は医療者の権限なので、登録で認めれば更新もできる。
+        user_access: access_options(%w[read write *]),
         context_scopes: context_scope_options
       }
     end
