@@ -116,7 +116,10 @@ class OauthTokensController < ApplicationController
       # the app is embedded under its own patient banner.
       patient: code.patient_id,
       encounter: code.encounter_id,
-      need_patient_banner: code.launch_context&.need_patient_banner
+      need_patient_banner: code.launch_context&.need_patient_banner,
+      # CDS Hooks: the card link's appContext travels with the launch and
+      # surfaces here, untouched.
+      appContext: code.launch_context&.app_context
     }.compact
   end
 

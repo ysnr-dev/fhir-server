@@ -62,6 +62,15 @@ RSpec.describe "Admin launch contexts (/admin/launch_contexts)", type: :request 
     expect(LaunchContext.where(token_digest: body["launch"])).to be_empty
   end
 
+  it "keeps an appContext for the token response and bounds its size" do
+    mint(app_context: '{"card":"x"}')
+    expect(response).to have_http_status(:created)
+    expect(LaunchContext.last.app_context).to eq('{"card":"x"}')
+
+    mint(app_context: "x" * (LaunchContext::APP_CONTEXT_MAX_BYTES + 1))
+    expect(response).to have_http_status(:bad_request)
+  end
+
   it "works without an encounter" do
     body = mint(encounter_id: nil)
 

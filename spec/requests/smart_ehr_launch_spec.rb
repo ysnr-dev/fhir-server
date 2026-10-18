@@ -207,6 +207,13 @@ RSpec.describe "SMART EHR launch", type: :request do
       expect(refreshed.encounter_id).to eq(encounter_id)
     end
 
+    it "hands the app the CDS Hooks appContext from the launch" do
+      get "/oauth/authorize", params: authorize_params(launch: mint_launch(app_context: '{"card":"abc"}'))
+      body = exchange(redirect_query["code"])
+
+      expect(body["appContext"]).to eq('{"card":"abc"}')
+    end
+
     it "reports need_patient_banner as the EHR said" do
       get "/oauth/authorize", params: authorize_params(launch: mint_launch(need_patient_banner: true))
       body = exchange(redirect_query["code"])

@@ -27,7 +27,8 @@ module Admin
         encounter_id: attributes[:encounter_id],
         practitioner_id: attributes[:practitioner_id],
         need_patient_banner: attributes[:need_patient_banner],
-        issued_by: attributes[:issued_by]
+        issued_by: attributes[:issued_by],
+        app_context: attributes[:app_context]
       )
       @launch_context_id = context.id
 
@@ -67,6 +68,13 @@ module Admin
 
         strings[key] = value.to_s.strip.presence
       end
+
+      # appContext は中身に立ち入らない(アプリとサービスの間の取り決め)。型と長さだけ見る。
+      app_context = params[:app_context]
+      return [nil, "app_context must be a string"] unless app_context.nil? || app_context.is_a?(String)
+      return [nil, "app_context is too long"] if app_context.to_s.bytesize > LaunchContext::APP_CONTEXT_MAX_BYTES
+
+      strings[:app_context] = app_context.presence
 
       banner = params[:need_patient_banner]
       return [nil, "need_patient_banner must be a boolean"] unless banner.nil? || [true, false].include?(banner)

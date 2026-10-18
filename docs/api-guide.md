@@ -164,7 +164,8 @@ EHR が管理 API で保証します。アプリ側の手順は standalone と�
    起動文脈が有効・未使用・同じクライアントのものであることを確かめ、**ログイン・同意画面を出さずに**認可コードを付けて
    `redirect_uri` へ 302 する（セッション Cookie も使わないので、iframe の中で動く）。`offline_access` は EHR launch では
    `invalid_scope`（`online_access` は可）。
-4. トークン応答には `patient`・`encounter`・`need_patient_banner` と、`openid` を含めれば `id_token`
+4. トークン応答には `patient`・`encounter`・`need_patient_banner`(発行時に `app_context` を渡していれば `appContext` も。
+   CDS Hooks のカードのリンクが使う)と、`openid` を含めれば `id_token`
    （`sub` = `Practitioner/{id}`、`fhirUser` = `{base_url}/Practitioner/{id}`）が入ります。refresh でも文脈を引き継ぎます。
 
 **`user/` スコープ**: 医療者の権限で、患者コンパートメントには閉じません（施設内の全患者）。書き込みは
