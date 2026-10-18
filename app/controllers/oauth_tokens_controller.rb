@@ -41,6 +41,9 @@ class OauthTokensController < ApplicationController
     # the grant outright rather than mint a token that can do nothing.
     return oauth_error(:bad_request, "unauthorized_client", "Launch clients cannot use client_credentials") if
       client.launch_client?
+    # A delegated (CDS Hooks) client only ever holds tokens the EHR obtained for it.
+    return oauth_error(:bad_request, "unauthorized_client", "Delegated clients cannot use client_credentials") if
+      client.delegated_client?
 
     scopes = granted_scopes(client)
     return oauth_error(:bad_request, "invalid_scope", "Requested scope exceeds the client's registration") unless scopes

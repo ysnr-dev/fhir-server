@@ -11,6 +11,8 @@ Rails.application.routes.draw do
     # EHR launch の起動文脈の発行。カルテ(fhir-client)の backend が医療者の身元を
     # 保証して呼ぶので、管理トークンの権限に載せる。
     resources :launch_contexts, only: :create
+    # CDS Hooks の fhirAuthorization に載せる、委任クライアント向けの短命トークン。
+    resources :delegated_tokens, only: :create
     get "scopes", to: "scopes#show"
   end
 

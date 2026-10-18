@@ -168,6 +168,12 @@ EHR が管理 API で保証します。アプリ側の手順は standalone と�
    CDS Hooks のカードのリンクが使う)と、`openid` を含めれば `id_token`
    （`sub` = `Practitioner/{id}`、`fhirUser` = `{base_url}/Practitioner/{id}`）が入ります。refresh でも文脈を引き継ぎます。
 
+**CDS Hooks の `fhirAuthorization`(委任トークン)**: CDS サービスは `user/` スコープだけを持ちリダイレクト URI の無い
+OAuth クライアント(委任クライアント、`kind: "delegated"`)として登録します。トークン窓口は使えず、EHR が hook を呼ぶ直前に
+`POST /admin/delegated_tokens {client_id, practitioner_id, patient_id?}`(管理トークン)で発行したトークンを受け取ります。
+応答は CDS Hooks 2.0 の `fhirAuthorization` の形(`access_token` `token_type: "Bearer"` `expires_in: 300` `scope` `subject`=client_id `patient`)で、
+スコープは登録スコープの読み取りだけ(`user/X.read`)、寿命は 5 分。監査には医療者(`agent.who.reference`)とサービス(client)が残ります。
+
 **`user/` スコープ**: 医療者の権限で、患者コンパートメントには閉じません（施設内の全患者）。書き込みは
 `user/Observation.cud` のように登録したときだけ。`GET /_history`・`GET /AuditEvent`・`$export` は `system/` 専用のままです。
 `patient/` と `user/` を同じクライアントに混ぜることはできず、launch クライアントは `client_credentials` を使えません。

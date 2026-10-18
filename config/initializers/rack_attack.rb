@@ -11,9 +11,10 @@ class Rack::Attack
   # 管理API。/admin/oauth_clients/:id のようにパスが可変なので、他と違って
   # 完全一致の定数では書けない(admin_path? を使う)。
   ADMIN_PATH_PREFIX = "/admin/".freeze
-  # EHR launch の発行はカルテの操作ごとに飛ぶ(1 画面 1 回)。管理トークンの
-  # ブルートフォース対策の枠に入れると起動回数の上限になるので別枠にする。
-  LAUNCH_ADMIN_PATH = "/admin/launch_contexts".freeze
+  # EHR launch の起動文脈と CDS Hooks の委任トークンの発行はカルテの操作ごとに飛ぶ
+  # (起動 1 回・hook 1 回ごと)。管理トークンのブルートフォース対策の枠に入れると
+  # 診療の操作回数の上限になるので別枠にする。
+  LAUNCH_ADMIN_PATHS = ["/admin/launch_contexts", "/admin/delegated_tokens"].freeze
 
   RATE_TOKEN_IP     = Integer(ENV.fetch("FHIR_RATE_TOKEN_IP", 10))      # /分
   RATE_TOKEN_CLIENT = Integer(ENV.fetch("FHIR_RATE_TOKEN_CLIENT", 30))  # /5分
@@ -90,11 +91,11 @@ class Rack::Attack
   # なので、積むと管理トークンの打ち間違いでFHIR API全体が遮断される)。
   # 共有トークンへのブルートフォースはこのスロットルだけが止める。
   throttle("admin/ip", limit: RATE_ADMIN_IP, period: 1.minute) do |req|
-    req.ip if admin_path?(req) && req.path != LAUNCH_ADMIN_PATH
+    req.ip if admin_path?(req) && !LAUNCH_ADMIN_PATHS.include?(req.path)
   end
 
   throttle("admin-launch/ip", limit: RATE_LAUNCH_IP, period: 1.minute) do |req|
-    req.ip if req.path == LAUNCH_ADMIN_PATH
+    req.ip if LAUNCH_ADMIN_PATHS.include?(req.path)
   end
 
   # --- FHIR API 全般 ---------------------------------------------------------

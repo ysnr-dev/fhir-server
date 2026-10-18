@@ -146,9 +146,16 @@ RSpec.describe "Admin OAuth clients (/admin/oauth_clients)", type: :request do
       end
 
       it "rejects an unsupported scope" do
-        create_client(name: "x", scopes: ["user/*.read"])
+        create_client(name: "x", scopes: ["system/patient.read"])
 
         expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it "registers user/ scopes without redirect URIs as a delegated (CDS Hooks) client" do
+        body = create_client(name: "cds", scopes: ["user/*.read"], client_type: "public")
+
+        expect(response).to have_http_status(:created)
+        expect(body["kind"]).to eq("delegated")
       end
 
       it "rejects mixing system/ and patient/ scopes" do

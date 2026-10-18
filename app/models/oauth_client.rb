@@ -11,6 +11,11 @@
 #     + PKCE, with one or more registered redirect URIs. Public ones (SPAs,
 #     native apps) hold no secret -- PKCE is the proof of possession instead.
 #
+#   * Delegated clients (CDS Hooks services): user/ scopes and no redirect URI.
+#     They never come to the token endpoint; the EHR obtains short-lived,
+#     read-only tokens for them through the admin API (/admin/delegated_tokens)
+#     and hands them over as fhirAuthorization.
+#
 # The kinds are kept disjoint by validation: a client is a system-scope backend
 # client, a patient-scope launch client or a user-scope launch client, never a
 # mix, so a compromised launch client can never present a token that skips
@@ -91,6 +96,23 @@ class OauthClient < ApplicationRecord
     allowed_scopes.any? { |scope| Fhir::Scopes.valid_user?(scope) }
   end
 
+  # A CDS Hooks service: acts for a practitioner, but only through tokens the
+  # EHR obtains for it -- it has no redirect URI to run an authorization from.
+  def delegated_client?
+    user_scoped? && !launch_client?
+  end
+
+  # The read part of the registered user/ scopes: what a delegated token may
+  # carry. A CDS service reads to decide; writing goes through the clinician.
+  def delegated_scopes
+    allowed_scopes.filter_map do |scope|
+      match = Fhir::Scopes::USER_PATTERN.match(scope)
+      next unless match && Fhir::Scopes.access_for(match[2])&.include?(:read)
+
+      "user/#{match[1]}.read"
+    end.uniq
+  end
+
   def redirect_uri_list
     redirect_uris.to_s.split
   end
@@ -127,13 +149,19 @@ class OauthClient < ApplicationRecord
     # access tokens and has no user to identify. So they require a patient/ or
     # user/ scope alongside them -- on a system registration they are a mistake.
     errors.add(:scopes, "offline_access/openid/launch style scopes require patient/ or user/ scopes") if context && !(patient || user)
+    # A delegated client holds no session of its own, so refresh/identity/launch mean nothing to it.
+    errors.add(:scopes, "a user/ client without redirect URIs cannot take context scopes") if
+      user && context && redirect_uri_list.empty?
   end
 
   def launch_clients_have_redirect_uris
     return if scopes.blank?
 
-    interactive = allowed_scopes.any? { |scope| Fhir::Scopes.valid_patient?(scope) || Fhir::Scopes.valid_user?(scope) }
-    errors.add(:redirect_uris, "are required for patient/ or user/ scopes") if interactive && redirect_uri_list.empty?
+    patient = allowed_scopes.any? { |scope| Fhir::Scopes.valid_patient?(scope) }
+    interactive = patient || user_scoped?
+    # user/ without redirect URIs is a delegated client (CDS Hooks); patient/ has
+    # no such form -- a patient always comes through the authorization endpoint.
+    errors.add(:redirect_uris, "are required for patient/ scopes") if patient && redirect_uri_list.empty?
     errors.add(:scopes, "must be patient/ or user/ scopes for a redirect-based client") if !interactive && redirect_uri_list.any?
   end
 

@@ -84,9 +84,12 @@ RSpec.describe OauthClient do
         .to raise_error(ActiveRecord::RecordInvalid, /cannot mix patient\/ and user\//)
     end
 
-    it "requires redirect_uris for user/ scopes" do
-      expect { described_class.register(name: "x", scopes: "user/*.read launch") }
-        .to raise_error(ActiveRecord::RecordInvalid, /redirect/i)
+    it "treats user/ scopes without redirect_uris as a delegated client, without context scopes" do
+      delegated, = described_class.register(name: "x", scopes: "user/*.read")
+      expect(delegated.delegated_client?).to be(true)
+
+      expect { described_class.register(name: "y", scopes: "user/*.read launch") }
+        .to raise_error(ActiveRecord::RecordInvalid, /context scopes/)
     end
 
     it "is EHR-launchable only with the launch scope registered" do

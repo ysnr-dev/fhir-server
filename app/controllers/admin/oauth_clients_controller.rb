@@ -154,7 +154,7 @@ module Admin
         client_type: client.client_type,
         scopes: client.allowed_scopes,
         redirect_uris: client.redirect_uri_list,
-        kind: client.launch_client? ? "launch" : "backend",
+        kind: client_kind(client),
         # カルテから EHR launch で起動できる(launch スコープを登録した)クライアントか。
         ehr_launchable: client.ehr_launchable?,
         auth_method: auth_method(client),
@@ -166,6 +166,13 @@ module Admin
       json[:active_refresh_token_count] = refresh_token_count unless refresh_token_count.nil?
       json[:client_secret] = secret if secret
       json
+    end
+
+    def client_kind(client)
+      return "launch" if client.launch_client?
+      return "delegated" if client.delegated_client?
+
+      "backend"
     end
 
     def auth_method(client)

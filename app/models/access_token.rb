@@ -11,6 +11,9 @@ class AccessToken < ApplicationRecord
   include DigestedToken
 
   TTL = 1.hour
+  # Tokens the EHR obtains for a CDS Hooks service (fhirAuthorization). Short:
+  # they only have to outlive one hook call and the reads the service makes for it.
+  DELEGATED_TTL = 5.minutes
 
   belongs_to :oauth_client
   belongs_to :user, optional: true
@@ -18,7 +21,7 @@ class AccessToken < ApplicationRecord
 
   # Returns [record, raw_token].
   def self.issue(client, scopes:, user: nil, patient_id: nil, practitioner_id: nil, encounter_id: nil,
-                 authorization_code: nil)
+                 authorization_code: nil, ttl: TTL)
     raw = SecureRandom.hex(32)
     record = create!(
       oauth_client: client,
@@ -29,7 +32,7 @@ class AccessToken < ApplicationRecord
       authorization_code: authorization_code,
       token_digest: OauthClient.digest(raw),
       scopes: scopes.join(" "),
-      expires_at: TTL.from_now
+      expires_at: ttl.from_now
     )
     [record, raw]
   end
