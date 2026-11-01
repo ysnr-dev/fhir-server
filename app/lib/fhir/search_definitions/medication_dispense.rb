@@ -12,7 +12,11 @@ module Fhir
         # matched by jsonb containment rather than an extracted column.
         "prescription"   => { type: :reference, multiple: true, jsonb_key: "authorizingPrescription",
                                ref_path: %w[reference], target_type: "MedicationRequest" },
-        "whenhandedover" => { type: :datetime, column: :when_handed_over }
+        "whenhandedover" => { type: :datetime, column: :when_handed_over },
+        # MedicationDispense.partOf は「どの行為に伴う払出か」を指す(輸血の出庫記録のハブ)。
+        # MedicationAdministration の part-of と同じく参照先は Procedure に絞る。
+        "part-of"        => { type: :reference, multiple: true, jsonb_key: "partOf",
+                               ref_path: %w[reference], target_type: "Procedure" }
       }.freeze
     end
   end

@@ -6,6 +6,29 @@ RSpec.describe "MedicationDispenses", type: :request do
     JSON.parse(response.body)["id"]
   end
 
+  describe "GET /MedicationDispense (part-of)" do
+    # 出庫記録(Procedure)に伴う払出(輸血の製剤バッグ)。
+    it "finds by part-of and comes back with _revinclude on the procedure search" do
+      subject_id = create_patient
+      post "/Procedure", params: valid_procedure_payload(subject_id: subject_id), as: :json
+      procedure_id = JSON.parse(response.body)["id"]
+      post "/MedicationDispense",
+           params: valid_medication_dispense_payload(
+             subject_id: subject_id, partOf: [{ "reference" => "Procedure/#{procedure_id}" }]
+           ),
+           as: :json
+      # 同じ患者の、出庫記録に紐づかない払出。part-of で拾われないことを確かめる。
+      post "/MedicationDispense", params: valid_medication_dispense_payload(subject_id: subject_id), as: :json
+
+      get "/MedicationDispense", params: { "part-of" => "Procedure/#{procedure_id}" }
+      expect(JSON.parse(response.body)["total"]).to eq(1)
+
+      get "/Procedure", params: { "_id" => procedure_id, "_revinclude" => "MedicationDispense:part-of" }
+      types = JSON.parse(response.body)["entry"].map { |e| e["resource"]["resourceType"] }
+      expect(types.sort).to eq(%w[MedicationDispense Procedure])
+    end
+  end
+
   describe "POST /MedicationDispense" do
     it "creates and returns 201 with Location, ETag, and meta" do
       subject_id = create_patient

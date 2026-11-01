@@ -46,7 +46,11 @@ module Fhir
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },
         "context" => { path: %w[context reference], targets: %w[Encounter], column: "context_reference" },
-        "prescription" => { multiple: true, jsonb_key: "authorizingPrescription", ref_path: %w[reference], targets: %w[MedicationRequest] }
+        "prescription" => { multiple: true, jsonb_key: "authorizingPrescription", ref_path: %w[reference], targets: %w[MedicationRequest] },
+        # 出庫記録(Procedure)に伴う払出(輸血の製剤バッグ)。出庫記録を含む検索に
+        # _revinclude:iterate=MedicationDispense:part-of を添えると、払い出したバッグまで
+        # 同じ応答で揃う。
+        "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Procedure] }
       },
       "MedicationAdministration" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
