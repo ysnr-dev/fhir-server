@@ -137,7 +137,13 @@ module Fhir
                       targets: %w[Practitioner PractitionerRole Organization Patient Device RelatedPerson CareTeam] },
         # focus は作業対象そのもの、based-on は作業を生んだ依頼。オーダー画面は
         # _revinclude=Task:based-on で「そのオーダーが今どこまで進んだか」を引く。
-        "focus" => { path: %w[focus reference], targets: %w[ServiceRequest], column: "focus_reference" },
+        # focus は進捗(ServiceRequest)のほか、通知の対象(検査結果・来歴の承認待ち・入院・
+        # 記録の確認待ち・測定値)も指すので、記録から通知を逆引きできるよう記録の型を並べる。
+        "focus" => { path: %w[focus reference], column: "focus_reference",
+                     targets: %w[ServiceRequest MedicationRequest Provenance DiagnosticReport Observation
+                                 Composition QuestionnaireResponse Encounter Procedure
+                                 MedicationAdministration Condition Specimen AllergyIntolerance
+                                 Appointment Flag CarePlan Goal Task] },
         "based-on" => { multiple: true, jsonb_key: "basedOn", ref_path: %w[reference], targets: %w[ServiceRequest] },
         "part-of" => { multiple: true, jsonb_key: "partOf", ref_path: %w[reference], targets: %w[Task] }
       },

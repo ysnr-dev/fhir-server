@@ -203,6 +203,25 @@ RSpec.describe "Provenances", type: :request do
       expect(entry_ids("include")).to eq([id])
     end
 
+    # カルテカードのリソース表示の経路。オーダーの来歴と、その来歴を focus にする承認待ちの
+    # 通知を 1 回の検索で引く。
+    it "follows the provenance to its approval task with _revinclude:iterate=Task:focus" do
+      author = create_practitioner
+      patient = create_patient
+      order = create_service_request(patient)
+      provenance = create_provenance(target_reference: "ServiceRequest/#{order}", author_id: author)
+      post "/Task", params: valid_task_payload(for_id: patient).merge(
+        "focus" => { "reference" => "Provenance/#{provenance}" }
+      ), as: :json
+      task = JSON.parse(response.body)["id"]
+
+      get "/ServiceRequest",
+          params: { _id: order, "_revinclude:iterate" => "Provenance:target,Task:focus" }
+
+      expect(entry_ids("match")).to eq([order])
+      expect(entry_ids("include")).to contain_exactly(provenance, task)
+    end
+
     it "includes the agent with _include=Provenance:agent" do
       author = create_practitioner
       order = create_service_request(create_patient)
