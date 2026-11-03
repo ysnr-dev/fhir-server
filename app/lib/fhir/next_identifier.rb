@@ -56,7 +56,7 @@ module Fhir
 
       base = [registered_max, issued_max(connection)].max
       value = base + 1
-      connection.execute("SELECT setval('#{sequence_name}', #{value}, true)")
+      connection.execute(ActiveRecord::Base.sanitize_sql_array(["SELECT setval(?, ?, true)", sequence_name, value]))
       value
     end
 

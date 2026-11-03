@@ -395,7 +395,8 @@ module Fhir
 
       # NOT IN alone would also drop NULL rows (NULL <> x is NULL); :not must
       # keep resources that have no value.
-      scope.where("#{column} IS NULL OR #{column} NOT IN (?)", clause.values)
+      attribute = model.arel_table[column]
+      scope.where(attribute.eq(nil).or(attribute.not_in(clause.values)))
     end
 
     # --- :string -----------------------------------------------------------
@@ -478,7 +479,8 @@ module Fhir
 
       # NOT IN alone would also drop NULL rows (NULL <> x is NULL); :not must
       # keep resources that have no value.
-      scope.where("#{column} IS NULL OR #{column} NOT IN (?)", codes)
+      attribute = model.arel_table[column]
+      scope.where(attribute.eq(nil).or(attribute.not_in(codes)))
     end
 
     def token_code(value)
@@ -762,12 +764,12 @@ module Fhir
       clauses = sort_clauses
       return scope.order(:id) if clauses.empty?
 
-      table = model.table_name
+      table = model.arel_table
       order = clauses.map do |column, direction|
-        Arel.sql("#{table}.#{column} #{direction == :desc ? 'DESC' : 'ASC'} NULLS LAST")
+        (direction == :desc ? table[column].desc : table[column].asc).nulls_last
       end
       # Append id as a stable tiebreaker so pagination is deterministic.
-      order << Arel.sql("#{table}.id ASC") unless clauses.key?(:id)
+      order << table[:id].asc unless clauses.key?(:id)
       scope.order(order)
     end
 
