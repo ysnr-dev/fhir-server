@@ -84,8 +84,6 @@ module Admin
     end
 
     def render_internal_error(exception)
-      # rescue_from が全例外を握るためSentryのRackミドルウェアには届かない。
-      Sentry.capture_exception(exception) if defined?(Sentry) && Sentry.initialized?
       Rails.logger.error("#{exception.class}: #{exception.message}\n#{exception.backtrace&.first(10)&.join("\n")}")
       render_error(
         :internal_server_error, "internal_error",

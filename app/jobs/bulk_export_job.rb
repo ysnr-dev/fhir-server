@@ -15,7 +15,6 @@ class BulkExportJob < ApplicationJob
     export.reload
     export.update!(status: "completed") if export.in_progress?
   rescue StandardError => e
-    Sentry.capture_exception(e) if defined?(Sentry) && Sentry.initialized?
     Rails.logger.error("BulkExportJob failed for #{export_id}: #{e.class}: #{e.message}")
     export&.update!(status: "failed", error_message: e.message)
   end

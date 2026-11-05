@@ -124,7 +124,7 @@ flowchart TB
 | 独自オペレーション | `$distinct-dates`（ある日付パラメータが取る値の集合。カルテの日付ナビ用）、`$next-identifier`（患者番号などの連番の払い出し） |
 | 認証・認可 | SMART Backend Services（`client_credentials` / client assertion JWT）、SMART v2 スコープ、OpenID Connect（`id_token` / `fhirUser`）、standalone launch、EHR launch（起動文脈・`appContext`・`user/*` スコープ・CORS）、リフレッシュトークン、Token Introspection（RFC 7662）、revoke、JWKS、`.well-known/smart-configuration` |
 | Bulk Data | Bulk Data Access IG v2.0.0。`/$export`・`/Patient/$export`・`/Group/{id}/$export` と非同期ジョブ、status / download / cancel |
-| 運用・管理 | `/metadata`（CapabilityStatement）、`/up`（ヘルスチェック）、`AuditEvent`（サーバー生成・読み取り専用）、rack-attack のレート制限・一時 ban、Sentry（`SENTRY_DSN` 未設定なら無効）、管理 API（下記） |
+| 運用・管理 | `/metadata`（CapabilityStatement）、`/up`（ヘルスチェック）、`AuditEvent`（サーバー生成・読み取り専用）、rack-attack のレート制限・一時 ban、管理 API（下記） |
 
 管理 API（`/admin/*`、共有トークン `FHIR_ADMIN_TOKEN` で認証）:
 

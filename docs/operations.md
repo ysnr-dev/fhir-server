@@ -12,7 +12,7 @@
 | `FHIR_ALLOWED_HOSTS` | 到達ホスト名(カンマ区切り)。空だと起動エラー |
 | `FHIR_AUTH_ENABLED` | 本番はデフォルト `true`。`false` 指定は起動エラー(デモ用途は `FHIR_AUTH_ALLOW_DISABLED=true` で明示的に解除) |
 
-全環境変数の一覧と任意設定(レート制限・IP許可リスト・Sentry等)は
+全環境変数の一覧と任意設定(レート制限・IP許可リスト等)は
 `.env.production.example` を参照。
 
 ## 起動
