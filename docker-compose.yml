@@ -43,6 +43,9 @@ services:
       # タイムゾーンを持たない検索値("2026-08-18" など)を解釈するゾーン。
       # 既定も Asia/Tokyo なので通常は指定不要(明示のために書いている)。
       FHIR_LOCAL_TIMEZONE: ${FHIR_LOCAL_TIMEZONE:-Asia/Tokyo}
+      # 認証が無効だと Bearer が付かず、FHIR API 全体が IP 単位の枠で数えられる。
+      # 既定の 120/分はカルテを 3 回開けば尽きるので、開発では広げる。
+      FHIR_RATE_API_IP: ${FHIR_RATE_API_IP:-2000}
     ports:
       - "3000:3000"
     volumes:

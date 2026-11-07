@@ -36,3 +36,6 @@ services:
       # 無料枠は RAM 512MB のため Puma ワーカーを 1 に抑える。
       - key: WEB_CONCURRENCY
         value: "1"
+      # fhir-client の backend は 1 本のトークンを全利用者で共有するので、この枠は院内全体の上限になる。
+      - key: FHIR_RATE_API_TOKEN
+        value: "1500"
