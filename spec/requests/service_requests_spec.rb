@@ -614,10 +614,16 @@ RSpec.describe "ServiceRequests", type: :request do
         nutrition = create_order(subject_id, "occurrenceDateTime" => "2026-09-01",
                                              "extension" => [{ "url" => "http://fhir-client.local/StructureDefinition/nutrition-guidance-order-end",
                                                                "valueDate" => "2026-09-30" }])
+        dialysis = create_order(subject_id, "occurrenceDateTime" => "2026-09-01",
+                                            "extension" => [{ "url" => "http://fhir-client.local/StructureDefinition/dialysis-order-end",
+                                                              "valueDate" => "2026-10-31" }])
 
-        # 9/2 で終わったリハビリは 9/9 には効いていない。栄養指導は 9/30 まで。
+        # 9/2 で終わったリハビリは 9/9 には効いていない。栄養指導は 9/30 まで、透析は 10/31 まで。
         get "/ServiceRequest?subject=Patient/#{subject_id}&order-period=ge2026-09-09&order-period=le2026-09-09"
-        expect(ids_of(response.body)).to eq([nutrition])
+        expect(ids_of(response.body)).to match_array([nutrition, dialysis])
+
+        get "/ServiceRequest?subject=Patient/#{subject_id}&order-period=ge2026-10-09&order-period=le2026-10-09"
+        expect(ids_of(response.body)).to eq([dialysis])
 
         # `eb`(終了が検索日より前)で終わった指示だけを引ける。
         get "/ServiceRequest", params: { subject: "Patient/#{subject_id}", "order-period" => "eb2026-09-09" }

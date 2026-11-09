@@ -2,7 +2,7 @@ module Fhir
   module ExtractionDefinitions
     module ServiceRequest
       # オーダーの終了日を持つ fhir-client のローカル拡張(ルート直下 extension)。
-      # 継続的な指示(看護指示・食事・リハビリ・栄養指導)は occurrenceDateTime を開始日
+      # 継続的な指示(看護指示・食事・リハビリ・栄養指導・透析)は occurrenceDateTime を開始日
       # にし、終了は occurrencePeriod ではなくこの拡張で表す(occurrence[x] は choice で
       # 開始日の dateTime と併用できないため)。値は valueDate か valueDateTime。
       ORDER_END_EXTENSION_URLS = %w[
@@ -10,6 +10,7 @@ module Fhir
         http://fhir-client.local/StructureDefinition/meal-order-end
         http://fhir-client.local/StructureDefinition/rehab-order-end
         http://fhir-client.local/StructureDefinition/nutrition-guidance-order-end
+        http://fhir-client.local/StructureDefinition/dialysis-order-end
       ].freeze
 
       FIELDS = {
