@@ -155,6 +155,32 @@ RSpec.describe "QuestionnaireResponse", type: :request do
       expect(total).to eq(1)
     end
 
+    it "finds responses by _tag and drops them with _tag:not (untagged ones stay)" do
+      tag_system = "http://fhir-client.local/CodeSystem/questionnaire-response-purpose"
+      patient_id = create_patient
+      post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json
+      plain_id = JSON.parse(response.body)["id"]
+      tagged = valid_questionnaire_response_payload(
+        subject_id: patient_id, "meta" => { "tag" => [{ "system" => tag_system, "code" => "dialysis-memo" }] }
+      )
+      post "/QuestionnaireResponse", params: tagged, as: :json
+      tagged_id = JSON.parse(response.body)["id"]
+      expect(JSON.parse(response.body).dig("meta", "tag", 0, "code")).to eq("dialysis-memo")
+      strict = { "Prefer" => "handling=strict" }
+      ids = -> { JSON.parse(response.body)["entry"].to_a.map { |e| e["resource"]["id"] } }
+
+      get "/QuestionnaireResponse", params: { patient: patient_id, _tag: "#{tag_system}|dialysis-memo" }, headers: strict
+      expect(response).to have_http_status(:ok)
+      expect(ids.call).to eq([tagged_id])
+
+      get "/QuestionnaireResponse", params: { patient: patient_id, "_tag:not" => "#{tag_system}|dialysis-memo" },
+                                    headers: strict
+      expect(ids.call).to eq([plain_id])
+
+      get "/QuestionnaireResponse", params: { patient: patient_id, _tag: "#{tag_system}|other" }, headers: strict
+      expect(ids.call).to eq([])
+    end
+
     it "finds responses by identifier" do
       patient_id = create_patient
       post "/QuestionnaireResponse", params: valid_questionnaire_response_payload(subject_id: patient_id), as: :json

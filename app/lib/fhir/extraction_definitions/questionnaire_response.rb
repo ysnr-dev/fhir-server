@@ -17,7 +17,8 @@ module Fhir
       }.freeze
 
       TOKENS = {
-        "status" => { path: "status", kind: :code }
+        "status" => { path: "status", kind: :code },
+        "_tag" => { path: "meta.tag", kind: :coding_list }
       }.freeze
     end
   end

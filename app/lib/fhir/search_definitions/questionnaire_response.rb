@@ -11,6 +11,9 @@ module Fhir
         # so it is never rewritten into "Questionnaire/{id}" and never chained.
         "questionnaire" => { type: :uri, column: :questionnaire_canonical },
         "status"        => { type: :token, column: :status },
+        # 共通の検索パラメータ _tag(meta.tag)。患者単位で持つ回答(透析の患者メモなど)を
+        # 用途で引き、カルテの時系列から :not で外すのに使う。
+        "_tag"          => { type: :token },
         # Declaring subject as a single-valued Patient reference is what puts
         # QuestionnaireResponse in the patient compartment (see
         # Fhir::PatientCompartment), which in turn drives Patient/$everything,
