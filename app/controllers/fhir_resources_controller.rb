@@ -17,6 +17,7 @@ class FhirResourcesController < ApplicationController
   # action_name -> restful-interaction code for the audit trail.
   AUDIT_INTERACTIONS = {
     "index" => "search-type",
+    "search" => "search-type",
     "show" => "read",
     "vread" => "vread",
     "history" => "history-instance",
@@ -33,12 +34,27 @@ class FhirResourcesController < ApplicationController
     "next_identifier" => "operation"
   }.freeze
 
+  # GET /{type} and GET /Patient/:patient_id/{type} (compartment search).
   def index
-    result = Fhir::Operation.search(
-      resource_type, request.query_string,
-      base_url: base_url, context: access_context, handling: preferred_handling
-    )
-    render_operation_result(result)
+    run_search(request.query_string)
+  end
+
+  # POST /{type}/_search (and the compartment form) -- the same search with the
+  # parameters in a form-encoded body, so identifiers and names stay out of
+  # the URL and therefore out of access logs and the audit trail's request_path.
+  # Parameters on the URL are still honored; the two sets are combined (AND).
+  def search
+    body = request.raw_post
+    if body.present? && request.media_type != "application/x-www-form-urlencoded"
+      return render_operation_outcome_single(
+        status: :unsupported_media_type,
+        severity: "error",
+        code: "not-supported",
+        diagnostics: "_search requires Content-Type: application/x-www-form-urlencoded"
+      )
+    end
+
+    run_search([request.query_string, body].reject(&:blank?).join("&"))
   end
 
   def show
@@ -233,6 +249,50 @@ class FhirResourcesController < ApplicationController
 
   def resource_type
     params[:resource_type]
+  end
+
+  def run_search(query_string)
+    patient_id = compartment_patient_id
+    return if patient_id && !compartment_searchable?(patient_id) # already rendered
+
+    result = Fhir::Operation.search(
+      resource_type, query_string,
+      base_url: base_url, context: access_context, handling: preferred_handling,
+      compartment_patient_id: patient_id
+    )
+    render_operation_result(result)
+  end
+
+  # Read from the path only: on a form-encoded POST the body is merged into
+  # `params`, and a `patient_id=` field there must not open a compartment.
+  def compartment_patient_id
+    request.path_parameters[:patient_id]
+  end
+
+  # Renders the error and returns false unless Patient/{patient_id}/{type} can
+  # be searched. The patient checks mirror $everything: another patient's
+  # compartment is a 404 (no existence disclosure), a deleted patient a 410.
+  def compartment_searchable?(patient_id)
+    if Fhir::PatientCompartment.reference_columns_for(resource_type).empty?
+      render_outcome(
+        Fhir::OperationOutcome.error("not-supported", "#{resource_type} is not in the Patient compartment"),
+        status: :bad_request
+      )
+      return false
+    end
+
+    patient = Patient.find_by(id: patient_id)
+    reference = "Patient/#{patient_id}"
+    if patient.nil? || (access_context && access_context.patient_id != patient.id)
+      render_outcome(Fhir::OperationOutcome.not_found(reference), status: :not_found)
+      return false
+    end
+    if patient.deleted?
+      render_outcome(Fhir::OperationOutcome.gone(reference), status: :gone)
+      return false
+    end
+
+    true
   end
 
   def authorize_interaction

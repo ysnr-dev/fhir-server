@@ -44,8 +44,8 @@ module Fhir
 
     Result = Struct.new(:records, :total, :count, :offset, keyword_init: true)
 
-    def self.call(resource_type, search_params, context: nil)
-      new(resource_type, search_params, context: context).call
+    def self.call(resource_type, search_params, context: nil, compartment_patient_id: nil)
+      new(resource_type, search_params, context: context, compartment_patient_id: compartment_patient_id).call
     end
 
     # context: a Fhir::PatientContext confining results to one patient
@@ -56,7 +56,11 @@ module Fhir
     # search rows are kept). Only the criteria-filtered type history uses it, to
     # find resources whose versions to return; chain/_has inner queries still
     # see live records only.
-    def initialize(resource_type, search_params, context: nil, chain_depth: 0, include_deleted: false)
+    # compartment_patient_id: additionally narrow the matches to this patient's
+    # compartment (compartment search). Applies to this searcher's own type
+    # only -- it is not handed down to chain/_has inner queries.
+    def initialize(resource_type, search_params, context: nil, chain_depth: 0, include_deleted: false,
+                   compartment_patient_id: nil)
       entry = ResourceRegistry.entry_for(resource_type)
       @resource_type = resource_type
       @model = entry.fetch(:model)
@@ -65,6 +69,7 @@ module Fhir
       @context = context
       @chain_depth = chain_depth
       @include_deleted = include_deleted
+      @compartment_patient_id = compartment_patient_id
     end
 
     def call
@@ -86,6 +91,9 @@ module Fhir
       # _has -- otherwise `?_has:Observation:performer:code=X` would leak which
       # other patients have a matching Observation.
       scope = PatientContext.base_scope(resource_type, context)
+      if compartment_patient_id
+        scope = scope.merge(PatientCompartment.scope_for_patient_id(resource_type, compartment_patient_id))
+      end
       scope = scope.unscope(where: :deleted) if include_deleted
 
       search_params.clauses.each do |clause|
@@ -129,7 +137,8 @@ module Fhir
 
     private
 
-    attr_reader :resource_type, :model, :search_param_defs, :search_params, :context, :chain_depth, :include_deleted
+    attr_reader :resource_type, :model, :search_param_defs, :search_params, :context, :chain_depth, :include_deleted,
+                :compartment_patient_id
 
     def definitions
       @definitions ||= SYSTEM_PARAMS.merge(search_param_defs)

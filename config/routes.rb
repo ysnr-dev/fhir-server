@@ -63,6 +63,16 @@ Rails.application.routes.draw do
      CarePlan Goal CareTeam].each do |type|
     scope defaults: { resource_type: type } do
       get    "/#{type}",                   to: "fhir_resources#index"
+      # 検索条件をボディ(application/x-www-form-urlencoded)で渡す検索。識別子や
+      # 氏名が URL(= アクセスログ・監査の request_path)に残らない。
+      post   "/#{type}/_search",           to: "fhir_resources#search"
+      # 患者コンパートメント検索: Patient/{id}/Observation?code=... 。コンパートメントの
+      # id は :patient_id で受け、リソース自身の :id と取り違えないようにする。
+      # コンパートメントに属さない型はコントローラが 400 にする。
+      unless type == "Patient"
+        get  "/Patient/:patient_id/#{type}",         to: "fhir_resources#index"
+        post "/Patient/:patient_id/#{type}/_search", to: "fhir_resources#search"
+      end
       post   "/#{type}",                   to: "fhir_resources#create"
       put    "/#{type}",                   to: "fhir_resources#conditional_update"
       delete "/#{type}",                   to: "fhir_resources#conditional_destroy"

@@ -1,6 +1,9 @@
 class BundleBuilder
-  def self.searchset(result:, base_url:, search_params:, resource_type:, included: [], shaper: nil)
-    new(base_url, resource_type).searchset(result: result, search_params: search_params, included: included, shaper: shaper)
+  # path: the request path the self/paging links point back at, when it is not
+  # the plain type path (compartment search: "Patient/1/Observation").
+  def self.searchset(result:, base_url:, search_params:, resource_type:, included: [], shaper: nil, path: nil)
+    new(base_url, resource_type, search_path: path)
+      .searchset(result: result, search_params: search_params, included: included, shaper: shaper)
   end
 
   def self.history(resource_id:, versions:, base_url:, resource_type:)
@@ -15,9 +18,10 @@ class BundleBuilder
     new(base_url, nil).history_page(page: page, path: path, params: params)
   end
 
-  def initialize(base_url, resource_type)
+  def initialize(base_url, resource_type, search_path: nil)
     @base_url = base_url
     @resource_type = resource_type
+    @search_path = search_path || resource_type
   end
 
   def searchset(result:, search_params:, included: [], shaper: nil)
@@ -145,6 +149,6 @@ class BundleBuilder
   end
 
   def page_url(search_params, offset)
-    "#{base_url}/#{resource_type}?#{search_params.to_query(offset: offset)}"
+    "#{base_url}/#{@search_path}?#{search_params.to_query(offset: offset)}"
   end
 end

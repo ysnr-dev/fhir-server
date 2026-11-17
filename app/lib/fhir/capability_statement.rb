@@ -30,7 +30,9 @@ module Fhir
         "resource" => ResourceRegistry.types.map { |type| resource_component(type) } + [audit_event_component],
         "operation" => [
           { "name" => "export", "definition" => "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/export" }
-        ]
+        ],
+        # GET /Patient/{id}/{type} (compartment search).
+        "compartment" => ["http://hl7.org/fhir/CompartmentDefinition/patient"]
       }
       rest = { "security" => security_component(base_url) }.merge(rest) if Auth.enabled?
 

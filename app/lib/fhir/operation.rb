@@ -49,8 +49,10 @@ module Fhir
       new(resource_type).validate(payload, profile: profile)
     end
 
-    def self.search(resource_type, query_string, base_url:, context: nil, handling: nil)
-      new(resource_type, context: context).search(query_string, base_url: base_url, handling: handling)
+    def self.search(resource_type, query_string, base_url:, context: nil, handling: nil, compartment_patient_id: nil)
+      new(resource_type, context: context).search(
+        query_string, base_url: base_url, handling: handling, compartment_patient_id: compartment_patient_id
+      )
     end
 
     # context: a Fhir::PatientContext confining reads to one patient
@@ -275,11 +277,16 @@ module Fhir
     # ignored per spec) or "strict" (Prefer: handling=strict -- any parameter,
     # modifier, _include/_revinclude token, or _sort key this server would
     # silently drop fails the search with 400 + OperationOutcome instead).
-    def search(query_string, base_url:, handling: nil)
+    #
+    # compartment_patient_id: confines the matches to that patient's compartment
+    # (GET /Patient/{id}/{type}). Unlike `context` it is a filter the client
+    # asked for, not an access boundary, so it does not restrict what _include
+    # or a chain may reach.
+    def search(query_string, base_url:, handling: nil, compartment_patient_id: nil)
       return unsupported_type_result unless entry
 
       search_params = SearchParams.parse(query_string.to_s)
-      searcher = Search.new(resource_type, search_params, context: context)
+      searcher = Search.new(resource_type, search_params, context: context, compartment_patient_id: compartment_patient_id)
 
       if handling == "strict"
         problems = strict_search_problems(searcher, search_params)
@@ -298,7 +305,8 @@ module Fhir
         end
       bundle = BundleBuilder.searchset(
         result: result, base_url: base_url, search_params: search_params, resource_type: resource_type,
-        included: included, shaper: ResourceShaper.build(search_params)
+        included: included, shaper: ResourceShaper.build(search_params),
+        path: compartment_patient_id && "Patient/#{compartment_patient_id}/#{resource_type}"
       )
       Result.new(status: :ok, resource: bundle)
     end
