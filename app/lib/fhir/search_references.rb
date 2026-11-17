@@ -210,6 +210,9 @@ module Fhir
       "AllergyIntolerance" => {
         "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" }
       },
+      "FamilyMemberHistory" => {
+        "patient" => { path: %w[patient reference], targets: %w[Patient], column: "patient_reference" }
+      },
       "Flag" => {
         "subject" => { path: %w[subject reference], targets: %w[Patient], column: "subject_reference" },
         "patient" => { alias: "subject" },

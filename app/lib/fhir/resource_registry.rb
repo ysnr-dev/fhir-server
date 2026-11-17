@@ -208,6 +208,14 @@ module Fhir
         token_extraction: ExtractionDefinitions::AllergyIntolerance::TOKENS,
         profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_AllergyIntolerance"
       },
+      "FamilyMemberHistory" => {
+        model: FamilyMemberHistory,
+        validator: FamilyMemberHistoryValidator,
+        search_params: SearchDefinitions::FamilyMemberHistory::PARAMS,
+        extraction: ExtractionDefinitions::FamilyMemberHistory::FIELDS,
+        token_extraction: ExtractionDefinitions::FamilyMemberHistory::TOKENS,
+        profile: "http://jpfhir.jp/fhir/core/StructureDefinition/JP_FamilyMemberHistory"
+      },
       "Procedure" => {
         model: Procedure,
         validator: ProcedureValidator,

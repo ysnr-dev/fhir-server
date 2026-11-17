@@ -2,7 +2,7 @@
 
 ## 対応リソース
 
-全 37 リソースが同一のエンドポイント群（後述）を持ちます。
+全 39 リソースが同一のエンドポイント群（後述）を持ちます。
 
 | カテゴリ | リソース |
 |---|---|
@@ -12,7 +12,7 @@
 | ワークフロー | Task |
 | 来歴 | Provenance |
 | 予約 | Appointment / Schedule / Slot |
-| 臨床情報 | Condition / AllergyIntolerance / Procedure / Immunization / Flag |
+| 臨床情報 | Condition / AllergyIntolerance / FamilyMemberHistory / Procedure / Immunization / Flag |
 | 診療計画 | CarePlan / Goal / CareTeam |
 | 保険 | Coverage |
 | 問診 | Questionnaire / QuestionnaireResponse |

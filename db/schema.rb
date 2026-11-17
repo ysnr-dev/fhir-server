@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_18_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -405,6 +405,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_18_120000) do
     t.index ["service_provider_reference"], name: "index_encounters_on_service_provider_reference"
     t.index ["status"], name: "index_encounters_on_status"
     t.index ["subject_reference"], name: "index_encounters_on_subject_reference"
+  end
+
+  create_table "family_member_histories", id: :string, force: :cascade do |t|
+    t.integer "version_id", default: 1, null: false
+    t.jsonb "content", null: false
+    t.boolean "deleted", default: false, null: false
+    t.datetime "last_updated", null: false
+    t.string "status"
+    t.string "relationship_code"
+    t.string "sex_code"
+    t.string "code_text"
+    t.string "patient_reference"
+    t.datetime "recorded_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code_text"], name: "index_family_member_histories_on_code_text"
+    t.index ["content"], name: "index_family_member_histories_on_content", using: :gin
+    t.index ["deleted"], name: "index_family_member_histories_on_deleted"
+    t.index ["last_updated"], name: "index_family_member_histories_on_last_updated"
+    t.index ["patient_reference"], name: "index_family_member_histories_on_patient_reference"
+    t.index ["recorded_time"], name: "index_family_member_histories_on_recorded_time"
+    t.index ["relationship_code"], name: "index_family_member_histories_on_relationship_code"
+    t.index ["sex_code"], name: "index_family_member_histories_on_sex_code"
+    t.index ["status"], name: "index_family_member_histories_on_status"
   end
 
   create_table "flags", id: :string, force: :cascade do |t|

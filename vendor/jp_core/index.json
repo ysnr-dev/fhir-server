@@ -18,6 +18,7 @@
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Location": "structure_definitions/JP_Location.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Condition": "structure_definitions/JP_Condition.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_AllergyIntolerance": "structure_definitions/JP_AllergyIntolerance.json",
+    "http://jpfhir.jp/fhir/core/StructureDefinition/JP_FamilyMemberHistory": "structure_definitions/JP_FamilyMemberHistory.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Procedure": "structure_definitions/JP_Procedure.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Immunization": "structure_definitions/JP_Immunization.json",
     "http://jpfhir.jp/fhir/core/StructureDefinition/JP_Coverage": "structure_definitions/JP_Coverage.json",

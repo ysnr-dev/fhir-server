@@ -124,6 +124,12 @@ module Fhir
       Array(references).first&.dig("reference")
     end
 
+    # concept_text of the CodeableConcept at `key` in every element of a 0..* backbone
+    # array, space-joined (FamilyMemberHistory.condition[].code); nil when none has text.
+    def nested_concept_text(elements, key)
+      Array(elements).filter_map { |element| concept_text(element[key]) if element.is_a?(Hash) }.join(" ").presence
+    end
+
     # Human-readable text of a single CodeableConcept: concept.text plus the first
     # coding's display, space-joined; nil when both are absent.
     def concept_text(concept)

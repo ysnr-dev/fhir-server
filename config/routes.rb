@@ -56,7 +56,7 @@ Rails.application.routes.draw do
      ServiceRequest Task Provenance Appointment Schedule Slot
      Practitioner Organization
      PractitionerRole Encounter Location
-     Condition AllergyIntolerance Procedure Immunization Coverage
+     Condition AllergyIntolerance FamilyMemberHistory Procedure Immunization Coverage
      Questionnaire QuestionnaireResponse
      Composition DocumentReference Binary
      Device RelatedPerson Group Flag

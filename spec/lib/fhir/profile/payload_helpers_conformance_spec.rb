@@ -31,6 +31,7 @@ RSpec.describe "IG profile payload helper conformance", type: :request do
       "Encounter" => valid_encounter_payload,
       "Condition" => valid_condition_payload(subject_id: patient_id),
       "AllergyIntolerance" => valid_allergy_intolerance_payload(patient_id: patient_id),
+      "FamilyMemberHistory" => valid_family_member_history_payload(patient_id: patient_id),
       "Procedure" => valid_procedure_payload(subject_id: patient_id),
       "Immunization" => valid_immunization_payload(patient_id: patient_id),
       "Observation" => valid_observation_payload(subject_id: patient_id),

@@ -66,7 +66,7 @@ flowchart TB
     IDP["外部 IdP（Auth0）"]
 
     subgraph serverRepo["fhir-server — Rails 8 / JP-Core v1.2.0 + JASPEHR v1.0.0"]
-        REST["FHIR REST<br/>38 リソース / 検索 / _history / Bundle / $validate"]
+        REST["FHIR REST<br/>39 リソース / 検索 / _history / Bundle / $validate"]
         AUTH["SMART 認可サーバー<br/>token / authorize / introspect / revoke / JWKS"]
         BULK["Bulk Data<br/>$export（system / patient / group）"]
         ADMINAPI["管理 API<br/>oauth_clients / scopes / launch_contexts / delegated_tokens"]
@@ -120,7 +120,7 @@ flowchart TB
 
 | 領域 | 内容 |
 |---|---|
-| FHIR REST | 38 リソース（`Patient` / `Observation` / `MedicationRequest` / `ServiceRequest` / `Questionnaire` / `CarePlan` / `CareTeam` ほか）の CRUD、チェーン検索・`_has`・`_include` / `_revinclude[:iterate]`、`_history` / vread（条件付きの型レベル `_history` を含む）、条件付き操作、JSON Patch、`$validate`、`Patient/$everything`、Bundle（transaction / batch） |
+| FHIR REST | 39 リソース（`Patient` / `Observation` / `MedicationRequest` / `ServiceRequest` / `Questionnaire` / `CarePlan` / `CareTeam` ほか）の CRUD、チェーン検索・`_has`・`_include` / `_revinclude[:iterate]`、`_history` / vread（条件付きの型レベル `_history` を含む）、条件付き操作、JSON Patch、`$validate`、`Patient/$everything`、Bundle（transaction / batch） |
 | 独自オペレーション | `$distinct-dates`（ある日付パラメータが取る値の集合。カルテの日付ナビ用）、`$next-identifier`（患者番号などの連番の払い出し） |
 | 認証・認可 | SMART Backend Services（`client_credentials` / client assertion JWT）、SMART v2 スコープ、OpenID Connect（`id_token` / `fhirUser`）、standalone launch、EHR launch（起動文脈・`appContext`・`user/*` スコープ・CORS）、リフレッシュトークン、Token Introspection（RFC 7662）、revoke、JWKS、`.well-known/smart-configuration` |
 | Bulk Data | Bulk Data Access IG v2.0.0。`/$export`・`/Patient/$export`・`/Group/{id}/$export` と非同期ジョブ、status / download / cancel |
@@ -143,7 +143,7 @@ flowchart TB
 - **宣言的な定義**: `app/lib/fhir/search_definitions/`（検索パラメータ）と `extraction_definitions/`
   （列・token の抽出）にリソース型ごとの定義を置き、`Fhir::ResourceRegistry` が束ねる。
   検索・索引付けのロジックは共通で、型ごとの差分はこの 2 つの定義ファイルだけ
-- **ルーティング**: 38 リソースへ同一のルートセットを生成し、すべて `FhirResourcesController` に集約。
+- **ルーティング**: 39 リソースへ同一のルートセットを生成し、すべて `FhirResourcesController` に集約。
   起動時に自動読込を走らせないよう、型のリストは `routes.rb` に文字列で持ち `ResourceRegistry` と手動で同期する
 - **プロファイル検証**: `app/lib/fhir/profile/` が IG のパッケージ（`rails jp_core:*` / `jaspehr:*` で取得）を
   読み、`app/services/*_validator.rb` と組み合わせて `$validate` と書き込み時の検証に使う。

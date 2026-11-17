@@ -399,6 +399,13 @@ RSpec.describe Fhir::Repository do
               ] },
               "who" => { "reference" => "Practitioner/smoke" } }
           ] }
+      when "FamilyMemberHistory"
+        { "resourceType" => "FamilyMemberHistory",
+          "identifier" => [{ "system" => "http://example.org/family-history", "value" => "smoke-fh" }],
+          "status" => "completed",
+          "patient" => { "reference" => "Patient/#{patient_id}" },
+          "relationship" => { "coding" => [{ "system" => "http://terminology.hl7.org/CodeSystem/v3-RoleCode",
+                                             "code" => "MTH" }] } }
       when "Flag"
         { "resourceType" => "Flag",
           "identifier" => [{ "system" => "http://example.org/flag", "value" => "smoke-flag" }],

@@ -98,6 +98,9 @@ module Fhir
     # http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality (required)
     ALLERGY_CRITICALITY = %w[low high unable-to-assess].freeze
 
+    # http://hl7.org/fhir/ValueSet/history-status (required) -- FamilyMemberHistory.status
+    FAMILY_HISTORY_STATUS = %w[partial completed entered-in-error health-unknown].freeze
+
     # http://hl7.org/fhir/ValueSet/event-status (required) -- Procedure.status
     EVENT_STATUS = %w[preparation in-progress not-done on-hold stopped completed entered-in-error unknown].freeze
 

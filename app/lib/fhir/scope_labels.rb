@@ -20,6 +20,7 @@ module Fhir
       "MedicationAdministration" => "投薬の実施記録",
       "Medication" => "医薬品情報",
       "AllergyIntolerance" => "アレルギー情報",
+      "FamilyMemberHistory" => "家族歴",
       "Immunization" => "予防接種歴",
       "Procedure" => "処置・手術",
       "Encounter" => "受診歴",
