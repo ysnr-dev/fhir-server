@@ -31,7 +31,8 @@ class FhirResourcesController < ApplicationController
     "everything" => "operation",
     "validate" => "operation",
     "distinct_dates" => "operation",
-    "next_identifier" => "operation"
+    "next_identifier" => "operation",
+    "lastn" => "operation"
   }.freeze
 
   # GET /{type} and GET /Patient/:patient_id/{type} (compartment search).
@@ -164,6 +165,15 @@ class FhirResourcesController < ApplicationController
   def distinct_dates
     result = Fhir::DistinctDates.call(
       resource_type, request.query_string, context: access_context, handling: preferred_handling
+    )
+    render_operation_result(result)
+  end
+
+  # GET /Observation/$lastn -- 項目(code)ごとの最新 N 件(max、既定 1)。検索条件は
+  # 通常の検索パラメータと同じ。
+  def lastn
+    result = Fhir::LastN.call(
+      request.query_string, base_url: base_url, context: access_context, handling: preferred_handling
     )
     render_operation_result(result)
   end

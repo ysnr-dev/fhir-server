@@ -130,6 +130,8 @@ module Fhir
         { "name" => "next-identifier", "definition" => "http://fhir-server.local/OperationDefinition/next-identifier" }
       ]
       case resource_type
+      when "Observation"
+        list << { "name" => "lastn", "definition" => "http://hl7.org/fhir/OperationDefinition/Observation-lastn" }
       when "Patient"
         list << { "name" => "everything", "definition" => "http://hl7.org/fhir/OperationDefinition/Patient-everything" }
         list << { "name" => "patient-export", "definition" => "http://hl7.org/fhir/uv/bulkdata/OperationDefinition/patient-export" }

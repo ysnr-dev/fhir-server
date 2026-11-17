@@ -72,6 +72,7 @@ curl -s "http://localhost:3000/ServiceRequest?reason-reference=Condition/{condit
 | `POST` | `/{Resource}/_search` | 検索条件をボディ（`application/x-www-form-urlencoded`）で渡す検索。結果は `GET /{Resource}` と同じ。識別子や氏名が URL・アクセスログ・監査ログの `request_path` に残らない。URL 側のパラメータとは AND で合成される。ボディがあるのに他の Content-Type なら 415 |
 | `GET` / `POST` | `/Patient/:id/{Resource}`、`/Patient/:id/{Resource}/_search` | 患者コンパートメント検索。その患者に属するリソースだけを対象に、通常の検索パラメータをすべて使える（`$everything` と同じ所属判定）。患者が無ければ 404、削除済みなら 410、コンパートメントに属さない型（`Medication` など）は 400 |
 | `GET` | `/{Resource}/$distinct-dates` | 独自 operation: date 検索パラメータが取る値の重複なし集合（新しい順）。`date-param`（必須）・`precision=day\|full`・`timezone=±HH:MM`（既定はサーバーのローカルゾーン）・`limit`・`count=true`（日付ごとの件数） |
+| `GET` | `/Observation/$lastn` | 項目（`code`）ごとの最新 N 件を searchset Bundle で返す（検査値・バイタルの最新値の一覧用）。通常の Observation の検索パラメータで絞り込み、`max` で項目ごとの件数を指定（既定 1、最大 100）。項目は `code` の先頭 coding の `system\|code`（coding が無ければ `code.text`）で判定し、新しさは `date`（`effectiveDateTime` / `effectivePeriod.start`）で比べる。`status` では自動で絞らないので、取り消し済みを除くなら `status=final,amended` などを付ける。`_sort` は効かない |
 | `GET` | `/{Resource}/$next-identifier` | 独自 operation: `system`（必須）の identifier で次に使える番号を払い出す（`Parameters` の `value`）。数字だけの値を数値として比べ、払い出し済み・登録済み（削除済み含む）の最大値 + 1 を返す。同時に呼んでも同じ番号は返らない。登録の一部なので write スコープ |
 | `GET` | `/{Resource}/_history` | タイプレベル履歴（`_count` / `_since` 対応）。検索パラメータを付けると、合致するリソース（削除済みを含む）の全版に絞る（例: `ServiceRequest/_history?based-on=ServiceRequest/X` でオーダー明細の履歴）。絞り込み時は通常の読み取りスコープで引け、未対応パラメータは 400。絞り込み無しは system スコープのみ |
 | `GET` | `/{Resource}/:id/_history` | インスタンスのバージョン履歴（Bundle） |
